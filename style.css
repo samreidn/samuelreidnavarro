@@ -77,3 +77,17 @@ img { max-width: 100%; height: auto; }
   border-radius: 4px;
   background: #fff;
 }
+
+.embed { display: grid; gap: .6rem; justify-items: end; }
+.fs {
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--band);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: .35rem .9rem;
+  cursor: pointer;
+}
+.fs:hover { border-color: var(--mark); }
+.fs:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
