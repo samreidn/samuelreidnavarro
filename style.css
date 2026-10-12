@@ -68,6 +68,15 @@ a { color: var(--mark); }
 img { max-width: 100%; height: auto; }
 .email { display: block; width: 15rem; max-width: 100%; }
 
+.portrait {
+  display: block;
+  width: 18rem;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.bio { margin: 0; text-align: justify; hyphens: auto; }
+
 .game {
   display: block;
   width: 100%;
