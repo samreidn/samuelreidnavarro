@@ -4,12 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>MENSURATOR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Noto+Music&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=IM+Fell+Double+Pica&family=Grenze+Gotisch:wght@400;500;600;700&display=swap">
     <style>
+        :root {
+            --bg: #fbf7ef;
+            --paper: #fffdf8;
+            --band: #f1e8d8;
+            --ink: #3b3125;
+            --soft: #8a7b66;
+            --line: #e0d4c0;
+            --mark: #9c6b3c;
+            --red: #b5473a;
+            --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color-scheme: light;
+        }
+        * { box-sizing: border-box; }
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a100a;
-            color: #d4c3a3;
+            background: var(--bg);
+            color: var(--ink);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -17,27 +33,26 @@
             height: 100vh;
             height: 100dvh;
             width: 100vw;
-            font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+            font-family: var(--sans);
             overflow: hidden;
-            touch-action: none; 
+            touch-action: none;
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
-            background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10,50 Q25,25 50,50 T90,50" fill="none" stroke="%23b8860b" stroke-width="2" opacity="0.3"/><circle cx="50" cy="50" r="3" fill="%23b8860b" opacity="0.4"/></svg>');
+            -webkit-tap-highlight-color: transparent;
         }
-        
+
         #gameWrapper {
             position: relative;
             width: 100%;
-            max-width: 800px;
+            max-width: 960px;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100%;
-            padding: 10px;
-            box-sizing: border-box;
+            padding: 12px;
         }
-        
+
         #canvasContainer {
             position: relative;
             width: 100%;
@@ -46,55 +61,87 @@
             align-items: center;
             aspect-ratio: 2 / 1;
         }
-        
+
         canvas {
             width: 100%;
             height: 100%;
-            background-color: #eeddbb;
-            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.15"/></svg>');
-            box-shadow: inset 0 0 40px rgba(92,64,51,0.6), 0 0 40px rgba(0,0,0,1);
-            border: 4px solid #5c4033;
-            border-radius: 8px;
-            transition: filter 0.1s;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 1px 2px rgba(59, 49, 37, 0.05), 0 10px 30px rgba(59, 49, 37, 0.07);
+            transition: filter 0.15s;
             display: block;
             touch-action: none;
             -webkit-user-select: none;
             user-select: none;
         }
-        
-        .bullet-time { filter: sepia(0.6) brightness(1.1) contrast(1.2); }
-        .alla-breve { filter: saturate(1.5) hue-rotate(-15deg); }
-        
-        .html-btn {
-            background: rgba(184, 134, 11, 0.2);
-            color: #b8860b;
-            border: 2px solid #b8860b;
-            padding: 8px 12px;
-            font-family: inherit; font-size: 14px; font-weight: bold;
-            border-radius: 10px; cursor: pointer; backdrop-filter: blur(4px);
+
+        .bullet-time { filter: grayscale(0.85) contrast(1.05); }
+        .alla-breve { filter: saturate(1.6) hue-rotate(-12deg); }
+
+        /* Paper-and-ink layer for the print themes; the game canvas underneath still takes the clicks */
+        #fxCanvas {
+            display: none; position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(40, 28, 16, 0.12), 0 10px 30px rgba(40, 28, 16, 0.12);
+            transition: filter 0.15s;
         }
-        .html-btn:active { background: rgba(184, 134, 11, 0.6); color: #fff; }
-        #fsBtn { position: absolute; top: 10px; left: 10px; z-index: 20; }
-        
+        body:not([data-theme="modern"]) canvas#gameCanvas { border-radius: 3px; border-color: transparent; box-shadow: none; }
+        #canvasContainer:has(#gameCanvas.bullet-time) #fxCanvas { filter: grayscale(0.85) contrast(1.05); }
+        #canvasContainer:has(#gameCanvas.alla-breve) #fxCanvas { filter: saturate(1.6) hue-rotate(-12deg); }
+        #themeSelect {
+            display: block; width: 100%; margin-top: 8px; padding: 9px 12px;
+            font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+            background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+        }
+
+        .html-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px; padding: 0;
+            background: rgba(255, 253, 248, 0.85);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            font-family: inherit; font-size: 16px; font-weight: 600;
+            border-radius: 999px; cursor: pointer;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .html-btn:hover { border-color: var(--mark); }
+        .html-btn:active { background: var(--band); }
+        #fsBtn { position: absolute; top: 12px; left: 12px; z-index: 20; }
+
         /* Draggable Shoot Button */
         #tShootDraggable {
             position: absolute;
             right: 15%;
             top: 35%;
-            width: 65px; height: 65px;
+            width: 64px; height: 64px;
             border-radius: 50%;
-            background: rgba(26, 16, 10, 0.15); 
-            border: 2px solid rgba(184, 134, 11, 0.3);
-            color: rgba(238, 221, 187, 0.6);
-            font-size: 28px; font-weight: bold;
+            background: rgba(255, 253, 248, 0.55);
+            border: 1.5px solid rgba(156, 107, 60, 0.45);
+            color: var(--mark);
+            font-size: 22px; font-weight: 700;
             display: none; justify-content: center; align-items: center;
             user-select: none; -webkit-user-select: none;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            box-shadow: 0 4px 14px rgba(59, 49, 37, 0.08);
             z-index: 35;
         }
-        #tShootDraggable:active { background: rgba(184, 134, 11, 0.5); color: #fff; }
-        
-        #tPause { position: fixed; top: 10px; right: 10px; width: 45px; height: 45px; font-size: 16px; border-radius: 50%; background: rgba(26,16,10,0.3); border: 2px solid rgba(184,134,11,0.3); color: #d4c3a3; display: none; justify-content:center; align-items:center; z-index: 35; }
+        #tShootDraggable:active { background: var(--mark); color: var(--paper); }
+
+        #tPause {
+            position: fixed; top: 10px; right: 10px; width: 44px; height: 44px;
+            font-size: 13px; font-weight: 800; letter-spacing: 1px; border-radius: 50%;
+            background: rgba(255, 253, 248, 0.85); border: 1px solid var(--line); color: var(--ink);
+            display: none; justify-content: center; align-items: center; z-index: 35;
+            box-shadow: 0 4px 14px rgba(59, 49, 37, 0.08);
+        }
+
+        #touchZonesOverlay .zone {
+            position: absolute; top: 0; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(156, 107, 60, 0.45); font-size: 14px; font-weight: 600; letter-spacing: 2px;
+        }
+        #touchZonesOverlay .zone + .zone { border-left: 1px dashed rgba(156, 107, 60, 0.25); }
 
         @media (orientation: portrait) {
             body { justify-content: flex-start; }
@@ -107,49 +154,102 @@
             bottom: 12px;
             left: 12px;
             z-index: 25;
-            padding: 6px 10px;
+            padding: 5px 10px;
             font-family: inherit;
-            font-size: 12px;
-            font-weight: bold;
-            color: #b8860b;
-            background: rgba(26, 16, 10, 0.85);
-            border: 2px solid rgba(184, 134, 11, 0.5);
-            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--soft);
+            background: transparent;
+            border: 1px solid var(--line);
+            border-radius: 999px;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
         }
-        #titleDevBtn:active { background: rgba(184, 134, 11, 0.35); color: #f4ecd8; }
-        .dev-stage-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 420px; margin: 16px auto; }
-        .dev-stage-btn { flex: 0 0 auto; min-width: 72px; padding: 8px 6px; font-family: inherit; font-size: 14px; font-weight: bold; border-radius: 12px; border: 2px solid #b8860b; background: rgba(184, 134, 11, 0.2); color: #f4ecd8; cursor: pointer; }
-        .dev-stage-btn:active { background: #b8860b; color: #1a100a; }
-        .dev-boss-btn { margin-top: 8px; background: rgba(139, 0, 0, 0.35); border-color: #8b0000; color: #f4ecd8; }
+        #titleDevBtn:hover { color: var(--ink); border-color: var(--mark); }
 
-        /* Unified Pause/Options Menu */
-        .overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 30; justify-content: center; align-items: center; flex-direction: column; }
-        .menu-box { background: rgba(26, 16, 10, 0.95); padding: 30px 40px; border: 4px solid #b8860b; border-radius: 16px; text-align: center; pointer-events: auto; max-width: 90%; }
-        .menu-box h2 { margin-top: 0; color: #f4ecd8; font-size: 32px; }
-        .slider-container { margin: 15px 0; font-size: 14px; color: #d4c3a3; }
-        .slider-container label { display: block; margin-bottom: 5px; }
-        .slider-value { display: inline-block; min-width: 60px; text-align: right; color: #b8860b; font-weight: bold; }
-        .slider-container input { vertical-align: middle; cursor: pointer; width: 100%; margin-top: 8px; }
-        .menu-btn { background: #b8860b; color: #1a100a; border: none; padding: 10px 20px; font-family: inherit; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; margin: 10px 5px; }
-        .menu-btn:active { background: #d4c3a3; }
+        /* Overlays and panels */
+        .overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(251, 247, 239, 0.72);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            z-index: 30; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .menu-box {
+            background: var(--paper); color: var(--ink);
+            padding: 28px 32px; border: 1px solid var(--line); border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(59, 49, 37, 0.14);
+            text-align: center; pointer-events: auto; max-width: 92%; width: 440px;
+        }
+        .menu-box h2 { margin: 0 0 18px; color: var(--ink); font-size: 22px; font-weight: 800; letter-spacing: 3px; }
+        .menu-box p { color: var(--soft); font-size: 14px; margin: 0 0 8px; }
+        .menu-box hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0; }
+        .slider-container { margin: 14px 0; font-size: 13px; font-weight: 500; color: var(--soft); text-align: left; }
+        .slider-container label { display: block; }
+        .slider-value { float: right; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+        .speed-name { display: block; margin-top: 4px; color: var(--ink); font-weight: 600; font-size: 14px; }
+        .slider-container input[type=range] { width: 100%; margin-top: 10px; cursor: pointer; accent-color: var(--mark); }
+        .menu-btn {
+            background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
+            padding: 11px 20px; font-family: inherit; font-size: 15px; font-weight: 600;
+            border-radius: 999px; cursor: pointer; margin: 6px 4px;
+        }
+        .menu-btn:hover { background: #2a231a; }
+        .menu-btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+        .menu-btn.ghost:hover { border-color: var(--mark); }
+        .menu-btn.danger { background: transparent; color: var(--red); border-color: rgba(181, 71, 58, 0.4); }
+        .menu-btn.danger:hover { border-color: var(--red); }
+        .menu-btn.block { display: block; width: 100%; margin: 0 0 10px; }
+        .dev-section-label { color: var(--mark); font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; text-align: center; }
+        .dev-stage-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
+        .dev-stage-btn {
+            padding: 9px 4px; font-family: inherit; font-size: 13px; font-weight: 600;
+            border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
+        }
+        .dev-stage-btn:hover { border-color: var(--mark); }
+        .dev-warp {
+            display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
+            margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
+        }
+        .dev-warp label { color: var(--ink); font-weight: 600; font-size: 13px; }
+        .dev-warp input {
+            width: 64px; padding: 6px; font-family: inherit; font-size: 15px; font-weight: 600; text-align: center;
+            color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+        }
+        .dev-check { color: var(--red); font-weight: 700; cursor: pointer; text-align: center; }
+        .dev-check input { width: auto; margin-right: 8px; accent-color: var(--red); }
+
+        #mobileNameInputOverlay {
+            position: fixed; inset: 0; z-index: 50;
+            background: rgba(251, 247, 239, 0.96);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-family: var(--sans); color: var(--ink); text-align: center; padding: 16px;
+        }
+        #mobileNameInputOverlay .t { font-size: 28px; font-weight: 800; letter-spacing: 3px; margin-bottom: 14px; }
+        #mobileNameInputOverlay .s { font-size: 15px; color: var(--soft); margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+        #mobileNameInputOverlay .p { font-size: 14px; font-weight: 600; color: var(--mark); margin: 16px 0 10px; }
+        #mobileNameInput {
+            font-family: inherit; font-size: 17px; font-weight: 600; text-align: center;
+            padding: 10px 14px; width: 220px; margin-bottom: 18px;
+            color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 12px; outline: none;
+        }
+        #mobileNameInput:focus { border-color: var(--mark); }
+        #mobileNameInputOverlay .row { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
 <div id="gameWrapper">
     <div id="canvasContainer">
-        <button id="fsBtn" class="html-btn">⛶</button>
+        <button id="fsBtn" class="html-btn" aria-label="Fullscreen">⛶</button>
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="tPause">II</div>
     </div>
 </div>
 
 <div id="touchZonesOverlay" style="display:none; pointer-events:none; position:fixed; left:0; top:0; width:100vw; height:0; z-index:4;">
-    <div style="position:absolute; left:0; top:0; width:18%; height:100%; border-right: 1px solid rgba(184,134,11,0.2); display:flex; align-items:center; justify-content:center; color:rgba(184,134,11,0.3); font-size:24px;">◄</div>
-    <div style="position:absolute; left:18%; top:0; width:27%; height:100%; border-right: 1px solid rgba(184,134,11,0.2); display:flex; align-items:center; justify-content:center; color:rgba(184,134,11,0.3); font-size:24px;">►</div>
-    <div style="position:absolute; left:45%; top:0; width:55%; height:100%; display:flex; align-items:center; justify-content:center; color:rgba(184,134,11,0.3); font-size:24px;">▲ JUMP</div>
+    <div class="zone" style="left:0; width:18%;">◀</div>
+    <div class="zone" style="left:18%; width:27%;">▶</div>
+    <div class="zone" style="left:45%; width:55%;">▲ JUMP</div>
 </div>
 
 <div id="tShootDraggable">●</div>
@@ -157,70 +257,74 @@
 <button type="button" id="titleDevBtn" aria-label="Developer mode">DEV</button>
 
 <div id="devOverlay" class="overlay" style="z-index: 40;">
-    <div class="menu-box" style="max-width: 95%;">
+    <div class="menu-box" style="width: 480px; max-height: 92vh; overflow-y: auto;">
         <h2>Modus Formatoris</h2>
-        <p style="color:#d4c3a3; font-size:15px; margin:0 0 8px;">Stadium Classicum (I–VIII) vel pugna cum Diabolo.</p>
+        <p>Stadium Classicum (I–VIII) vel pugna cum Diabolo.</p>
         <div class="dev-stage-grid" id="devStageGrid"></div>
-        <button type="button" class="menu-btn dev-boss-btn" id="devBossBtn">Pugna: MI-FA (Boss)</button>
-        <br>
-        <div style="margin: 15px auto; max-width: 320px; border: 2px solid #b8860b; background: rgba(184, 134, 11, 0.1); padding: 10px; border-radius: 12px;">
-            <label style="color: #f4ecd8; font-weight: bold; display: block; margin-bottom: 8px;">Endless Mode Warp (0-23): </label>
-            <input type="number" id="devEndlessLevelInput" min="0" max="23" value="0" style="width: 60px; background: #1a100a; color: #b8860b; border: 2px solid #b8860b; border-radius: 6px; text-align: center; font-size: 16px; padding: 4px;">
-            <button type="button" class="menu-btn" id="devEndlessJumpBtn" style="padding: 6px 16px; font-size: 16px; margin-left: 10px;">WARP</button>
+        <button type="button" class="menu-btn danger block" id="devBossBtn">Pugna: MI-FA (Boss)</button>
+        <div class="dev-warp">
+            <label for="devEndlessLevelInput">Endless Mode Warp (0-23):</label>
+            <input type="number" id="devEndlessLevelInput" min="0" max="23" value="0">
+            <button type="button" class="menu-btn" id="devEndlessJumpBtn" style="margin: 0; padding: 7px 16px;">WARP</button>
         </div>
-        <br>
-        <button type="button" class="menu-btn" id="devLeaderboardBtn">Test: Nomen in Tabella</button>
-        <br>
-        <button type="button" class="menu-btn" id="devResetLeaderboardBtn" style="background: rgba(220, 53, 69, 0.2); border-color: #dc3545;">Reset Leaderboard</button>
-        <br>
-        <button type="button" class="menu-btn" id="devCloseBtn">Claudere</button>
+        <button type="button" class="menu-btn ghost block" id="devLeaderboardBtn">Test: Nomen in Tabella</button>
+        <button type="button" class="menu-btn danger block" id="devResetLeaderboardBtn">Reset Leaderboard</button>
+        <button type="button" class="menu-btn block" id="devCloseBtn">Claudere</button>
     </div>
 </div>
 
 <div id="pauseOverlay" class="overlay">
-    <div class="menu-box" style="max-width: 500px; max-height: 85vh; overflow-y: auto;">
-        <h2>PAUSATUM</h2>
-        
-                <button class="menu-btn" onclick="togglePause()" style="width: 100%; margin-bottom: 10px;">Resume</button>
-        <button class="menu-btn" onclick="quitToMenu()" style="width: 100%; background: rgba(139, 0, 0, 0.5); margin-bottom: 15px;">Quit to Title</button>
-        
-        <hr style="border-color: rgba(184,134,11,0.3); margin: 15px 0;">
+    <div class="menu-box" style="max-height: 88vh; overflow-y: auto;">
+        <h2>PAUSATUM</h2>
 
-        <div class="slider-container">
-            <label>Mensura (Game Speed): <br><span id="speedLabel" style="font-weight:bold; color:#b8860b;">Tempus perfectum prolatio minor</span><br>
-            <input type="range" id="speedSlider" min="0" max="4" step="1" value="2" oninput="updateSpeedLabel()"></label>
-        </div>
-        <div class="slider-container">
-            <label>Musica Vol: <span class="slider-value" id="musicVolValue">0.8</span><input type="range" id="musicVol" min="0" max="1" step="0.05" value="0.8" oninput="updateSliderValue('musicVolValue', this.value)"></label>
-        </div>
-        <div class="slider-container">
-            <label>Effectus Vol: <span class="slider-value" id="fxVolValue">0.4</span><input type="range" id="fxVol" min="0" max="1" step="0.05" value="0.4" oninput="updateSliderValue('fxVolValue', this.value)"></label>
-        </div>
-        <div id="devPhysicsSection" style="display: none;">
-            <hr style="border-color: rgba(184,134,11,0.3); margin: 15px 0;">
-            <div style="text-align: center; color: #b8860b; font-weight: bold; margin-bottom: 10px; font-size: 14px;">⚙ DEV MODE: Physics Tweaker</div>
-            <div class="slider-container">
-                <label>Gravitas: <span class="slider-value" id="gravityValue">0.6</span><input type="range" id="gravitySlider" min="0.2" max="1.0" step="0.1" value="0.6" oninput="updateSliderValue('gravityValue', this.value)"></label>
-            </div>
-            <div class="slider-container">
-                <label>Saltus Altitudo (Jump Height): <span class="slider-value" id="jumpPowerValue">9</span><input type="range" id="jumpPowerSlider" min="5" max="13" step="1" value="9" oninput="updateSliderValue('jumpPowerValue', this.value)"></label>
-            </div>
-            <div class="slider-container">
-                <label>Celeritas Pedestris (Walk Speed): <span class="slider-value" id="walkSpeedValue">6.5</span><input type="range" id="walkSpeedSlider" min="3" max="10" step="0.5" value="6.5" oninput="updateSliderValue('walkSpeedValue', this.value)"></label>
-            </div>
-            <div class="slider-container">
-                <label>Cursus Velocitas (Sprint Speed): <span class="slider-value" id="sprintSpeedValue">12</span><input type="range" id="sprintSpeedSlider" min="8" max="16" step="1" value="12" oninput="updateSliderValue('sprintSpeedValue', this.value)"></label>
+        <button class="menu-btn block" onclick="togglePause()">Resume</button>
+        <button class="menu-btn ghost block" onclick="quitToMenu()">Quit to Title</button>
+
+        <hr>
+
+        <div class="slider-container">
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect" onchange="applyTheme(this.value)">
+                <option value="petrucci">Petrucci</option>
+                <option value="attaingnant">Attaingnant</option>
+                <option value="rubrica">Red &amp; Black</option>
+                <option value="manuscript">Manuscript</option>
+            </select>
+        </div>
+        <div class="slider-container">
+            <label>Mensura (Game Speed) <span id="speedLabel" class="speed-name">Tempus perfectum prolatio minor</span>
+            <input type="range" id="speedSlider" min="0" max="4" step="1" value="2" oninput="updateSpeedLabel()"></label>
+        </div>
+        <div class="slider-container">
+            <label>Musica Vol <span class="slider-value" id="musicVolValue">0.8</span><input type="range" id="musicVol" min="0" max="1" step="0.05" value="0.8" oninput="updateSliderValue('musicVolValue', this.value)"></label>
+        </div>
+        <div class="slider-container">
+            <label>Effectus Vol <span class="slider-value" id="fxVolValue">0.4</span><input type="range" id="fxVol" min="0" max="1" step="0.05" value="0.4" oninput="updateSliderValue('fxVolValue', this.value)"></label>
+        </div>
+        <div id="devPhysicsSection" style="display: none;">
+            <hr>
+            <div class="dev-section-label">⚙ DEV MODE: Physics Tweaker</div>
+            <div class="slider-container">
+                <label>Gravitas <span class="slider-value" id="gravityValue">0.6</span><input type="range" id="gravitySlider" min="0.2" max="1.0" step="0.1" value="0.6" oninput="updateSliderValue('gravityValue', this.value)"></label>
             </div>
-            <div class="slider-container" style="text-align: center; margin-top: 15px;">
-                <label style="color: #ff4444; font-weight: bold; cursor: pointer;">
-                    <input type="checkbox" id="devInvincibilityToggle" style="width: auto; margin-right: 8px;">
+            <div class="slider-container">
+                <label>Saltus Altitudo (Jump Height) <span class="slider-value" id="jumpPowerValue">9</span><input type="range" id="jumpPowerSlider" min="5" max="13" step="1" value="9" oninput="updateSliderValue('jumpPowerValue', this.value)"></label>
+            </div>
+            <div class="slider-container">
+                <label>Celeritas Pedestris (Walk Speed) <span class="slider-value" id="walkSpeedValue">6.5</span><input type="range" id="walkSpeedSlider" min="3" max="10" step="0.5" value="6.5" oninput="updateSliderValue('walkSpeedValue', this.value)"></label>
+            </div>
+            <div class="slider-container">
+                <label>Cursus Velocitas (Sprint Speed) <span class="slider-value" id="sprintSpeedValue">12</span><input type="range" id="sprintSpeedSlider" min="8" max="16" step="1" value="12" oninput="updateSliderValue('sprintSpeedValue', this.value)"></label>
+            </div>
+            <div class="slider-container dev-check">
+                <label>
+                    <input type="checkbox" id="devInvincibilityToggle">
                     INVINCIBILITY
                 </label>
             </div>
         </div>
     </div>
 </div>
-
 <script>
     document.getElementById('fsBtn').addEventListener('click', () => {
         let elem = document.documentElement;
@@ -235,6 +339,10 @@
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    // Logical game size is 800x400; the backing store is scaled for sharp rendering on high-density screens
+    const W = 800, H = 400;
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * DPR; canvas.height = H * DPR;
     
     const pauseOverlay = document.getElementById('pauseOverlay');
     const touchZonesOverlay = document.getElementById('touchZonesOverlay');
@@ -444,110 +552,555 @@ let devInvincible = false;
         } catch (error) { console.log('Failed to add to Dreamlo:', error); }
     }
 
-    // --- // --- Name Input Screen ---
+    // --- Visual Style & Themes ---
+    const MODERN_COLORS = {
+        bg: '#fbf7ef', paper: '#fffdf8', band: '#f1e8d8', ink: '#3b3125', inkSoft: '#5c4f3e', soft: '#8a7b66',
+        line: '#e0d4c0', staff: '#d8cab2', mark: '#9c6b3c', red: '#b5473a', redHot: '#dc5a43', blue: '#3f6c9c',
+        gold: '#c49a2c', silver: '#9a9a96', bronze: '#b07a4a'
+    };
+    const C = Object.assign({}, MODERN_COLORS);
+    const SANS = '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+    const MUSIC = '"Noto Music", "Segoe UI Symbol", "Apple Symbols", serif';
+    const FELL = '"IM Fell English", "EB Garamond", Garamond, "Times New Roman", serif';
+    const FELL_SC = '"IM Fell English SC", ' + FELL;
+    const FELL_BIG = '"IM Fell Double Pica", ' + FELL;
+    const GOTH = '"Grenze Gotisch", "UnifrakturMaguntia", Garamond, serif';
+
+    // Each theme recolours the game and picks its type; print themes also get a paper-and-ink pass (see fx below)
+    const THEMES = {
+        petrucci: {
+            name: 'Petrucci', ui: FELL, display: FELL_BIG, sc: FELL_SC, scale: 1.14, weights: false, italic: true, print: true, initial: 'factotum', pageBg: '#efe6d3',
+            colors: { paper: '#ecdfc2', bg: '#ecdfc2', band: '#e3d4b3', ink: '#231a13', inkSoft: '#3b2d20', soft: '#5f4e3b', line: '#bfa77f', staff: '#231a13', mark: '#231a13', red: '#9e3424', redHot: '#c0402a', blue: '#2d4f86', gold: '#8c6a1e', silver: '#5f4e3b', bronze: '#9e3424' },
+            post: { mode: 1, paper: [236, 223, 194], grain: 0.5, density: 0.26, foxing: 0.07, laid: true }
+        },
+        attaingnant: {
+            name: 'Attaingnant', ui: FELL, display: FELL_BIG, sc: FELL_SC, scale: 1.14, weights: false, italic: true, print: true, segments: true, mono: true, initial: 'factotum', pageBg: '#f3f2ee',
+            colors: { paper: '#ffffff', bg: '#ffffff', band: '#ffffff', ink: '#000000', inkSoft: '#000000', soft: '#222222', line: '#000000', staff: '#000000', mark: '#000000', red: '#000000', redHot: '#000000', blue: '#000000', gold: '#000000', silver: '#000000', bronze: '#000000' },
+            post: { mode: 2, paper: [255, 255, 255], grain: 0.55, density: 0 }
+        },
+        rubrica: {
+            name: 'Red & Black', ui: FELL, display: FELL_BIG, sc: FELL_SC, scale: 1.14, weights: false, italic: true, print: true, initial: 'factotum', pageBg: '#efe6d3',
+            colors: { paper: '#f1e6cf', bg: '#f1e6cf', band: '#e8d9bb', ink: '#15100c', inkSoft: '#2a2018', soft: '#55453a', line: '#c9a291', staff: '#b32c1f', mark: '#b32c1f', red: '#b32c1f', redHot: '#d8381f', blue: '#1f3f80', gold: '#b32c1f', silver: '#55453a', bronze: '#55453a' },
+            post: { mode: 1, paper: [241, 230, 207], grain: 0.4, density: 0.16, foxing: 0.05, laid: true }
+        },
+        manuscript: {
+            name: 'Manuscript', ui: GOTH, display: GOTH, sc: GOTH, scale: 1.16, weights: true, italic: false, print: true, hand: true, white: true, initial: 'illuminated', pageBg: '#efe6d3',
+            colors: { paper: '#efe3c7', bg: '#efe3c7', band: '#e6d6b3', ink: '#3e2615', inkSoft: '#57381f', soft: '#7a5a3a', line: '#c8a888', staff: '#b63424', mark: '#b63424', red: '#b63424', redHot: '#d24a30', blue: '#2c4a9e', gold: '#b08a2e', silver: '#7a5a3a', bronze: '#57381f' },
+            post: { mode: 1, paper: [239, 227, 199], grain: 0.3, density: 0.32, foxing: 0.04, vellum: true }
+        }
+    };
+    const THEME_ORDER = ['petrucci', 'attaingnant', 'rubrica', 'manuscript'];
+    let themeKey = 'rubrica', T = THEMES.rubrica;
+
+    function font(size, weight = 400, italic = false, role = 'ui') {
+        const fam = role === 'display' ? T.display : role === 'sc' ? T.sc : T.ui;
+        const w = T.weights ? Math.min(weight, T.hand ? 700 : 900) : 400;
+        return `${italic && T.italic ? 'italic ' : ''}${w} ${Math.round(size * T.scale)}px ${fam}`;
+    }
+    function spacing(px) { if ('letterSpacing' in ctx) ctx.letterSpacing = px + 'px'; }
+    function inRect(x, y, r) { return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h; }
+    function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${a})`; }
+
+    function pill(x, y, w, h, fill, stroke, r = h / 2) {
+        pathRoundRect(ctx, x, y, w, h, r);
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+        if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+
+    function veil(alpha = 0.94) { ctx.fillStyle = rgba(C.paper, alpha); ctx.fillRect(0, 0, W, H); }
+
+    // Title menu layout, shared by drawing and click handling
+    const MENU_ACTIONS = [
+        () => { gameMode = 'CLASSIC'; currentLevel = 0; startGame(); },
+        () => { gameMode = 'ENDLESS'; currentLevel = 0; startGame(); },
+        () => { gameMode = 'GRADUS'; currentLevel = 0; startGame(); },
+        () => { gameMode = 'KART'; currentLevel = 0; startGame(); },
+        () => { gameState = 'LEADERBOARD'; loadLeaderboard(); }
+    ];
+    const MENU_LABELS = ['Ars Antiqua (Classic)', 'Ars Nova (Endless)', 'Gradus ad Parnassum', 'Cursus (Kart)', 'Magistri Mensurarum'];
+    const MODERN_MENU = [[150, 160], [406, 160], [150, 228], [406, 228]].map(([x, y], i) => ({ x, y, w: 244, h: 56, label: MENU_LABELS[i], primary: i === 0, action: MENU_ACTIONS[i] }));
+    const PRINT_MENU = MENU_LABELS.map((label, i) => ({ x: 232, y: 200 + i * 29, w: 330, h: 28, label, primary: i === 0, action: MENU_ACTIONS[i] }));
+    let MENU_BTNS = MODERN_MENU;
+    const INSTALL_BTN = { x: 696, y: 16, w: 88, h: 30 };
+    const THEME_BTN = { x: 584, y: 16, w: 104, h: 30 };
+    const LB_SWITCH_BTN = { x: 10, y: 10, w: 160, h: 30 };
+    const LB_CLOSE_BTN = { x: 760, y: 10, w: 30, h: 30 };
+    let menuHover = -1;
+    let menuArt = null; // cached decorations for the print title pages
+
+    function applyTheme(key) {
+        if (!THEMES[key]) key = 'rubrica';
+        themeKey = key; T = THEMES[key];
+        Object.assign(C, MODERN_COLORS, T.colors);
+        MENU_BTNS = T.print ? PRINT_MENU : MODERN_MENU;
+        if (T.print) { INSTALL_BTN.x = 690; INSTALL_BTN.y = 30; INSTALL_BTN.w = 72; INSTALL_BTN.h = 28; THEME_BTN.x = 566; THEME_BTN.y = 30; THEME_BTN.w = 118; THEME_BTN.h = 28; }
+        else { INSTALL_BTN.x = 696; INSTALL_BTN.y = 16; INSTALL_BTN.w = 88; INSTALL_BTN.h = 30; THEME_BTN.x = 584; THEME_BTN.y = 16; THEME_BTN.w = 104; THEME_BTN.h = 30; }
+        document.body.dataset.theme = key;
+        document.body.style.background = T.pageBg;
+        menuArt = null;
+        fx.setTheme(T);
+        const sel = document.getElementById('themeSelect'); if (sel) sel.value = key;
+        try { localStorage.setItem('mensuratorTheme', key); } catch (e) {}
+        if (document.fonts && document.fonts.load) {
+            Promise.all([font(20), font(20, 400, true), font(40, 700, false, 'display'), font(20, 400, false, 'sc')].map(f => document.fonts.load(f).catch(() => {})))
+                .then(() => { if (themeKey === key) menuArt = null; });
+        }
+    }
+    function cycleTheme() { applyTheme(THEME_ORDER[(THEME_ORDER.indexOf(themeKey) + 1) % THEME_ORDER.length]); }
+
+    // ===== Period drawing primitives (print and manuscript themes) =====
+    function hashf(n) { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+    function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+    const NIB = -40 * Math.PI / 180; // broad pen held at about 40 degrees
+    // broad-nib stroke: each segment swept by the pen edge, so thick and thin come from direction
+    function nib(c, pts, w) {
+        const nx = Math.cos(NIB) * w / 2, ny = Math.sin(NIB) * w / 2;
+        for (let i = 0; i < pts.length - 1; i++) {
+            const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+            c.beginPath(); c.moveTo(x0 - nx, y0 - ny); c.lineTo(x0 + nx, y0 + ny); c.lineTo(x1 + nx, y1 + ny); c.lineTo(x1 - nx, y1 - ny); c.closePath(); c.fill();
+        }
+    }
+    function hw(x, y) { return Math.sin(x * 0.021 + y * 0.37) * 0.8 + Math.sin(x * 0.067 + y * 1.3) * 0.45; } // hand tremor
+    function wob(x0, y0, x1, y1, amp = 1, step = 8) {
+        const n = Math.max(2, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / step)), pts = [];
+        for (let i = 0; i <= n; i++) { const t = i / n, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t; pts.push([x + hw(y, x) * amp * 0.5, y + hw(x, y) * amp]); }
+        return pts;
+    }
+    function lozenge(c, x, y, rx, ry, filled, lw = 2.4) {
+        c.beginPath(); c.moveTo(x, y - ry); c.lineTo(x + rx, y); c.lineTo(x, y + ry); c.lineTo(x - rx, y); c.closePath();
+        if (filled) c.fill(); else { c.lineWidth = lw; c.lineJoin = 'miter'; c.stroke(); }
+    }
+    function voidLozenge(c, x, y, rx, ry, w = 4.6) { nib(c, [[x, y - ry], [x + rx, y], [x, y + ry], [x - rx, y], [x, y - ry]], w); }
+    function voidRect(c, x, y, w, h, pen = 5) { nib(c, [[x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]], pen); }
+
+    // staff lines in world space: continuous rules, movable-type segments, or hand-ruled
+    function drawStaff(c, x0, x1, top, gap) {
+        c.fillStyle = C.staff; c.strokeStyle = C.staff;
+        for (let i = 0; i < 5; i++) {
+            const y = top + i * gap;
+            if (T.segments) {
+                const sw = 18; let k = Math.floor(x0 / sw);
+                for (let x = k * sw; x < x1; x += sw, k++) {
+                    const dy = (hashf(k * 7 + i) - 0.5) * 1.6, th = 1.5 + hashf(k * 13 + i * 3) * 0.6;
+                    const a = Math.max(x, x0), b = Math.min(x + sw - 1, x1);
+                    if (b > a) c.fillRect(a, y - th / 2 + dy, b - a + 0.5, th);
+                }
+            } else if (T.hand) {
+                c.lineWidth = 1.5; c.beginPath();
+                const s = Math.floor(x0 / 12) * 12;
+                c.moveTo(x0, y + hw(x0, i * 50) * 1.2);
+                for (let x = s + 12; x < x1; x += 12) c.lineTo(x, y + hw(x, i * 50) * 1.2);
+                c.lineTo(x1, y + hw(x1, i * 50) * 1.2); c.stroke();
+            } else if (T.print) {
+                c.fillRect(x0, y - 0.8, x1 - x0, 1.6);
+            } else {
+                c.lineWidth = 1.5; c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.stroke();
+            }
+        }
+    }
+    // mensural F clef: a square head with its tail on the F line, two lozenges straddling it, all on one stem
+    function printFClef(c, x, y) {
+        if (T.hand) {
+            nib(c, wob(x, y - 24, x, y + 24, 0.6), 2.8); lozenge(c, x + 10, y - 8, 5.5, 7, true); lozenge(c, x + 10, y + 8, 5.5, 7, true);
+            voidRect(c, x + 20, y - 9, 13, 18, 3.4); nib(c, wob(x + 32, y, x + 32.4, y + 30, 0.4), 2.6);
+        } else {
+            c.fillRect(x, y - 26, 2.6, 52); lozenge(c, x + 11, y - 8, 6, 7.5, true); lozenge(c, x + 11, y + 8, 6, 7.5, true);
+            c.fillRect(x + 21, y - 9, 13, 18); c.fillRect(x + 31.4, y - 9, 2.6, 38);
+        }
+    }
+    // mensuration signs: O / C for perfect and imperfect tempus, a dot for major prolation, a stroke for diminution
+    function printMensuration(c, x, y, sign = 'O', r = 12) {
+        const closed = sign[0] === 'O', dot = sign.includes('.'), cut = sign.includes('|');
+        if (T.hand) {
+            // walk the circle anticlockwise from the right so the C opens to the right
+            const p2 = []; for (let i = 0; i <= 16; i++) { const a = (closed ? -0.1 : 0.32) + ((closed ? Math.PI * 2 + 0.25 : Math.PI * 2 - 0.64)) * i / 16; p2.push([x + Math.cos(a) * r * 0.9, y - Math.sin(a) * r]); }
+            nib(c, p2, 3.6);
+            if (cut) nib(c, wob(x, y - r - 7, x, y + r + 7, 0.4), 2.6);
+        } else {
+            c.lineWidth = r / 4.4; c.beginPath();
+            if (closed) c.ellipse(x, y, r * 0.9, r, 0, 0, Math.PI * 2); else c.ellipse(x, y, r * 0.9, r, 0, Math.PI * 0.27, Math.PI * 1.73, false);
+            c.stroke();
+            if (cut) c.fillRect(x - 1.2, y - r - 7, 2.4, 2 * r + 14);
+        }
+        if (dot) { c.beginPath(); c.arc(x + (cut ? 4.5 : 0), y, r / 5, 0, Math.PI * 2); c.fill(); }
+    }
+    // the signature for each Mensura setting, drawn after the clef (modus is shown by perfect longa rests spanning three spaces)
+    const MENSURA_SIGNS = ['O', 'O.', 'O', 'C.', 'C'];
+    function printSignature(c, x, mid, gap) {
+        const k = difficultyIndex;
+        if (k === 0) { printRest(c, x - 14, mid - gap, gap * 3); printRest(c, x - 4, mid - gap, gap * 3); printMensuration(c, x + 20, mid, 'O', gap * 0.42); }
+        else printMensuration(c, x, mid, MENSURA_SIGNS[k], gap * 0.42);
+    }
+    // rests: a thick stroke whose length and place on the staff give its value
+    function printRest(c, x, y, h, w = 6) {
+        if (T.hand) { const d = hw(x, y) * 0.4; c.beginPath(); c.moveTo(x - w / 2 + d, y); c.lineTo(x + w / 2 + d, y + 1); c.lineTo(x + w / 2, y + h); c.lineTo(x - w / 2, y + h - 1); c.closePath(); c.fill(); }
+        else { c.fillRect(x - w / 2, y, w, h); c.fillRect(x - w / 2 - 1, y, w + 2, 1.4); c.fillRect(x - w / 2 - 1, y + h - 1.4, w + 2, 1.4); }
+    }
+    // b rotundum: a tall stem with a pointed bowl
+    function printFlat(c, x, y, s = 1) {
+        c.save(); c.translate(x, y); c.scale(s, s);
+        if (T.hand) nib(c, wob(0, -30, 0, 4, 0.4), 2.8); else c.fillRect(-1.3, -30, 2.6, 34);
+        {
+            c.beginPath(); c.moveTo(0, -6); c.bezierCurveTo(6, -14, 15, -11, 11, -3); c.bezierCurveTo(9, 1, 4, 3, 0, 5); c.lineTo(0, 1.5); c.bezierCurveTo(4, 0, 7, -2, 8, -4.5); c.bezierCurveTo(9, -9, 4, -9, 0, -3.5); c.closePath(); c.fill();
+        }
+        c.restore();
+    }
+    // the diesis as printed: a lattice of four strokes set on the diagonal
+    function printSharp(c, x, y, s = 1) {
+        c.save(); c.translate(x + 8, y); c.scale(s, s); c.rotate(-0.62);
+        if (T.hand) { nib(c, [[-4, -15], [-4, 15]], 2.4); nib(c, [[4, -15], [4, 15]], 2.4); nib(c, [[-15, -4], [15, -4]], 3.4); nib(c, [[-15, 4], [15, 4]], 3.4); }
+        else { c.fillRect(-5.2, -15, 2.4, 30); c.fillRect(2.8, -15, 2.4, 30); c.fillRect(-15, -5.5, 30, 3); c.fillRect(-15, 2.5, 30, 3); }
+        c.restore();
+    }
+    function printFermata(c, x, y) {
+        if (T.hand) { nib(c, [[x - 12, y + 2], [x - 9, y - 7], [x, y - 11], [x + 9, y - 7], [x + 12, y + 2]], 2.4); }
+        else { c.lineWidth = 2.4; c.beginPath(); c.arc(x, y, 12, Math.PI, 0); c.stroke(); }
+        c.beginPath(); c.arc(x, y - 3, 2.6, 0, Math.PI * 2); c.fill();
+    }
+    function printCustos(c, x, y) {
+        const p = [[x, y], [x + 5, y + 6], [x + 10, y - 4], [x + 14, y + 2], [x + 22, y - 22]];
+        if (T.hand) nib(c, p, 2.2); else { c.lineWidth = 2.4; c.beginPath(); p.forEach(([a, b], i) => i ? c.lineTo(a, b) : c.moveTo(a, b)); c.stroke(); }
+    }
+    function fleuron(c, x, y, s = 1) { // hedera leaf
+        c.save(); c.translate(x, y); c.scale(s, s);
+        c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(-9, -12, 4, -18, 8, -8); c.bezierCurveTo(14, -16, 22, -4, 10, 4); c.bezierCurveTo(6, 7, 2, 4, 0, 0); c.fill();
+        c.lineWidth = 1.6; c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(-8, 6, -14, 2); c.stroke();
+        c.restore();
+    }
+    // woodcut factotum initial: black block, white letter and vine cut away
+    function factotum(c, x, y, size, letter) {
+        const r = rng(7);
+        c.save();
+        c.fillStyle = C.ink; c.fillRect(x, y, size, size);
+        c.globalCompositeOperation = 'destination-out';
+        c.lineWidth = 1.4; c.strokeRect(x + 4, y + 4, size - 8, size - 8);
+        for (let i = 0; i < 70; i++) { const px = x + 8 + r() * (size - 16), py = y + 8 + r() * (size - 16); c.beginPath(); c.arc(px, py, 0.7 + r() * 1.1, 0, Math.PI * 2); c.fill(); }
+        for (let k = 0; k < 4; k++) { c.beginPath(); c.moveTo(x + 8, y + 14 + k * 18); c.bezierCurveTo(x + size * .3, y + 4 + k * 18, x + size * .6, y + 24 + k * 18, x + size - 8, y + 12 + k * 18); c.lineWidth = 1.2; c.stroke(); }
+        c.font = `${size * 0.86}px ${FELL_BIG}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(letter, x + size / 2, y + size * 0.56);
+        c.restore();
+    }
+
+    // manuscript illumination
+    const PIG = { blue: '#2c4a9e', blueDk: '#1d3270', red: '#b8342a', rose: '#c45a6e', green: '#3f7a4a', gold: '#c8a03c', goldHi: '#efd486', goldDk: '#8c6a1e', white: '#fbf6ea', flesh: '#e9c9a8', brown: '#7a4a26' };
+    function gold(c, path) {
+        c.save(); c.fillStyle = PIG.gold; c.fill(path); c.clip(path);
+        c.globalAlpha = 0.55; c.fillStyle = PIG.goldHi; c.translate(-6, -6); c.fill(path); c.restore();
+        c.save(); c.strokeStyle = PIG.goldDk; c.lineWidth = 1; c.stroke(path); c.restore();
+    }
+    function bezant(c, x, y, r = 3.4) { const p = new Path2D(); p.arc(x, y, r, 0, Math.PI * 2); gold(c, p); }
+    function leaf(c, x, y, ang, len, col) { c.save(); c.translate(x, y); c.rotate(ang); c.fillStyle = col; c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(len * 0.5, -len * 0.45, len, 0); c.quadraticCurveTo(len * 0.5, len * 0.45, 0, 0); c.fill(); c.strokeStyle = 'rgba(40,25,15,.75)'; c.lineWidth = 0.7; c.stroke(); c.fillStyle = PIG.white; c.globalAlpha = .5; c.fillRect(len * 0.25, -0.5, len * 0.5, 1); c.restore(); }
+    function trefoil(c, x, y, a, r, col) { c.save(); c.translate(x, y); c.rotate(a); c.fillStyle = col; for (let k = -1; k <= 1; k++) { c.beginPath(); c.arc(Math.cos(k * 0.9) * r, Math.sin(k * 0.9) * r, r * 0.62, 0, Math.PI * 2); c.fill(); } c.fillRect(-r * 0.6, -0.8, r * 0.8, 1.6); c.strokeStyle = 'rgba(40,25,15,.7)'; c.lineWidth = .6; for (let k = -1; k <= 1; k++) { c.beginPath(); c.arc(Math.cos(k * 0.9) * r, Math.sin(k * 0.9) * r, r * 0.62, 0, Math.PI * 2); c.stroke(); } c.restore(); }
+    // marginal ivy: hairline stem, curling tendrils, ivy leaves and gold bezants
+    function vine(c, x0, y0, x1, y1, seed) {
+        const r = rng(seed), pts = [], len = Math.hypot(x1 - x0, y1 - y0), n = Math.ceil(len / 3);
+        const ux = (x1 - x0) / len, uy = (y1 - y0) / len, px = -uy, py = ux;
+        for (let i = 0; i <= n; i++) { const t = i / n, w = Math.sin(t * len / 38) * 3.2; pts.push([x0 + (x1 - x0) * t + px * w, y0 + (y1 - y0) * t + py * w]); }
+        c.strokeStyle = C.ink; c.lineWidth = 1.1; c.beginPath(); pts.forEach(([x, y], k) => k ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
+        const cols = [PIG.blue, PIG.red, PIG.blue, PIG.rose];
+        let side = 1;
+        for (let d = 10 + r() * 8; d < len - 10; d += 16 + r() * 10) {
+            const i = Math.round(d / 3), [x, y] = pts[i]; side = -side;
+            const bx = px * side, by = py * side;
+            c.strokeStyle = C.ink; c.lineWidth = 0.9; c.beginPath(); c.moveTo(x, y);
+            const sx = x + bx * 9 + ux * 6, sy = y + by * 9 + uy * 6; c.quadraticCurveTo(x + bx * 2 + ux * 6, y + by * 2 + uy * 6, sx, sy);
+            const roll = r() < 0.35;
+            if (roll) { const a0 = Math.atan2(by, bx); for (let a = 0; a < 4.2; a += 0.3) { const rr = 4 - a * 0.8; c.lineTo(sx + Math.cos(a0 + a * side) * rr, sy + Math.sin(a0 + a * side) * rr); } }
+            c.stroke();
+            if (roll) continue;
+            const ang = Math.atan2(by + uy * 0.5, bx + ux * 0.5);
+            if (r() < 0.45) bezant(c, sx, sy, 3.1);
+            else if (r() < 0.6) trefoil(c, sx + bx * 3, sy + by * 3, ang, 3.4, cols[(r() * cols.length) | 0]);
+            else leaf(c, sx, sy, ang, 10 + r() * 3, cols[(r() * cols.length) | 0]);
+        }
+    }
+    function illumInitial(c, x, y, s, letter) { // gold-leaf letter on a blue ground with white filigree
+        c.save();
+        const frame = new Path2D(); frame.rect(x, y, s, s); gold(c, frame);
+        c.fillStyle = PIG.rose; c.fillRect(x + 5, y + 5, s - 10, s - 10);
+        c.fillStyle = PIG.blue; c.fillRect(x + 9, y + 9, s - 18, s - 18);
+        c.strokeStyle = 'rgba(251,246,234,.8)'; c.lineWidth = 0.8; c.fillStyle = 'rgba(251,246,234,.85)';
+        const r = rng(3);
+        for (let i = 0; i < 26; i++) { const fx = x + 14 + r() * (s - 28), fy = y + 14 + r() * (s - 28); c.beginPath(); c.arc(fx, fy, 1, 0, Math.PI * 2); c.fill(); c.beginPath(); c.arc(fx, fy, 3.5, 0, Math.PI * 1.4); c.stroke(); }
+        c.font = `700 ${s * 0.92}px ${GOTH}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.translate(x + s / 2, y + s * 0.5);
+        c.lineWidth = 5; c.strokeStyle = PIG.goldDk; c.strokeText(letter, 0, 0);
+        const g = c.createLinearGradient(-s / 3, -s / 3, s / 3, s / 3); g.addColorStop(0, PIG.goldHi); g.addColorStop(0.45, PIG.gold); g.addColorStop(1, PIG.goldDk);
+        c.fillStyle = g; c.fillText(letter, 0, 0);
+        c.restore();
+        c.strokeStyle = C.ink; c.lineWidth = 1; c.strokeRect(x, y, s, s);
+    }
+    function miniature(c, x, y, w, h) { // three singers at a lectern under a pointed arch
+        c.save();
+        const arch = new Path2D();
+        arch.moveTo(x, y + h); arch.lineTo(x, y + h * 0.32); arch.quadraticCurveTo(x, y + 4, x + w / 2, y); arch.quadraticCurveTo(x + w, y + 4, x + w, y + h * 0.32); arch.lineTo(x + w, y + h); arch.closePath();
+        gold(c, arch);
+        const inner = new Path2D(); const m = 6;
+        inner.moveTo(x + m, y + h - m); inner.lineTo(x + m, y + h * 0.34); inner.quadraticCurveTo(x + m, y + 4 + m * 1.6, x + w / 2, y + m * 1.4); inner.quadraticCurveTo(x + w - m, y + 4 + m * 1.6, x + w - m, y + h * 0.34); inner.lineTo(x + w - m, y + h - m); inner.closePath();
+        c.save(); c.clip(inner);
+        c.fillStyle = PIG.blue; c.fillRect(x, y, w, h);
+        const d = 12;
+        for (let gy = -1; gy < h / d + 1; gy++) for (let gx = -1; gx < w / d + 1; gx++) {
+            const cx = x + gx * d + (gy % 2 ? d / 2 : 0), cy = y + gy * d * 0.9;
+            if ((gx + gy) % 3 === 0) { c.fillStyle = PIG.red; c.beginPath(); c.moveTo(cx, cy - d * 0.45); c.lineTo(cx + d * 0.5, cy); c.lineTo(cx, cy + d * 0.45); c.lineTo(cx - d * 0.5, cy); c.closePath(); c.fill(); }
+            c.fillStyle = PIG.goldHi; c.beginPath(); c.arc(cx, cy, 1.1, 0, Math.PI * 2); c.fill();
+        }
+        const fy = y + h * 0.8;
+        c.fillStyle = '#5e7f4e'; c.fillRect(x, fy, w, h);
+        c.strokeStyle = 'rgba(30,40,20,.45)'; c.lineWidth = .7;
+        for (let i = -8; i < 16; i++) { c.beginPath(); c.moveTo(x + w / 2 + i * 10, fy); c.lineTo(x + w / 2 + i * 22, y + h); c.stroke(); }
+        for (let j = 1; j < 4; j++) { c.beginPath(); c.moveTo(x, fy + j * j * 2.5); c.lineTo(x + w, fy + j * j * 2.5); c.stroke(); }
+        const lx = x + w * 0.56;
+        c.fillStyle = '#6b4123'; c.fillRect(lx - 2, y + h * 0.5, 4, h * 0.34); c.fillRect(lx - 10, y + h * 0.82, 20, 3);
+        c.save(); c.translate(lx, y + h * 0.47); c.rotate(-0.12);
+        c.fillStyle = '#6b4123'; c.fillRect(-21, 0, 42, 4);
+        c.fillStyle = PIG.white; c.beginPath(); c.moveTo(-22, -14); c.quadraticCurveTo(-11, -18, 0, -13); c.quadraticCurveTo(11, -18, 22, -14); c.lineTo(22, 1); c.quadraticCurveTo(11, -3, 0, 1); c.quadraticCurveTo(-11, -3, -22, 1); c.closePath(); c.fill();
+        c.strokeStyle = PIG.red; c.lineWidth = .5;
+        for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(-19, -11 + i * 2.6); c.lineTo(-3, -11 + i * 2.6); c.moveTo(3, -11 + i * 2.6); c.lineTo(19, -11 + i * 2.6); c.stroke(); }
+        c.fillStyle = '#2a1a10'; [[-15, -10], [-9, -8], [7, -9], [14, -7]].forEach(([a, b]) => c.fillRect(a, b, 1.4, 1.4));
+        c.restore();
+        [[x + w * 0.2, PIG.blueDk, 1, 1.0], [x + w * 0.34, PIG.red, 1, 0.94], [x + w * 0.82, '#e8e0cc', -1, 1.04]].forEach(([cx, robe, face, sc]) => {
+            const top = y + h * (0.34 + (1 - sc) * 0.4), base = fy + 4;
+            c.fillStyle = robe; c.beginPath(); c.moveTo(cx - 10 * sc, base); c.quadraticCurveTo(cx - 9 * sc, top + 20, cx - 5, top + 9); c.lineTo(cx + 5, top + 9); c.quadraticCurveTo(cx + 9 * sc, top + 20, cx + 10 * sc, base); c.closePath(); c.fill();
+            c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = .8; for (let k = -1; k <= 1; k++) { c.beginPath(); c.moveTo(cx + k * 3, top + 14); c.quadraticCurveTo(cx + k * 4.5, top + 30, cx + k * 6, base); c.stroke(); }
+            c.fillStyle = PIG.flesh; c.beginPath(); c.arc(cx + face * 1.5, top + 4, 5, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#4a2e1a'; c.beginPath(); c.arc(cx + face * 1.5, top + 4, 5, Math.PI * (face > 0 ? 0.95 : 1.05), Math.PI * (face > 0 ? 1.75 : 2.05)); c.fill();
+            c.fillStyle = PIG.flesh; c.beginPath(); c.arc(cx + face * 1.5, top + 0.5, 2, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#2a1a10'; c.beginPath(); c.arc(cx + face * 4, top + 3.5, 0.7, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#7a2a20'; c.beginPath(); c.arc(cx + face * 4.6, top + 6.2, 0.8, 0, Math.PI * 2); c.fill();
+            c.fillStyle = PIG.flesh; c.beginPath(); c.arc(cx + face * 7, top + 15, 1.8, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = C.ink; c.lineWidth = .7; c.beginPath(); c.arc(cx + face * 1.5, top + 4, 5, 0, Math.PI * 2); c.stroke();
+        });
+        c.restore();
+        c.strokeStyle = C.ink; c.lineWidth = 1; c.stroke(arch); c.stroke(inner);
+        c.restore();
+    }
+    function lombard(c, ch, x, y, size) { // pen-flourished initial: blue letter, red filigree
+        c.save(); c.font = `700 ${size}px ${GOTH}`; c.fillStyle = PIG.blue; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillText(ch, x, y);
+        c.strokeStyle = PIG.red; c.lineWidth = 0.9;
+        for (let i = 0; i < 7; i++) { const yy = y - size * 0.9 + i * size * 0.16; c.beginPath(); c.moveTo(x - 4, yy); c.bezierCurveTo(x - 12, yy + 3, x - 8, yy + 9, x - 14, yy + 12); c.stroke(); }
+        c.beginPath(); c.moveTo(x - 6, y + 2); c.bezierCurveTo(x - 18, y + 16, x + 10, y + 20, x - 2, y + 30); c.stroke(); c.restore();
+    }
+
+    // Static title-page decorations, drawn once per theme into an offscreen canvas
+    function buildMenuArt() {
+        const cv = document.createElement('canvas'); cv.width = W * DPR; cv.height = H * DPR;
+        const c = cv.getContext('2d'); c.scale(DPR, DPR);
+        c.fillStyle = C.ink; c.strokeStyle = C.ink;
+        if (T.hand) {
+            c.strokeStyle = C.red; c.lineWidth = 1; c.strokeRect(40, 22, 720, 356);
+            vine(c, 26, 30, 26, 370, 5); vine(c, 50, 388, 750, 388, 6); vine(c, 774, 30, 774, 370, 7);
+            [[26, 22], [774, 22], [26, 388], [774, 388]].forEach(([x, y]) => bezant(c, x, y, 4.5));
+            illumInitial(c, 92, 40, 112, 'M');
+            miniature(c, 590, 200, 140, 150);
+        } else {
+            const fc = T.staff;
+            c.fillStyle = fc;
+            c.fillRect(24, 22, 752, 2.2); c.fillRect(24, 376, 752, 2.2); c.fillRect(24, 22, 2.2, 356); c.fillRect(774, 22, 2.2, 356);
+            c.fillRect(30, 28, 740, 0.9); c.fillRect(30, 371, 740, 0.9); c.fillRect(30, 28, 0.9, 344); c.fillRect(769, 28, 0.9, 344);
+            factotum(c, 104, 46, 86, 'M');
+        }
+        // short staff under the title, with a few notes in the theme's notation
+        c.fillStyle = C.staff; c.strokeStyle = C.staff;
+        const top = T.hand ? 176 : 180;
+        for (let i = 0; i < 5; i++) {
+            const y = top + i * 5.5;
+            if (T.hand) { c.lineWidth = 1.2; c.beginPath(); c.moveTo(222, y + hw(222, i * 9)); for (let x = 234; x <= 708; x += 12) c.lineTo(x, y + hw(x, i * 9) * 0.8); c.stroke(); }
+            else if (T.segments) { for (let x = 222; x < 708; x += 18) c.fillRect(x, y - 0.8 + (hashf(x + i * 31) - 0.5) * 1.2, 17, 1.6); }
+            else c.fillRect(222, y - 0.7, 486, 1.4);
+        }
+        c.fillStyle = C.ink; c.strokeStyle = C.ink;
+        const ny = (step) => top + 22 - step * 2.75;
+        [[250, 2, 's'], [280, 0, 'm'], [310, 4, 's'], [338, 2, 'sm'], [366, 1, 'b'], [404, -1, 's'], [432, 3, 'm'], [462, 5, 'sm'], [490, 4, 'sm'], [518, 2, 's']].forEach(([x, st, kind]) => {
+            const y = ny(st);
+            if (kind === 'b') { if (T.hand) voidRect(c, x - 8, y - 5, 16, 10, 1.8); else { c.lineWidth = 1.6; c.strokeRect(x - 8, y - 5, 16, 10); } return; }
+            if (kind === 'sm') lozenge(c, x, y, 4, 5, true);
+            else if (T.hand) voidLozenge(c, x, y, 4, 5, 1.8);
+            else lozenge(c, x, y, 4, 5, false, 1.6);
+            if (kind !== 's') c.fillRect(x - 0.6, y - 17, 1.2, 12);
+        });
+        printCustos(c, 690, ny(1));
+        return cv;
+    }
+
+    // ===== Paper and ink pass for the print themes (WebGL, falls back to flat paper) =====
+    const fx = (() => {
+        const cv = document.createElement('canvas');
+        cv.id = 'fxCanvas';
+        const off = { active: false, setTheme() { canvas.style.opacity = ''; canvas.style.background = T.print ? C.paper : ''; }, render() {} };
+        let gl = null;
+        try { gl = cv.getContext('webgl', { alpha: false, antialias: false, premultipliedAlpha: false }); } catch (e) {}
+        if (!gl) return off;
+        canvasContainer.appendChild(cv);
+        const vs = 'attribute vec2 p; varying vec2 v; void main(){ v = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }';
+        const fs = `precision mediump float;
+            uniform sampler2D uGame, uPaper, uNoise; uniform vec2 uRes; uniform float uMode, uGrain, uDensity;
+            varying vec2 v;
+            void main() {
+                vec2 uv = vec2(v.x, 1.0 - v.y);
+                vec4 g = texture2D(uGame, uv);
+                vec3 paper = texture2D(uPaper, uv).rgb;
+                vec2 px = uv * uRes;
+                float fine = texture2D(uNoise, px / 256.0 * 0.8).r;
+                float mid = texture2D(uNoise, px / 2048.0).g;
+                float a = g.a;
+                if (uMode > 1.5) {
+                    float lum = dot(g.rgb, vec3(0.299, 0.587, 0.114));
+                    float ink = a * (1.0 - smoothstep(0.55, 0.8, lum));
+                    float t = ink + (fine - 0.5) * uGrain + (mid - 0.5) * 0.14;
+                    gl_FragColor = vec4(t > 0.5 ? vec3(0.0) : paper, 1.0);
+                } else {
+                    float edge = 1.0 - abs(a * 2.0 - 1.0);
+                    float e = clamp(a + (fine - 0.5) * uGrain * (0.35 + edge * 2.2), 0.0, 1.0);
+                    e *= 1.0 - uDensity * mid * step(0.02, a);
+                    gl_FragColor = vec4(mix(paper, g.rgb, e), 1.0);
+                }
+            }`;
+        const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+        let prog;
+        try { prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error('link'); }
+        catch (e) { cv.remove(); return off; }
+        gl.useProgram(prog);
+        const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+        const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        const U = n => gl.getUniformLocation(prog, n);
+        const tex = (unit, wrap) => { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap); return t; };
+        const gameTex = tex(0, gl.CLAMP_TO_EDGE), paperTex = tex(1, gl.CLAMP_TO_EDGE), noiseTex = tex(2, gl.REPEAT);
+        gl.uniform1i(U('uGame'), 0); gl.uniform1i(U('uPaper'), 1); gl.uniform1i(U('uNoise'), 2);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        // tileable grain: independent random values per texel, smoothed by linear filtering
+        { const n = new Uint8Array(256 * 256 * 4), r = rng(42); for (let i = 0; i < n.length; i++) n[i] = r() * 255; gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, noiseTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0, gl.RGBA, gl.UNSIGNED_BYTE, n); }
+
+        function valueNoise(seed, cell, w, h) {
+            const r = rng(seed), gw = Math.ceil(w / cell) + 2, gh = Math.ceil(h / cell) + 2, g = new Float32Array(gw * gh);
+            for (let i = 0; i < g.length; i++) g[i] = r();
+            return (x, y) => {
+                const fx = x / cell, fy = y / cell, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+                const ix = ((x0 % (gw - 1)) + gw - 1) % (gw - 1), iy = ((y0 % (gh - 1)) + gh - 1) % (gh - 1);
+                const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+                const a = g[iy * gw + ix], b = g[iy * gw + ix + 1], c = g[(iy + 1) * gw + ix], d = g[(iy + 1) * gw + ix + 1];
+                return a + (b - a) * sx + (c - a + (a - b + d - c) * sx) * sy;
+            };
+        }
+        function makePaper(p, w, h) {
+            const pc = document.createElement('canvas'); pc.width = w; pc.height = h;
+            const c = pc.getContext('2d'), img = c.createImageData(w, h), d = img.data;
+            const k = w / 1600; // features keep their size whatever the resolution
+            const fine = valueNoise(11, 1.6 * k, w, h), mid = valueNoise(12, 9 * k, w, h), big = valueNoise(13, 180 * k, w, h), fox = valueNoise(14, 40 * k, w, h);
+            const plain = p.mode === 2;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const i = (y * w + x) * 4;
+                let r = p.paper[0], g = p.paper[1], b = p.paper[2];
+                if (!plain) {
+                    const n = (big(x, y) - 0.5) * 22 + (mid(x, y) - 0.5) * 6 + (fine(x, y) - 0.5) * 5;
+                    const laid = p.vellum ? (mid(x * 0.15, y * 2.5) - 0.5) * 7 : p.laid ? ((y / k) % 7 < 1 ? -3 : 0) + ((x / k) % 64 < 2 ? -4 : 0) : 0;
+                    const wv = (mid(x * 0.3, y * 0.3) - 0.5) * 60 * k;
+                    const f = Math.max(0, fox(x + wv, y - wv) * 0.7 + big(x * 2, y * 2) * 0.3 - (1 - (p.foxing || 0) * 2.6)) * 90;
+                    const edge = Math.min(x, y, w - x, h - y) / k, vig = edge < 40 ? (40 - edge) * 0.35 : 0;
+                    r += n + laid - f * 0.4 - vig; g += n + laid - f * 0.7 - vig; b += n * 1.2 + laid - f - vig * 1.3;
+                } else if (hashf(x * 3.17 + y * 913.7) > 0.99995) { r = g = b = 40; } // dust specks in the scan
+                d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255;
+            }
+            c.putImageData(img, 0, 0);
+            return pc;
+        }
+        const api = {
+            active: false,
+            setTheme(t) {
+                canvas.style.background = '';
+                if (!t.post) { api.active = false; cv.style.display = 'none'; canvas.style.opacity = ''; return; }
+                cv.width = canvas.width; cv.height = canvas.height;
+                gl.viewport(0, 0, cv.width, cv.height);
+                const paper = makePaper(t.post, Math.min(cv.width, 1600), Math.min(cv.height, 800));
+                gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, paperTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, paper);
+                gl.uniform2f(U('uRes'), cv.width, cv.height);
+                gl.uniform1f(U('uMode'), t.post.mode); gl.uniform1f(U('uGrain'), t.post.grain); gl.uniform1f(U('uDensity'), t.post.density);
+                cv.style.display = 'block'; canvas.style.opacity = '0'; api.active = true;
+            },
+            render() {
+                if (!api.active) return;
+                gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, gameTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            }
+        };
+        return api;
+    })();
+
+    // --- Name Input Screen ---
     function drawNameInput() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        veil(0.97);
         ctx.textAlign = 'center';
-        
-        ctx.fillStyle = '#f4ecd8'; ctx.font = 'bold 32px "Book Antiqua", serif';
-        ctx.fillText(gameMode === 'ENDLESS' ? 'CANTUS FINITUS' : 'VICTORIA!', canvas.width / 2, 100);
-        
-        ctx.fillStyle = '#d4c3a3'; ctx.font = '20px "Book Antiqua", serif';
-        ctx.fillText('Tempus: ' + Math.floor(levelTime / 60) + ':' + Math.floor(levelTime % 60).toString().padStart(2, '0'), canvas.width / 2, 140);
-        ctx.fillText('Puncta: ' + player.score, canvas.width / 2, 170);
-        if (gameMode === 'ENDLESS') ctx.fillText('Spatium: ' + endlessDistance, canvas.width / 2, 200);
-        
-        ctx.fillStyle = '#b8860b'; ctx.font = '18px "Book Antiqua", serif';
-        ctx.fillText('Inscribe nomen tuum:', canvas.width / 2, 240);
-        
-        ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 2;
-        ctx.strokeRect(canvas.width / 2 - 100, 270, 200, 30);
-        ctx.fillStyle = inputName ? '#d4c3a3' : '#1a100a';
-        ctx.fillRect(canvas.width / 2 - 98, 272, 196, 26);
-        
-        ctx.fillStyle = '#000'; ctx.font = '16px monospace';
-        ctx.textAlign = 'center';
-        const cursor = Math.floor(Date.now() / 500) % 2 ? '_' : '';
-        ctx.fillText(inputName + cursor, canvas.width / 2, 290);
-        
-        ctx.fillStyle = '#b8860b'; ctx.font = 'italic 14px "Book Antiqua", serif';
-        ctx.fillText('Press ENTER to save, ESC to skip', canvas.width / 2, 340);
+
+        ctx.fillStyle = C.ink; ctx.font = font(30, 800, false, "display"); spacing(4);
+        ctx.fillText(gameMode === 'ENDLESS' ? 'CANTUS FINITUS' : 'VICTORIA!', W / 2, 96);
+        spacing(0);
+
+        ctx.fillStyle = C.soft; ctx.font = font(15, 500);
+        let stats = ['Tempus: ' + Math.floor(levelTime / 60) + ':' + Math.floor(levelTime % 60).toString().padStart(2, '0'), 'Puncta: ' + player.score];
+        if (gameMode === 'ENDLESS') stats.push('Spatium: ' + endlessDistance);
+        ctx.fillText(stats.join('   ·   '), W / 2, 132);
+
+        ctx.fillStyle = C.mark; ctx.font = font(14, 600);
+        ctx.fillText('Inscribe nomen tuum:', W / 2, 196);
+
+        pill(W / 2 - 130, 212, 260, 48, C.paper, C.mark, 12);
+        ctx.fillStyle = C.ink; ctx.font = font(20, 600);
+        const cursor = Math.floor(Date.now() / 500) % 2 ? '_' : ' ';
+        ctx.fillText(inputName + cursor, W / 2, 244);
+
+        ctx.fillStyle = C.soft; ctx.font = font(12, 500);
+        ctx.fillText('Press ENTER to save, ESC to skip', W / 2, 300);
     }
 
     // --- Leaderboard Display Screen ---
     function drawLeaderboard() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw Switch Button
-        const switchBtnW = 160;
-        const switchBtnH = 30;
-        const switchBtnX = 10;
-        const switchBtnY = 10;
-        
-        ctx.fillStyle = 'rgba(184, 134, 11, 0.3)';
-        ctx.fillRect(switchBtnX, switchBtnY, switchBtnW, switchBtnH);
-        ctx.strokeStyle = '#b8860b';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(switchBtnX, switchBtnY, switchBtnW, switchBtnH);
-        
-        ctx.fillStyle = '#d4c3a3';
-        ctx.font = '16px "Book Antiqua", serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(currentLeaderboardMode === 'CLASSIC' ? 'Switch to Endless' : 'Switch to Classic', switchBtnX + switchBtnW / 2, switchBtnY + 21);
+        veil(0.98);
 
-        // Draw close button
-        const closeBtnSize = 30;
-        const closeBtnX = canvas.width - closeBtnSize - 10;
-        const closeBtnY = 10;
-        
-        ctx.fillStyle = 'rgba(184, 134, 11, 0.3)';
-        ctx.fillRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize);
-        ctx.strokeStyle = '#b8860b';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize);
-        ctx.strokeStyle = '#d4c3a3';
-        ctx.lineWidth = 2;
+        // Switch Button
+        const sb = LB_SWITCH_BTN;
+        pill(sb.x, sb.y, sb.w, sb.h, C.paper, C.line);
+        ctx.fillStyle = C.ink; ctx.font = font(12, 600); ctx.textAlign = 'center';
+        ctx.fillText(currentLeaderboardMode === 'CLASSIC' ? 'Switch to Endless' : 'Switch to Classic', sb.x + sb.w / 2, sb.y + 19);
+
+        // Close button
+        const cb = LB_CLOSE_BTN;
+        pill(cb.x, cb.y, cb.w, cb.h, C.paper, C.line);
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(closeBtnX + 8, closeBtnY + 8);
-        ctx.lineTo(closeBtnX + closeBtnSize - 8, closeBtnY + closeBtnSize - 8);
-        ctx.moveTo(closeBtnX + closeBtnSize - 8, closeBtnY + 8);
-        ctx.lineTo(closeBtnX + 8, closeBtnY + closeBtnSize - 8);
-        ctx.stroke();
-        
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#f4ecd8';
-        ctx.font = 'bold 32px "Book Antiqua", serif';
-        ctx.fillText('MAGISTRI MENSURATORUM', canvas.width / 2, 60);
-        
-        ctx.fillStyle = '#d4c3a3';
-        ctx.font = '20px "Book Antiqua", serif';
-        ctx.fillText(`Top 10 Champions (${currentLeaderboardMode})`, canvas.width / 2, 100);
-        
-        ctx.textAlign = 'left';
-        ctx.font = '16px "Book Antiqua", serif';
-        let y = 140;
-        
+        ctx.moveTo(cb.x + 10, cb.y + 10); ctx.lineTo(cb.x + cb.w - 10, cb.y + cb.h - 10);
+        ctx.moveTo(cb.x + cb.w - 10, cb.y + 10); ctx.lineTo(cb.x + 10, cb.y + cb.h - 10);
+        ctx.stroke(); ctx.lineCap = 'butt';
+
+        ctx.fillStyle = C.ink; ctx.font = font(24, 800, false, "display"); spacing(3);
+        ctx.fillText('MAGISTRI MENSURATORUM', W / 2, 62);
+        spacing(0);
+        ctx.fillStyle = C.soft; ctx.font = font(13, 500);
+        ctx.fillText(`Top 10 Champions (${currentLeaderboardMode})`, W / 2, 86);
+
+        const left = W / 2 - 170, right = W / 2 + 170;
+        let y = 124;
         if (leaderboard.length === 0) {
-            ctx.fillStyle = '#d4c3a3';
-            ctx.fillText('No champions yet. Be the first!', canvas.width / 2 - 100, y);
+            ctx.fillStyle = C.soft; ctx.font = font(15, 500);
+            ctx.fillText('No champions yet. Be the first!', W / 2, 170);
         } else {
+            const medal = [C.gold, C.silver, C.bronze];
             leaderboard.forEach((entry, i) => {
-                if (i === 0) ctx.fillStyle = '#ffd700';
-                else if (i === 1) ctx.fillStyle = '#c0c0c0';
-                else if (i === 2) ctx.fillStyle = '#cd7f32';
-                else ctx.fillStyle = '#d4c3a3';
-                
-                const rank = (i + 1).toString().padStart(2, '.') + ' ';
-                ctx.fillText(rank + entry.name + ' - ' + entry.score + ' pts', canvas.width / 2 - 150, y);
-                y += 25;
+                if (i > 0) { ctx.fillStyle = C.line; ctx.fillRect(left, y - 16, right - left, 1); }
+                ctx.textAlign = 'left';
+                if (i < 3) { ctx.fillStyle = medal[i]; ctx.beginPath(); ctx.arc(left + 9, y - 5, 9, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = C.paper; ctx.font = font(11, 700); ctx.textAlign = 'center'; ctx.fillText(i + 1, left + 9, y - 1); }
+                else { ctx.fillStyle = C.soft; ctx.font = font(12, 600); ctx.textAlign = 'center'; ctx.fillText(i + 1, left + 9, y - 1); }
+                ctx.textAlign = 'left'; ctx.fillStyle = C.ink; ctx.font = font(15, 600);
+                ctx.fillText(entry.name, left + 30, y);
+                ctx.textAlign = 'right'; ctx.fillStyle = C.inkSoft; ctx.font = font(14, 500);
+                ctx.fillText(entry.score + ' pts', right, y);
+                y += 24;
             });
         }
-        
-        ctx.fillStyle = '#b8860b';
-        ctx.font = 'italic 14px "Book Antiqua", serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Click the ✕ button to return to menu', canvas.width / 2, canvas.height - 40);
+
+        ctx.fillStyle = C.soft; ctx.font = font(12, 500); ctx.textAlign = 'center';
+        ctx.fillText('Click the ✕ button to return to menu', W / 2, H - 24);
     }
 
     const diatonic = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50];
@@ -843,9 +1396,9 @@ let devInvincible = false;
     function releaseRight() { keys.right = false; player.isSprinting = false; player.isTripleSprinting = false; }
     function pressLeft() { keys.left = true; let now = Date.now(); if (now - lastLeftTap < 250) leftTapCount++; else leftTapCount = 1; lastLeftTap = now; if (leftTapCount >= 3) player.isTripleSprinting = true; else if (leftTapCount >= 2) player.isSprinting = true; }
     function releaseLeft() { keys.left = false; player.isSprinting = false; player.isTripleSprinting = false; }
-    function pressJump() { keys.up = true; if (gameState === 'PLAY') { let sm = speedSettings[difficultyIndex].mult; let maxJumps = (player.stateIndex >= 11) ? 3 : 2; if (player.jumps < maxJumps) { player.vy = player.jumpPower * sm; spawnDust(player.x, player.y); player.grounded = false; player.jumps++; playSound('jump'); } } }
+    function pressJump() { keys.up = true; if (gameMode === 'KART') return; if (gameState === 'PLAY') { let sm = speedSettings[difficultyIndex].mult; let maxJumps = (player.stateIndex >= 11) ? 3 : 2; if (player.jumps < maxJumps) { player.vy = player.jumpPower * sm; spawnDust(player.x, player.y); player.grounded = false; player.jumps++; playSound('jump'); } } }
     function releaseJump() { keys.up = false; }
-    function pressShoot() { keys.space = true; if (gameState === 'PLAY') { projectiles.push({x: player.x + 12, y: player.y + 25, vx: keys.left ? -25 : 25, active: true}); playSound('shoot'); } }
+    function pressShoot() { keys.space = true; if (gameMode === 'KART') { if (gameState === 'PLAY' && kart) kartUseItem(kart.p); return; } if (gameState === 'PLAY') { projectiles.push({x: player.x + 12, y: player.y + 25, vx: keys.left ? -25 : 25, active: true}); playSound('shoot'); } }
     function releaseShoot() { keys.space = false; }
     
     function togglePause() {
@@ -954,10 +1507,12 @@ let devInvincible = false;
         if (gameState === 'MENU') {
             if (e.code === 'KeyM') { isMuted = !isMuted; if (isMuted && musicTimeout) clearTimeout(musicTimeout); return; }
             if (e.code === 'KeyL') { gameState = 'LEADERBOARD'; loadLeaderboard(); return; }
+            if (e.code === 'KeyT') { cycleTheme(); return; }
             if (!e.repeat) {
                 if (e.key === '1') { gameMode = 'CLASSIC'; currentLevel = 0; startGame(); }
                 else if (e.key === '2') { gameMode = 'ENDLESS'; currentLevel = 0; startGame(); }
                 else if (e.key === '3') { gameMode = 'GRADUS'; currentLevel = 0; startGame(); }
+                else if (e.key === '4') { gameMode = 'KART'; currentLevel = 0; startGame(); }
             }
             return;
         }
@@ -1018,60 +1573,15 @@ let devInvincible = false;
         window.virtualKeyboardShown = true;
         const inputOverlay = document.createElement('div');
         inputOverlay.id = 'mobileNameInputOverlay';
-        inputOverlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 50;
-        `;
-        
         inputOverlay.innerHTML = `
-            <div style="color: #f4ecd8; font-size: 32px; font-family: 'Book Antiqua', serif; margin-bottom: 20px;">VICTORIA!</div>
-            <div style="color: #d4c3a3; font-size: 18px; font-family: 'Book Antiqua', serif; margin-bottom: 10px;">Tempus: ${Math.floor(levelTime / 60)}:${Math.floor(levelTime % 60).toString().padStart(2, '0')}</div>
-            <div style="color: #d4c3a3; font-size: 18px; font-family: 'Book Antiqua', serif; margin-bottom: 20px;">Puncta: ${player.score}</div>
-            <div style="color: #b8860b; font-size: 18px; font-family: 'Book Antiqua', serif; margin-bottom: 10px;">Inscribe nomen tuum:</div>
-            <input type="text" id="mobileNameInput" style="
-                font-size: 16px;
-                padding: 8px;
-                border: 2px solid #b8860b;
-                background: #1a100a;
-                color: #d4c3a3;
-                border-radius: 8px;
-                text-align: center;
-                margin-bottom: 20px;
-                width: 200px;
-                font-family: monospace;
-            " placeholder="Enter name" maxlength="15" value="${inputName}">
-            <div style="display: flex; gap: 10px;">
-                <button id="mobileSaveBtn" style="
-                    background: #b8860b;
-                    color: #1a100a;
-                    border: none;
-                    padding: 10px 20px;
-                    font-family: 'Book Antiqua', serif;
-                    font-size: 16px;
-                    font-weight: bold;
-                    border-radius: 8px;
-                    cursor: pointer;
-                ">SAVE</button>
-                <button id="mobileSkipBtn" style="
-                    background: rgba(139, 0, 0, 0.5);
-                    color: #f4ecd8;
-                    border: none;
-                    padding: 10px 20px;
-                    font-family: 'Book Antiqua', serif;
-                    font-size: 16px;
-                    font-weight: bold;
-                    border-radius: 8px;
-                    cursor: pointer;
-                ">SKIP</button>
+            <div class="t">VICTORIA!</div>
+            <div class="s">Tempus: ${Math.floor(levelTime / 60)}:${Math.floor(levelTime % 60).toString().padStart(2, '0')}</div>
+            <div class="s">Puncta: ${player.score}</div>
+            <div class="p">Inscribe nomen tuum:</div>
+            <input type="text" id="mobileNameInput" placeholder="Enter name" maxlength="15" value="${inputName}">
+            <div class="row">
+                <button id="mobileSaveBtn" class="menu-btn" style="margin:0;">SAVE</button>
+                <button id="mobileSkipBtn" class="menu-btn ghost" style="margin:0;">SKIP</button>
             </div>
         `;
         
@@ -1133,11 +1643,11 @@ let devInvincible = false;
             // Check if close button was touched
             const rect = canvas.getBoundingClientRect();
             const touch = e.touches[0] || e.changedTouches[0];
-            const x = (touch.clientX - rect.left) / (rect.width / canvas.width);
-            const y = (touch.clientY - rect.top) / (rect.height / canvas.height);
+            const x = (touch.clientX - rect.left) / (rect.width / W);
+            const y = (touch.clientY - rect.top) / (rect.height / H);
             
             const closeBtnSize = 30;
-            const closeBtnX = canvas.width - closeBtnSize - 10;
+            const closeBtnX = W - closeBtnSize - 10;
             const closeBtnY = 10;
             
             if (x >= closeBtnX && x <= closeBtnX + closeBtnSize && 
@@ -1221,6 +1731,16 @@ let devInvincible = false;
 
     document.getElementById('tPause').addEventListener('touchstart', (e) => { e.preventDefault(); togglePause(); });
 
+    canvas.addEventListener('pointermove', (e) => {
+        if (gameState !== 'MENU' || e.pointerType === 'touch') { if (menuHover !== -1) { menuHover = -1; canvas.style.cursor = ''; } return; }
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / (rect.width / W);
+        const y = (e.clientY - rect.top) / (rect.height / H);
+        menuHover = MENU_BTNS.findIndex(b => inRect(x, y, b));
+        canvas.style.cursor = (menuHover !== -1 || inRect(x, y, INSTALL_BTN) || inRect(x, y, THEME_BTN)) ? 'pointer' : '';
+    });
+    canvas.addEventListener('pointerleave', () => { menuHover = -1; canvas.style.cursor = ''; });
+
     canvas.addEventListener('pointerdown', (e) => {
         unlockAudio();
         
@@ -1234,22 +1754,18 @@ let devInvincible = false;
             advanceSplash();
         } else if (gameState === 'MENU') {
             const rect = canvas.getBoundingClientRect(); 
-            const y = (e.clientY - rect.top) / (rect.height / canvas.height);
-            const x = (e.clientX - rect.left) / (rect.width / canvas.width);
+            const y = (e.clientY - rect.top) / (rect.height / H);
+            const x = (e.clientX - rect.left) / (rect.width / W);
             
-            // Check if "Install?" button was clicked
-            if (x > 660 && x < 780 && y > 16 && y < 52) {
+            // Check if "Install" button was clicked
+            if (inRect(x, y, INSTALL_BTN)) {
                 gameState = 'INSTALL_PROMPT';
                 return;
             }
+            if (inRect(x, y, THEME_BTN)) { cycleTheme(); return; }
 
-            if (y > 118 && y < 170) { gameMode = 'CLASSIC'; currentLevel = 0; startGame(); }
-            else if (y > 184 && y < 236) { gameMode = 'ENDLESS'; currentLevel = 0; startGame(); }
-            else if (y > 250 && y < 302) { gameMode = 'GRADUS'; currentLevel = 0; startGame(); }
-            else if (y > 316 && y < 368) { 
-                gameState = 'LEADERBOARD'; 
-                loadLeaderboard();
-            }
+            const picked = MENU_BTNS.find(b => inRect(x, y, b));
+            if (picked) picked.action();
         } else if (gameState === 'DEATH_FREEZE' || gameState === 'WIN') {
             if (gameState === 'WIN') {
                 gameState = 'MENU';
@@ -1262,8 +1778,8 @@ let devInvincible = false;
             }
         } else if (gameState === 'LEADERBOARD') {
             const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / (rect.width / canvas.width);
-            const y = (e.clientY - rect.top) / (rect.height / canvas.height);
+            const x = (e.clientX - rect.left) / (rect.width / W);
+            const y = (e.clientY - rect.top) / (rect.height / H);
             
             // Check if Switch Mode button was clicked
             if (x >= 10 && x <= 170 && y >= 10 && y <= 40) {
@@ -1274,7 +1790,7 @@ let devInvincible = false;
 
             // Check if close button was clicked
             const closeBtnSize = 30;
-            const closeBtnX = canvas.width - closeBtnSize - 10;
+            const closeBtnX = W - closeBtnSize - 10;
             const closeBtnY = 10;
             
             if (x >= closeBtnX && x <= closeBtnX + closeBtnSize && 
@@ -1291,6 +1807,7 @@ let devInvincible = false;
         document.getElementById('fsBtn').style.display = 'none';
         unlockAudio(); 
         previousState = 'PLAY';
+        if (gameMode === 'KART') { kartStart(); return; }
 
         // 1. If respawning from a Classic mode death, DO NOT reset time or score!
         if (gameState === 'DEATH_FREEZE' && gameMode === 'CLASSIC') { 
@@ -1346,7 +1863,7 @@ let devInvincible = false;
 
     function resetPlayer(startX, startY) {
         player.x = startX; player.y = startY; player.vx = 0; player.vy = 0; player.jumps = 0; player.stateValue = 4; player.invulnerableTimer = 60; player.isSSprint = false; player.isTripleSprinting = false; player.tempusTimer = 0; player.colorationTimer = 0; player.allaBreveTimer = 0; player.history = []; player.bounceTimer = 0; rightTapCount = 0; leftTapCount = 0; gradusTimer = 0; player.currentSlope = 'none';
-        updateFlashingEffects(); trail = []; projectiles = []; cameraX = player.x - canvas.width / 3; endlessAutoScroll = gameMode === 'GRADUS' ? 0 : cameraX; cameraY = gameMode === 'GRADUS' ? 0 : 0;
+        updateFlashingEffects(); trail = []; projectiles = []; cameraX = player.x - W / 3; endlessAutoScroll = gameMode === 'GRADUS' ? 0 : cameraX; cameraY = gameMode === 'GRADUS' ? 0 : 0;
     }
 
     function checkCollision(r1, r2) { return r1.x < r2.x + (r2.width || r2.w) && r1.x + (r1.width || r1.w) > r2.x && r1.y < r2.y + (r2.height || r2.h) && r1.y + (r1.height || r1.h) > r2.y; }
@@ -1439,6 +1956,7 @@ let devInvincible = false;
     }
 
     function update() {
+        if (gameMode === 'KART') { if ((gameState === 'PLAY' || gameState === 'WIN') && kart) kartUpdate(); return; }
         if (gameState !== 'PLAY') return;
         
         const speedMult = speedSettings[difficultyIndex].mult;
@@ -1486,16 +2004,17 @@ let devInvincible = false;
         
         if (gameMode === 'GRADUS') {
             gradusTimer += speedMult; if (gradusTimer > 120) { endlessAutoScroll -= (1.5 + currentLevel * 0.3) * timeMod; } if (endlessAutoScroll > 0) endlessAutoScroll = 0; 
-            let targetCamY = player.y - canvas.height * 0.6; cameraY = Math.min(endlessAutoScroll, targetCamY); if (cameraY > 0) cameraY = 0; cameraX = 0; endlessDistance = Math.max(0, Math.floor(-player.y / 150));
-            if (player.x < -20) player.x = canvas.width; if (player.x > canvas.width) player.x = -20; if (player.y > cameraY + canvas.height + 100) { die(); return; } 
+            let targetCamY = player.y - H * 0.6; cameraY = Math.min(endlessAutoScroll, targetCamY); if (cameraY > 0) cameraY = 0; cameraX = 0; endlessDistance = Math.max(0, Math.floor(-player.y / 150));
+            if (player.x < -20) player.x = W; if (player.x > W) player.x = -20; if (player.y > cameraY + H + 100) { die(); return; } 
         } else if (gameMode === 'ENDLESS') {
             let smod = 2.5 + (currentLevel * 0.7) + (endlessDistance / 500); endlessAutoScroll += smod * timeMod; cameraX = endlessAutoScroll; endlessDistance = Math.floor(cameraX / 150);
             if (player.x < cameraX - 24) { 
                 if (devInvincible) { player.x = cameraX - 24; player.vx = smod * timeMod; } 
                 else { die(); return; } 
             } 
-            if (player.x > cameraX + canvas.width - player.width) player.x = cameraX + canvas.width - player.width;
-        } else if (!boss.active) { if (player.x < 0) player.x = 0; cameraX = player.x - canvas.width / 3; if (cameraX < 0) cameraX = 0; if (cameraX > currentLevelData.length - canvas.width) cameraX = currentLevelData.length - canvas.width; }
+            if (player.x > cameraX + W - player.width) player.x = cameraX + W - player.width;
+        } else if (!boss.active) { if (player.x < 0) player.x = 0; cameraX = player.x - W / 3; if (cameraX < 0) cameraX = 0; if (cameraX > currentLevelData.length - W) cameraX = currentLevelData.length - W; }
+        else if (player.x > cameraX + W - player.width) player.x = cameraX + W - player.width; // keep the boss fight on screen
 
         let gravity = devPhysics.gravity * speedMult; 
         if (keys.up && player.vy < 0) gravity = devPhysics.gravity * 0.625 * speedMult;
@@ -1503,7 +2022,7 @@ let devInvincible = false;
         const vyCap = 18 * speedMult;
         if (player.vy > vyCap) player.vy = vyCap; 
         player.y += player.vy; player.grounded = false; player.onIce = false;
-        if (gameMode !== 'GRADUS' && player.y > canvas.height + 50) { die(); return; }
+        if (gameMode !== 'GRADUS' && player.y > H + 50) { die(); return; }
 
         if (gameMode !== 'GRADUS') { currentLevelData.groundChunks.forEach(chunk => { if (player.vy > 0 && player.y + player.height - player.vy <= 350 && player.y + player.height >= 350) { if (player.x + player.width > chunk.x && player.x < chunk.x + chunk.w) { player.y = 350 - player.height; player.vy = 0; player.grounded = true; player.jumps = 0; } } }); }
 
@@ -1526,7 +2045,10 @@ let devInvincible = false;
                     }
                 }
             } else { 
-                if (!plat.falling && isColliding) { if (player.vy > 0 && player.y + player.height - player.vy <= plat.y + 15) { player.y = plat.y - player.height; player.vy = 0; player.grounded = true; player.jumps = 0; plat.steppedOn = true; } }
+                // the lower note of a rising ligature sits a step below the higher one
+                const top = (plat.type === 'rising' && player.x + player.width / 2 < plat.x + plat.w / 2) ? plat.y + 15 : plat.y;
+                if (top !== plat.y) isColliding = checkCollision(player, { x: plat.x, y: top, width: plat.w, height: plat.h });
+                if (!plat.falling && isColliding) { if (player.vy > 0 && player.y + player.height - player.vy <= top + 15) { player.y = top - player.height; player.vy = 0; player.grounded = true; player.jumps = 0; plat.steppedOn = true; } }
             }
             if (plat.steppedOn && !plat.falling && plat.type !== 'ground') { plat.shakeTimer += timeMod; if (plat.shakeTimer > 30) plat.falling = true; } if (plat.falling) { plat.vy = (plat.vy || 0) + 0.5 * timeMod; plat.y += plat.vy; }
         });
@@ -1686,19 +2208,43 @@ let devInvincible = false;
         if (musicTimeout) clearTimeout(musicTimeout); 
         document.getElementById('fsBtn').style.display = 'block'; 
     }
-    function drawDiamond(ctx, x, y, size, filled) { ctx.beginPath(); ctx.moveTo(x, y - size); ctx.lineTo(x + size, y); ctx.lineTo(x, y + size); ctx.lineTo(x - size, y); ctx.closePath(); if (filled) ctx.fill(); else { ctx.lineWidth = 3; ctx.stroke(); } }
+    function drawDiamond(ctx, x, y, size, filled) { ctx.beginPath(); ctx.moveTo(x, y - size); ctx.lineTo(x + size, y); ctx.lineTo(x, y + size); ctx.lineTo(x - size, y); ctx.closePath(); if (filled) ctx.fill(); else { ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke(); ctx.lineJoin = 'miter'; } }
 
     function drawMensuralNote(ctx, x, y, stateName, isInvulnerable, opacity = 1, isColored = false, isGhost = false) {
         ctx.save(); const cx = x + 12; const cy = y + 35; let isDotted = stateName.startsWith('DOTTED_'); let baseState = stateName.replace('DOTTED_', '');
-        if (isGhost) { ctx.fillStyle = `rgba(180, 0, 0, 0.6)`; ctx.strokeStyle = `rgba(180, 0, 0, 0.6)`; } else if (isColored) { if (player.colorationTimer < 60 && Math.floor(Date.now() / 100) % 2 === 0) { ctx.fillStyle = `rgba(26, 16, 10, ${opacity})`; ctx.strokeStyle = `rgba(26, 16, 10, ${opacity})`; } else { ctx.shadowBlur = 15; ctx.shadowColor = 'white'; ctx.fillStyle = '#000'; ctx.strokeStyle = '#000'; } } else { ctx.fillStyle = `rgba(26, 16, 10, ${opacity})`; ctx.strokeStyle = `rgba(26, 16, 10, ${opacity})`; }
+        const inkA = rgba(C.ink, opacity);
+        if (isGhost) { ctx.fillStyle = rgba(C.red, 0.55); ctx.strokeStyle = rgba(C.red, 0.55); }
+        else if (isColored) { if (player.colorationTimer < 60 && Math.floor(Date.now() / 100) % 2 === 0) { ctx.fillStyle = inkA; ctx.strokeStyle = inkA; } else { if (!T.print) { ctx.shadowBlur = 14; ctx.shadowColor = rgba(C.mark, 0.85); } ctx.fillStyle = T.print ? C.ink : '#1f1a14'; ctx.strokeStyle = ctx.fillStyle; } }
+        else { ctx.fillStyle = inkA; ctx.strokeStyle = inkA; }
+        const solid = isColored || isGhost;
+        if (T.white) {
+            // white mensural notation by hand: void heads drawn with a broad pen, blackened when coloured
+            const head = (rx, ry) => solid ? lozenge(ctx, cx, cy, rx, ry, true) : voidLozenge(ctx, cx, cy, rx, ry, 4.6);
+            const stem = (len) => nib(ctx, wob(cx, cy - 11, cx + 0.4, cy - 11 - len, 0.4, 8), 3.2);
+            const box = (w, h) => solid ? ctx.fillRect(cx - w / 2, cy - h / 2, w, h) : voidRect(ctx, cx - w / 2, cy - h / 2, w, h, 5);
+            switch (baseState) {
+                case 'FUSA': lozenge(ctx, cx, cy, 10, 12, true); stem(34); nib(ctx, [[cx, cy - 45], [cx + 8, cy - 36], [cx + 16, cy - 24]], 3); break;
+                case 'SEMIMINIMA': lozenge(ctx, cx, cy, 10, 12, true); stem(24); break;
+                case 'MINIMA': head(10, 12); stem(24); break;
+                case 'SEMIBREVIS': head(12, 14); break;
+                case 'BREVIS': box(22, 22); break;
+                case 'LONGA': box(22, 22); nib(ctx, wob(cx + 10, cy + 10, cx + 10, cy + 30, 0.4), 3.2); break;
+                case 'MAXIMA': box(36, 24); nib(ctx, wob(cx + 17, cy + 12, cx + 17, cy + 35, 0.4), 3.2); break;
+            }
+            if (isDotted) { ctx.beginPath(); ctx.arc(cx + 21, cy - 5, 3, 0, Math.PI * 2); ctx.fill(); }
+            ctx.restore();
+            return;
+        }
+        const hollow = C.paper;
+        const r = T.print ? 0 : 3;
         switch(baseState) {
-            case 'FUSA': drawDiamond(ctx, cx, cy, 10, true); ctx.fillRect(cx - 1.5, cy - 45, 3, 35); ctx.beginPath(); ctx.moveTo(cx, cy - 45); ctx.quadraticCurveTo(cx + 12, cy - 20, cx + 18, cy - 20); ctx.stroke(); break;
-            case 'SEMIMINIMA': drawDiamond(ctx, cx, cy, 10, true); ctx.fillRect(cx - 1.5, cy - 35, 3, 25); break; 
-            case 'MINIMA': drawDiamond(ctx, cx, cy, 10, isColored || isGhost); ctx.fillRect(cx - 1.5, cy - 35, 3, 25); break;
-            case 'SEMIBREVIS': drawDiamond(ctx, cx, cy, 13, isColored || isGhost); break; 
-            case 'BREVIS': ctx.lineWidth = 3; if(isColored || isGhost) ctx.fillRect(cx-11, cy-11, 22, 22); else ctx.strokeRect(cx - 11, cy - 11, 22, 22); break;
-            case 'LONGA': ctx.lineWidth = 3; if(isColored || isGhost) { ctx.fillRect(cx - 11, cy - 11, 22, 22); } else { ctx.fillStyle = '#eeddbb'; ctx.fillRect(cx - 11, cy - 11, 22, 22); ctx.fillStyle = `rgba(26, 16, 10, ${opacity})`; ctx.strokeRect(cx - 11, cy - 11, 22, 22); } ctx.fillRect(cx + 9, cy, 3, 30); break;
-            case 'MAXIMA': ctx.lineWidth = 3; if(isColored || isGhost) { ctx.fillRect(cx - 18, cy - 12, 36, 24); } else { ctx.fillStyle = '#eeddbb'; ctx.fillRect(cx - 18, cy - 12, 36, 24); ctx.fillStyle = `rgba(26, 16, 10, ${opacity})`; ctx.strokeRect(cx - 18, cy - 12, 36, 24); } ctx.fillRect(cx + 16, cy, 3, 35); break;
+            case 'FUSA': drawDiamond(ctx, cx, cy, 10, true); ctx.fillRect(cx - 1.25, cy - 45, 2.5, 35); ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx, cy - 45); ctx.quadraticCurveTo(cx + 12, cy - 20, cx + 18, cy - 20); ctx.stroke(); break;
+            case 'SEMIMINIMA': drawDiamond(ctx, cx, cy, 10, true); ctx.fillRect(cx - 1.25, cy - 35, 2.5, 25); break;
+            case 'MINIMA': drawDiamond(ctx, cx, cy, 10, solid); ctx.fillRect(cx - 1.25, cy - 35, 2.5, 25); break;
+            case 'SEMIBREVIS': drawDiamond(ctx, cx, cy, 13, solid); break;
+            case 'BREVIS': ctx.lineWidth = 2.5; if (solid) { pathRoundRect(ctx, cx - 11, cy - 11, 22, 22, r); ctx.fill(); } else { pathRoundRect(ctx, cx - 11, cy - 11, 22, 22, r); ctx.stroke(); } break;
+            case 'LONGA': ctx.lineWidth = 2.5; if (solid) { pathRoundRect(ctx, cx - 11, cy - 11, 22, 22, r); ctx.fill(); } else { const f = ctx.fillStyle; ctx.fillStyle = hollow; pathRoundRect(ctx, cx - 11, cy - 11, 22, 22, r); ctx.fill(); ctx.fillStyle = f; ctx.stroke(); } ctx.fillRect(cx + 9, cy, 2.5, 30); break;
+            case 'MAXIMA': ctx.lineWidth = 2.5; if (solid) { pathRoundRect(ctx, cx - 18, cy - 12, 36, 24, r); ctx.fill(); } else { const f = ctx.fillStyle; ctx.fillStyle = hollow; pathRoundRect(ctx, cx - 18, cy - 12, 36, 24, r); ctx.fill(); ctx.fillStyle = f; ctx.stroke(); } ctx.fillRect(cx + 16, cy, 2.5, 35); break;
         }
         if (isDotted) { ctx.beginPath(); ctx.arc(cx + 20, cy - 5, 2.8, 0, Math.PI*2); ctx.fill(); }
         ctx.restore();
@@ -1719,23 +2265,217 @@ let devInvincible = false;
         ctx.closePath();
     }
 
-    function drawCheckpoint(ctx, cp) { ctx.fillStyle = cp.active ? '#8b6508' : 'rgba(139, 101, 8, 0.3)'; ctx.fillRect(cp.x, 230, 4, 120); ctx.fillRect(cp.x + 10, 230, 4, 120); ctx.font = '40px serif'; ctx.fillText('𝄐', cp.x - 10, 220); if (cp.active) { ctx.font = '14px serif'; ctx.fillText(cp.label, cp.x - 20, 180); } }
-    
+    function drawCheckpoint(ctx, cp) {
+        const col = cp.active ? C.mark : rgba(C.mark, T.mono ? 1 : 0.28);
+        ctx.fillStyle = col; ctx.strokeStyle = col;
+        if (T.print) {
+            if (T.hand) { nib(ctx, wob(cp.x + 1.5, 230, cp.x + 1.5, 350, 0.6), 2.8); nib(ctx, wob(cp.x + 11.5, 230, cp.x + 11.5, 350, 0.6), 2.8); }
+            else { ctx.fillRect(cp.x, 230, 3, 120); ctx.fillRect(cp.x + 10, 230, 3, 120); }
+            ctx.fillStyle = col; printFermata(ctx, cp.x + 6.5, 216);
+        } else {
+            pathRoundRect(ctx, cp.x, 230, 3, 120, 1.5); ctx.fill();
+            pathRoundRect(ctx, cp.x + 10, 230, 3, 120, 1.5); ctx.fill();
+            ctx.textAlign = 'left'; ctx.font = `40px ${MUSIC}`; ctx.fillText('𝄐', cp.x - 10, 220);
+        }
+        if (cp.active) { ctx.textAlign = 'left'; ctx.font = font(12, 600, false, 'sc'); ctx.fillText(cp.label, cp.x - 20, 180); }
+    }
+
+    // Platforms are ligatures in white notation: void square heads joined side by side, oblique for the slopes,
+    // with the stems that tell their values. A ligature about to fall is blackened (coloration) as a warning.
+    function ligHead(c, x, y, w, h, filled, k) {
+        if (T.segments) y += (hashf(k * 5.3 + x) - 0.5) * 1.2; // each head its own sort
+        if (filled) { c.fillRect(x, y, w, h); return; }
+        if (T.hand) { voidRect(c, x + 1.5, y + 1.5, w - 3, h - 3, 4.6); return; }
+        const t = 4.2, v = 2.4;
+        c.fillRect(x, y, w, t); c.fillRect(x, y + h - t, w, t); c.fillRect(x, y, v, h); c.fillRect(x + w - v, y, v, h);
+    }
+    function ligStem(c, x, y0, y1) {
+        if (T.hand) nib(c, wob(x, y0, x + 0.3, y1, 0.4, 6), 3);
+        else c.fillRect(x - 1.25, Math.min(y0, y1), 2.5, Math.abs(y1 - y0));
+    }
+    function ligOblique(c, x, y0, w, y1, h, filled) {
+        // a parallelogram with upright ends, as the obliqua is cut
+        const band = (dy, t) => { c.beginPath(); c.moveTo(x, y0 + dy); c.lineTo(x + w, y1 + dy); c.lineTo(x + w, y1 + dy + t); c.lineTo(x, y0 + dy + t); c.closePath(); c.fill(); };
+        if (filled) { band(0, h); return; }
+        if (!T.hand) { band(0, 4.2); band(h - 4.2, 4.2); c.fillRect(x, y0, 2.4, h); c.fillRect(x + w - 2.4, y1, 2.4, h); return; }
+        nib(c, [[x + 1.5, y0 + 1.5], [x + w - 1.5, y1 + 1.5], [x + w - 1.5, y1 + h - 1.5], [x + 1.5, y0 + h - 1.5], [x + 1.5, y0 + 1.5]], 4.6);
+    }
     function drawLigature(ctx, plat) {
-        if (plat.type === 'ground') return; ctx.fillStyle = '#1a100a'; let drawY = plat.y + (plat.shakeTimer > 0 && plat.shakeTimer <= 30 ? Math.sin(plat.shakeTimer * 2) * 2 : 0);
-        if (plat.type === 'ice') { 
-            ctx.beginPath(); ctx.moveTo(plat.x, drawY); ctx.lineTo(plat.x + plat.w, drawY - 20); ctx.lineTo(plat.x + plat.w, drawY + plat.h - 20); ctx.lineTo(plat.x, drawY + plat.h); ctx.closePath(); ctx.fill(); ctx.fillRect(plat.x + plat.w - 4, drawY - 20, 4, 35); 
-        } else if (plat.type === 'descend') { 
-            ctx.beginPath(); ctx.moveTo(plat.x, drawY - 20); ctx.lineTo(plat.x + plat.w, drawY); ctx.lineTo(plat.x + plat.w, drawY + plat.h); ctx.lineTo(plat.x, drawY + plat.h - 20); ctx.closePath(); ctx.fill(); ctx.fillRect(plat.x + plat.w - 4, drawY, 4, 35);
-        } else if (plat.type === 'rising') { 
-            ctx.fillRect(plat.x, drawY + 15, plat.w/2, plat.h); ctx.fillRect(plat.x + plat.w/2, drawY, plat.w/2, plat.h); ctx.fillRect(plat.x + plat.w/2 - 2, drawY, 4, 15 + plat.h); ctx.fillRect(plat.x + plat.w - 4, drawY, 4, 35); 
-        } else { 
-            ctx.fillRect(plat.x, drawY, plat.w, plat.h); ctx.fillRect(plat.x + plat.w - 4, drawY, 4, 35); 
+        if (plat.type === 'ground') return;
+        const shaking = plat.shakeTimer > 0 && plat.shakeTimer <= 30;
+        const y = plat.y + (shaking ? Math.sin(plat.shakeTimer * 2) * 2 : 0), x = plat.x, w = plat.w, h = plat.h;
+        const filled = shaking || plat.falling;
+        ctx.fillStyle = C.ink; ctx.strokeStyle = C.ink;
+        const seed = hashf(x * 0.013 + 3.1);
+        if (plat.type === 'ice' || plat.type === 'descend') {
+            // obliqua: rising for 'ice', falling for 'descend' (with the stem down on the left that makes its first note a breve)
+            const up = plat.type === 'ice', y0 = up ? y : y - 20, y1 = up ? y - 20 : y;
+            ligOblique(ctx, x, y0, w, y1, h, filled);
+            if (!up) ligStem(ctx, x + 1.2, y0 + h - 2, y0 + h + 22);
+            return;
+        }
+        if (plat.type === 'rising') {
+            // two notes a step apart, the higher joined to the lower by its side
+            const half = w / 2, n = Math.max(1, Math.round(half / 34)), hw = half / n;
+            for (let i = 0; i < n; i++) ligHead(ctx, x + i * hw, y + 15, hw + 0.5, h, filled, i);
+            for (let i = 0; i < n; i++) ligHead(ctx, x + half + i * hw, y, hw + 0.5, h, filled, i + 9);
+            ligStem(ctx, x + half + 1.2, y + h - 2, y + 15 + h);
+            if (seed < 0.5) ligStem(ctx, x + 1.2, y + 15 + h - 2, y + 15 + h + 22);
+            return;
+        }
+        const n = Math.max(2, Math.round(w / 34)), hw = w / n;
+        for (let i = 0; i < n; i++) ligHead(ctx, x + i * hw, y, hw + 0.5, h, filled, i);
+        // first note: stem up on the left (cum opposita proprietate) or down (cum proprietate); last: a longa's tail on the right
+        if (seed < 0.4) ligStem(ctx, x + 1.2, y + 2, y - 24);
+        else if (seed < 0.75) ligStem(ctx, x + 1.2, y + h - 2, y + h + 22);
+        if (seed > 0.3) ligStem(ctx, x + w - 1.2, y + h - 2, y + h + 26);
+    }
+
+    function drawThemeButton() {
+        const b = THEME_BTN;
+        ctx.textAlign = 'center';
+        if (T.print) {
+            ctx.fillStyle = C.red; ctx.font = font(14, 500, false, 'sc');
+            ctx.fillText('❧ ' + T.name, b.x + b.w / 2, b.y + 19);
+        } else {
+            pill(b.x, b.y, b.w, b.h, C.paper, C.line);
+            ctx.fillStyle = C.ink; ctx.font = font(13, 600);
+            ctx.fillText('◐ ' + T.name, b.x + b.w / 2, b.y + 20);
         }
     }
 
+    function drawPrintMenu() {
+        if (!menuArt) menuArt = buildMenuArt();
+        ctx.drawImage(menuArt, 0, 0, W, H);
+        const tx = T.hand ? 222 : 200, ty = T.hand ? 132 : 122;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = (T.hand || T.mono) ? C.ink : C.red;
+        if (T.hand) { ctx.font = `600 76px ${GOTH}`; spacing(1); }
+        else { ctx.font = `62px ${FELL_BIG}`; spacing(5); }
+        ctx.fillText(T.hand ? 'ensurator' : 'ENSURATOR', tx, ty);
+        spacing(0);
+        ctx.fillStyle = T.hand ? C.red : C.ink;
+        ctx.font = T.hand ? `400 21px ${GOTH}` : `italic 19px ${FELL}`;
+        ctx.textAlign = T.hand ? 'left' : 'center';
+        ctx.fillText('Unmute your device for sound!', T.hand ? 222 : 400, T.hand ? 162 : 162);
+
+        MENU_BTNS.forEach((b, i) => {
+            const y = b.y + 25, hover = menuHover === i;
+            if (T.hand) {
+                ctx.fillStyle = i % 2 ? PIG.blue : PIG.red; ctx.font = `700 26px ${GOTH}`; ctx.textAlign = 'left';
+                ctx.fillText('¶', b.x + 4, y);
+                ctx.fillStyle = C.ink; ctx.font = `${i === 0 ? 600 : 500} 27px ${GOTH}`;
+            } else {
+                ctx.fillStyle = C.red; ctx.strokeStyle = C.red;
+                fleuron(ctx, b.x + 8, y - 7, 0.9);
+                ctx.fillStyle = (i === 0 && !T.mono) ? C.red : C.ink; ctx.font = `${i === 0 ? 26 : 24}px ${FELL}`;
+            }
+            ctx.textAlign = 'left';
+            ctx.fillText(b.label, b.x + 30, y);
+            if (hover) { const w = ctx.measureText(b.label).width; ctx.fillRect(b.x + 30, y + 5, w, 1.2); }
+        });
+
+        // Install and theme
+        const ib = INSTALL_BTN;
+        ctx.textAlign = 'center'; ctx.fillStyle = C.red; ctx.font = font(15, 500, false, 'sc');
+        ctx.fillText('Install', ib.x + ib.w / 2, ib.y + 19);
+        drawThemeButton();
+
+        const credit = 'Feedback > mensuratorgame@gmail.com  Samuel Reid Navarro  ·  ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        ctx.fillStyle = C.ink; ctx.textAlign = 'center';
+        ctx.font = T.hand ? `400 13px ${GOTH}` : `italic 13px ${FELL}`;
+        ctx.fillText(credit, W / 2, T.hand ? 368 : 362);
+    }
+
+    function drawMenu() {
+        if (T.print) { drawPrintMenu(); return; }
+        // Faint staff behind the title
+        ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+        for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(60, 50.5 + i * 11); ctx.lineTo(W - 60, 50.5 + i * 11); ctx.stroke(); }
+        ctx.fillStyle = C.mark;
+        drawDiamond(ctx, 86, 72, 7, true);
+        ctx.strokeStyle = C.mark; drawDiamond(ctx, W - 86, 83, 7, false);
+
+        let titleSize = 58;
+        const mainTitle = 'MENSURATOR';
+        ctx.textAlign = 'center';
+        spacing(10);
+        for (;;) {
+            ctx.font = font(titleSize, 800);
+            if (ctx.measureText(mainTitle).width <= 540 || titleSize <= 30) break;
+            titleSize -= 2;
+        }
+        const tw = ctx.measureText(mainTitle).width;
+        ctx.fillStyle = C.paper; ctx.fillRect(W / 2 - tw / 2 - 18, 44, tw + 36, 56);
+        ctx.fillStyle = C.ink;
+        ctx.fillText(mainTitle, W / 2 + 5, 94);
+        spacing(0);
+
+        ctx.fillStyle = C.soft;
+        ctx.font = font(13, 500);
+        ctx.fillText('Unmute your device for sound!', W / 2, 130);
+
+        MENU_BTNS.forEach((b, i) => {
+            const hover = menuHover === i;
+            ctx.save();
+            if (b.primary) {
+                const pulse = (Math.sin(Date.now() / 400) + 1) / 2;
+                ctx.shadowColor = `rgba(156, 107, 60, ${0.18 + pulse * 0.22})`;
+                ctx.shadowBlur = 10 + pulse * 10; ctx.shadowOffsetY = 3;
+                pill(b.x, b.y, b.w, b.h, hover ? '#2a231a' : C.ink, null, 16);
+            } else {
+                pill(b.x, b.y, b.w, b.h, hover ? C.band : C.paper, hover ? C.mark : C.line, 16);
+            }
+            ctx.restore();
+            const m = b.label.match(/^(.*) \((.*)\)$/);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = b.primary ? C.paper : C.ink;
+            if (m) {
+                ctx.font = font(17, 700);
+                ctx.fillText(m[1], b.x + b.w / 2, b.y + 26);
+                ctx.fillStyle = b.primary ? 'rgba(255, 253, 248, 0.65)' : C.soft;
+                ctx.font = font(11, 600); spacing(1.5);
+                ctx.fillText(m[2].toUpperCase(), b.x + b.w / 2, b.y + 43);
+                spacing(0);
+            } else {
+                ctx.font = font(17, 700);
+                ctx.fillText(b.label, b.x + b.w / 2, b.y + 34);
+            }
+        });
+
+        // Install Button (Top Right)
+        const ib = INSTALL_BTN;
+        pill(ib.x, ib.y, ib.w, ib.h, C.paper, C.line);
+        ctx.fillStyle = C.ink;
+        ctx.font = font(13, 600);
+        ctx.textAlign = 'center';
+        ctx.fillText('Install', ib.x + ib.w / 2, ib.y + 20);
+        drawThemeButton();
+
+        const credit = 'Feedback > mensuratorgame@gmail.com  Samuel Reid Navarro  ·  ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        ctx.fillStyle = C.soft;
+        ctx.font = font(11, 500);
+        ctx.fillText(credit, W / 2, 374);
+    }
+
+    function drawStatusPill(text, color, y) {
+        if (T.print) {
+            ctx.font = font(15, 600, true); ctx.fillStyle = color; ctx.textAlign = 'right';
+            ctx.fillText(text, W - 24, y + 15);
+            return y + 22;
+        }
+        ctx.font = font(12, 700);
+        const w = ctx.measureText(text).width + 22;
+        ctx.save(); ctx.globalAlpha = 0.12; pill(W - 24 - w, y, w, 22, color); ctx.restore();
+        ctx.fillStyle = color; ctx.textAlign = 'right';
+        ctx.fillText(text, W - 35, y + 15);
+        return y + 28;
+    }
+
     function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, W, H);
+        ctx.textBaseline = 'alphabetic';
 
         titleDevBtn.style.display = (gameState === 'MENU') ? 'block' : 'none';
         if (isTouchDevice) {
@@ -1751,203 +2491,155 @@ let devInvincible = false;
             }
         }
 
-        if (gameState === 'MENU' || gameState === 'OPTIONS') {
-            const MENU_X = 110, MENU_W = 580, R_OUT = 24, R_IN = 16;
-            ctx.fillStyle = 'rgba(238, 221, 187, 0.35)';
-            pathRoundRect(ctx, 100, 16, 600, 368, R_OUT);
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(184, 134, 11, 0.55)';
-            ctx.lineWidth = 2;
-            pathRoundRect(ctx, 100, 16, 600, 368, R_OUT);
-            ctx.stroke();
-
-            ctx.fillStyle = 'rgba(26, 16, 10, 0.18)';
-            pathRoundRect(ctx, MENU_X, 26, MENU_W, 80, R_IN);
-            ctx.fill();
-            ctx.strokeStyle = '#b8860b';
-            ctx.lineWidth = 2;
-            pathRoundRect(ctx, MENU_X, 26, MENU_W, 80, R_IN);
-            ctx.stroke();
-
-            let titleSize = 58;
-            const mainTitle = 'MENSURATOR';
-            ctx.textAlign = 'left';
-            for (;;) {
-                ctx.font = `bold ${titleSize}px "Book Antiqua", Palatino, serif`;
-                if (ctx.measureText(mainTitle).width <= MENU_W - 36 || titleSize <= 30) break;
-                titleSize -= 2;
-            }
-            ctx.fillStyle = '#cc0000';
-            ctx.fillText(mainTitle, MENU_X + (MENU_W - ctx.measureText(mainTitle).width) / 2, 26 + 54);
-            
-            ctx.fillStyle = '#b8860b';
-            ctx.font = 'italic 16px serif';
-            ctx.fillText('Unmute your device for sound!', MENU_X + (MENU_W - ctx.measureText('Unmute your Phone for sound!').width) / 2, 26 + 77);
-
-            const drawModeButton = (top, text, accent = '#b8860b', bgStyle = 'rgba(238, 221, 187, 0.45)', isPulsing = false) => {
-                const bh = 52;
-                
-                ctx.save();
-                if (isPulsing) {
-                    const pulse = (Math.sin(Date.now() / 250) + 1) / 2; // Ranges 0 to 1
-                    ctx.shadowBlur = 10 + (pulse * 15);
-                    ctx.shadowColor = `rgba(255, 215, 0, ${0.3 + pulse * 0.5})`; // Yellow glow
-                    bgStyle = `rgba(255, 225, 120, ${0.3 + pulse * 0.4})`; // Soft yellow background
-                    accent = `rgba(255, 215, 0, ${0.6 + pulse * 0.4})`; // Bright yellow border
-                }
-
-                ctx.fillStyle = bgStyle;
-                pathRoundRect(ctx, MENU_X, top, MENU_W, bh, R_IN);
-                ctx.fill();
-                
-                ctx.strokeStyle = accent;
-                ctx.lineWidth = 2;
-                pathRoundRect(ctx, MENU_X, top, MENU_W, bh, R_IN);
-                ctx.stroke();
-                
-                // Reset shadow so the text remains crisp
-                ctx.shadowBlur = 0; 
-                ctx.fillStyle = '#2a1810';
-                ctx.font = '22px "Book Antiqua", Palatino, serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(text, MENU_X + MENU_W / 2, top + 34);
-                ctx.restore();
-            };
-
-            drawModeButton(118, 'Ars Antiqua (Classic)', undefined, undefined, true);
-            drawModeButton(184, 'Ars Nova (Endless)');
-            drawModeButton(250, 'Gradus ad Parnassum');
-            drawModeButton(316, 'Magistri Mensurarum');
-
-            // Install Button (Top Right)
-            ctx.fillStyle = 'rgba(184, 134, 11, 0.2)';
-            pathRoundRect(ctx, 660, 16, 120, 36, 10);
-            ctx.fill();
-            ctx.strokeStyle = '#b8860b';
-            ctx.lineWidth = 2;
-            pathRoundRect(ctx, 660, 16, 120, 36, 10);
-            ctx.stroke();
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 30px "Book Antiqua", serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Install', 720, 45);
-
-            const credit = 'Feedback > mensuratorgame@gmail.com  Samuel Reid Navarro  ·  ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-            ctx.fillStyle = '#3d2914';
-            ctx.font = 'italic 13px serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(credit, 400, 378);
-            ctx.textAlign = 'center';
-            return;
-        }
+        if (gameState === 'MENU' || gameState === 'OPTIONS') { drawMenu(); return; }
+        if (gameMode === 'KART' && kart && ['PLAY', 'SPLASH', 'WIN', 'PAUSE'].includes(gameState)) { kartDraw(); return; }
 
         if (gameState === 'PLAY' || gameState === 'SPLASH' || gameState === 'DEATH_FREEZE' || gameState === 'WIN') {
-            ctx.save(); ctx.translate(-cameraX, -cameraY); 
-            ctx.strokeStyle = '#3a2518'; ctx.lineWidth = 2;
-            if (gameMode !== 'GRADUS' && currentLevelData && currentLevelData.groundChunks) { 
-                currentLevelData.groundChunks.forEach(chunk => { 
-                    for (let i = 0; i < 5; i++) { 
-                        ctx.beginPath(); 
-                        ctx.moveTo(chunk.x, 230 + i * 30); 
-                        ctx.lineTo(chunk.x + chunk.w, 230 + i * 30); 
-                        ctx.stroke(); 
-                    } 
-                }); 
-            } else if (gameMode === 'GRADUS') { 
-                let startY = Math.floor(cameraY / 100) * 100; 
-                for (let i = 0; i < 5; i++) { 
-                    ctx.beginPath(); 
-                    ctx.moveTo(100 + i * 150, startY - 1000); 
-                    ctx.lineTo(100 + i * 150, cameraY + canvas.height + 1000); 
-                    ctx.stroke(); 
-                } 
+            ctx.save(); ctx.translate(-cameraX, -cameraY);
+            ctx.strokeStyle = C.staff; ctx.lineWidth = 1.5;
+            if (gameMode !== 'GRADUS' && currentLevelData && currentLevelData.groundChunks) {
+                currentLevelData.groundChunks.forEach(chunk => {
+                    const x0 = Math.max(chunk.x, cameraX - 40), x1 = Math.min(chunk.x + chunk.w, cameraX + W + 40);
+                    if (x1 > x0) drawStaff(ctx, x0, x1, 230, 30);
+                });
+            } else if (gameMode === 'GRADUS') {
+                let startY = Math.floor(cameraY / 100) * 100;
+                ctx.fillStyle = C.staff;
+                for (let i = 0; i < 5; i++) {
+                    if (T.print) { ctx.fillRect(100 + i * 150 - 0.8, cameraY - 40, 1.6, H + 80); continue; }
+                    ctx.beginPath();
+                    ctx.moveTo(100 + i * 150, startY - 1000);
+                    ctx.lineTo(100 + i * 150, cameraY + H + 1000);
+                    ctx.stroke();
+                }
             }
 
+        if (gameMode !== 'GRADUS') {
+            // F clef on the fourth line, then the sign of the chosen Mensura
+            ctx.fillStyle = C.ink; ctx.strokeStyle = C.ink;
+            printFClef(ctx, 20, 260); printSignature(ctx, 86, 290, 30);
+        }
         if (gameMode === 'CLASSIC') {
-            ctx.fillStyle = '#1a100a'; ctx.font = '70px serif'; ctx.fillText('𝄢', 20, 290); currentLevelData.checkpoints.forEach(cp => drawCheckpoint(ctx, cp));
-if (!boss.active) { 
-                ctx.fillStyle = '#8b6508'; 
-                ctx.font = '60px serif'; 
-                ctx.fillText('𝄡', currentLevelData.goal.x, 320); 
-                
-                // Add the "Finalis" label
-                ctx.font = 'italic 22px "Book Antiqua", serif';
-                ctx.fillText('Finalis', currentLevelData.goal.x - 15, 150);
+            ctx.textAlign = 'left';
+            currentLevelData.checkpoints.forEach(cp => drawCheckpoint(ctx, cp));
+            if (!boss.active) {
+                ctx.strokeStyle = rgba(C.mark, T.mono ? 0.6 : 0.35);
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 8]);
+                ctx.beginPath();
+                ctx.moveTo(currentLevelData.goal.x + 20, 0);
+                ctx.lineTo(currentLevelData.goal.x + 20, H);
+                ctx.stroke();
+                ctx.setLineDash([]);
 
-                ctx.strokeStyle = 'rgba(139, 101, 8, 0.3)'; 
-                ctx.lineWidth = 5; 
-                ctx.beginPath(); 
-                ctx.moveTo(currentLevelData.goal.x + 20, 0); 
-                ctx.lineTo(currentLevelData.goal.x + 20, canvas.height); 
-                ctx.stroke(); 
-            }        }
+                ctx.fillStyle = C.mark;
+                ctx.textAlign = 'left';
+                if (T.print) {
+                    // final double bar with a custos, as at the end of a part
+                    const gx = currentLevelData.goal.x;
+                    if (T.hand) { nib(ctx, wob(gx + 4, 230, gx + 4, 350, 0.6), 2.6); nib(ctx, wob(gx + 13, 230, gx + 13, 350, 0.6), 7); }
+                    else { ctx.fillRect(gx + 3, 230, 2.4, 120); ctx.fillRect(gx + 10, 230, 6, 120); }
+                    ctx.strokeStyle = C.mark; printCustos(ctx, gx + 22, 300);
+                } else {
+                    ctx.font = `60px ${MUSIC}`;
+                    ctx.fillText('𝄡', currentLevelData.goal.x, 320);
+                }
 
-        if (boss.active) {
-            ctx.fillStyle = '#8b0000'; ctx.font = 'bold 60px serif'; ctx.fillText('♯ ♭', boss.x - 20, boss.y + 60);
-            ctx.fillStyle = '#1a100a'; ctx.fillRect(boss.x - 20, boss.y - 20, 80, 8); ctx.fillStyle = '#8b0000'; ctx.fillRect(boss.x - 20, boss.y - 20, 80 * (boss.hp / boss.maxHp), 8);
-            ctx.font = '16px serif'; ctx.fillText('MI-FA (Diabolus in Musica)', boss.x - 40, boss.y - 30);
-            ctx.fillStyle = '#8b0000'; ctx.font = 'bold 24px serif'; boss.projectiles.forEach(bp => { ctx.fillText(Math.random() > 0.5 ? '♭' : '♯', bp.x, bp.y + 20); });
+                // "Finalis" label
+                ctx.font = font(16, 600, true);
+                ctx.fillText('Finalis', currentLevelData.goal.x - 8, 150);
+            }
         }
 
-        currentLevelData.walls.forEach(wall => { ctx.fillStyle = '#1a100a'; ctx.fillRect(wall.x, wall.y, wall.w, wall.h); });
-        ctx.fillStyle = '#1a100a'; currentLevelData.fallingLongas.forEach(l => { 
-            if (!l.dead) { 
-                let lx = l.x; 
-                if (l.state === 'shaking') lx += (Math.random() > 0.5 ? 2 : -2); 
-                
-                ctx.fillStyle = (l.state === 'shaking' || l.state === 'falling') ? '#ff0000' : '#8b0000';
-                const width = 12; 
-                const centerX = lx; 
-                
-                ctx.fillRect(centerX, l.y, width, 60); 
-            } 
+        if (boss.active) {
+            ctx.textAlign = 'left';
+            ctx.fillStyle = C.red; ctx.strokeStyle = C.red;
+            if (T.print) { printSharp(ctx, boss.x - 14, boss.y + 38, 1.6); printFlat(ctx, boss.x + 34, boss.y + 52, 1.6); }
+            else { ctx.font = `60px ${MUSIC}`; ctx.fillText('♯ ♭', boss.x - 20, boss.y + 60); }
+            pill(boss.x - 20, boss.y - 20, 80, 6, C.line); 
+            if (boss.hp > 0) pill(boss.x - 20, boss.y - 20, Math.max(6, 80 * (boss.hp / boss.maxHp)), 6, C.red);
+            ctx.fillStyle = C.red; ctx.font = font(12, 600, false, 'sc'); ctx.fillText('MI-FA (Diabolus in Musica)', boss.x - 40, boss.y - 30);
+            ctx.fillStyle = C.red; ctx.strokeStyle = C.red; ctx.font = `26px ${MUSIC}`;
+            boss.projectiles.forEach(bp => {
+                if (bp.fl === undefined) bp.fl = Math.random() > 0.5;
+                const fl = bp.fl;
+                if (T.print) { if (fl) printFlat(ctx, bp.x + 3, bp.y + 16, 0.7); else printSharp(ctx, bp.x + 2, bp.y + 8, 0.7); }
+                else ctx.fillText(fl ? '♭' : '♯', bp.x, bp.y + 20);
+            });
+        }
+
+        currentLevelData.walls.forEach(wall => { ctx.fillStyle = C.ink; if (T.hand) nib(ctx, wob(wall.x + wall.w / 2, wall.y, wall.x + wall.w / 2, wall.y + wall.h, 0.6), Math.max(3, wall.w)); else { pathRoundRect(ctx, wall.x, wall.y, wall.w, wall.h, T.print ? 0 : 3); ctx.fill(); } });
+        currentLevelData.fallingLongas.forEach(l => {
+            if (!l.dead) {
+                let lx = l.x;
+                if (l.state === 'shaking') lx += (Math.random() > 0.5 ? 2 : -2);
+                ctx.fillStyle = (l.state === 'shaking' || l.state === 'falling') ? C.redHot : C.red;
+                printRest(ctx, lx + l.w / 2, l.y, l.h, 9); // a longa rest spans two spaces
+            }
         });
         currentLevelData.platforms.forEach(plat => drawLigature(ctx, plat));
 
-        ctx.fillStyle = '#1a100a'; currentLevelData.scoreNotes.forEach(note => { if (note.active) drawDiamond(ctx, note.x + 7, note.y + 7, 8, true); });
-        
-        ctx.fillStyle = '#00008b'; ctx.font = 'bold 36px serif'; 
-        currentLevelData.allaBreves.forEach(item => { 
-            if (item.active) {
-                ctx.fillText('C', item.x - 5, item.y + 35); 
-                ctx.fillRect(item.x - 5, item.y + 3, 3, 40); 
-            } 
+        // score notes: blackened semiminims
+        ctx.fillStyle = C.ink; ctx.strokeStyle = C.ink;
+        currentLevelData.scoreNotes.forEach(note => { if (note.active) { lozenge(ctx, note.x + 7.5, note.y + 9, 6, 8, true); ligStem(ctx, note.x + 7.5, note.y + 4, note.y - 13); } });
+
+        // alla breve: the cut C; tempus perfectum: the circle
+        ctx.fillStyle = C.blue; ctx.strokeStyle = C.blue;
+        currentLevelData.allaBreves.forEach(item => { if (item.active) printMensuration(ctx, item.x + 12.5, item.y + 12.5, 'C|', 13); });
+        ctx.fillStyle = C.ink; ctx.strokeStyle = C.ink;
+        currentLevelData.tempusItems.forEach(item => { if (item.active) printMensuration(ctx, item.x + 12.5, item.y + 12.5, 'O', 13); });
+        ctx.fillStyle = C.ink; currentLevelData.inkPots.forEach(pot => { if (pot.active) { ctx.beginPath(); ctx.arc(pot.x + 10, pot.y + 15, 10, 0, Math.PI*2); ctx.fill(); pathRoundRect(ctx, pot.x + 5, pot.y, 10, 10, 2); ctx.fill(); } });
+
+        currentLevelData.enemies.forEach(e => {
+            if (e.dead) return;
+            // breve rest fills a space, semibreve rest hangs from a line, minim rest stands on one
+            ctx.fillStyle = e.aggro ? C.redHot : C.red;
+            printRest(ctx, e.x + e.w / 2, e.y, e.h, e.aggro ? 8 : 7);
         });
+        ctx.fillStyle = C.red; ctx.strokeStyle = C.red; ctx.font = `30px ${MUSIC}`;
+        currentLevelData.jumpingFlats.forEach(flat => { if (!flat.dead && flat.state !== 'hidden') { if (T.print) printFlat(ctx, flat.x + 4, flat.y + 22); else ctx.fillText('♭', flat.x, flat.y + 25); } });
+        ctx.fillStyle = C.red; ctx.strokeStyle = C.red; ctx.font = `40px ${MUSIC}`;
+        currentLevelData.flyingEnemies.forEach(e => { if (!e.dead) { if (T.print) printSharp(ctx, e.x + 5, e.y + 20); else ctx.fillText('♯', e.x, e.y + 35); } });
+        ctx.fillStyle = C.ink; projectiles.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill(); });
 
-        ctx.fillStyle = '#1a100a'; ctx.font = 'bold 24px sans-serif'; currentLevelData.tempusItems.forEach(item => { if (item.active) ctx.fillText('◯', item.x, item.y + 20); });
-        ctx.fillStyle = '#000'; currentLevelData.inkPots.forEach(pot => { if (pot.active) { ctx.beginPath(); ctx.arc(pot.x + 10, pot.y + 15, 10, 0, Math.PI*2); ctx.fill(); ctx.fillRect(pot.x + 5, pot.y, 10, 10); } });
-
-        currentLevelData.enemies.forEach(e => { if(!e.dead) { ctx.fillStyle = e.aggro ? '#ff0000' : '#8b0000'; ctx.fillRect(e.x, e.y, e.w, e.h); } }); 
-        ctx.fillStyle = '#b30000'; ctx.font = 'bold 30px serif'; currentLevelData.jumpingFlats.forEach(flat => { if (!flat.dead && flat.state !== 'hidden') ctx.fillText('♭', flat.x, flat.y + 25); });
-        ctx.fillStyle = '#8b0000'; ctx.font = 'bold 40px serif'; currentLevelData.flyingEnemies.forEach(e => { if(!e.dead) ctx.fillText('♯', e.x, e.y + 35); });
-        ctx.fillStyle = '#1a100a'; projectiles.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill(); });
-        
-        if (gameMode === 'ENDLESS') { ctx.fillStyle = 'rgba(26, 16, 10, 0.95)'; ctx.fillRect(cameraX - 1000, -500, 1000 - 24, canvas.height + 1000); } 
-        else if (gameMode === 'GRADUS') { ctx.fillStyle = 'rgba(26, 16, 10, 0.95)'; ctx.fillRect(-1000, cameraY + canvas.height + 24, canvas.width + 2000, 1000); }
+        if (gameMode === 'ENDLESS') { ctx.fillStyle = rgba(C.ink, T.print ? 1 : 0.9); ctx.fillRect(cameraX - 1000, -500, 1000 - 24, H + 1000); ctx.fillStyle = C.red; ctx.fillRect(cameraX - 26, -500, 2, H + 1000); }
+        else if (gameMode === 'GRADUS') { ctx.fillStyle = rgba(C.ink, T.print ? 1 : 0.9); ctx.fillRect(-1000, cameraY + H + 24, W + 2000, 1000); ctx.fillStyle = C.red; ctx.fillRect(-1000, cameraY + H + 24, W + 2000, 2); }
 
         if (currentLevelData.hasFuga && player.history.length === 60) { let ghost = player.history[0]; drawMensuralNote(ctx, ghost.x, ghost.y, noteStates[ghost.state], false, 0.6, false, true); }
 
         const isColored = player.colorationTimer > 0;
-        trail.forEach((t, i) => drawMensuralNote(ctx, t.x, t.y, noteStates[t.state], false, (i+1)/10, isColored));
+        trail.forEach((t, i) => drawMensuralNote(ctx, t.x, t.y, noteStates[t.state], false, (i+1)/14, isColored));
         drawMensuralNote(ctx, player.x, player.y, noteStates[getStateIndex(player.stateValue)], player.invulnerableTimer > 0, 1, isColored);
 
-        particles.forEach(p => { ctx.fillStyle = p.color || 'rgba(100, 80, 60, 0.6)'; ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2); ctx.fill(); });
-        ctx.restore(); 
+        particles.forEach(p => { ctx.fillStyle = p.color === '#b30000' ? C.red : (p.color || rgba(C.soft, 0.45)); ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2); ctx.fill(); });
+        ctx.restore();
 
         if (gameState === 'SPLASH') {
-            ctx.fillStyle = 'rgba(26, 16, 10, 0.95)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+            veil(0.95);
+
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#b8860b'; ctx.font = 'bold 40px "Book Antiqua", serif';
             const titleSplash = modesData[currentLevel].name;
-            ctx.fillText(titleSplash, canvas.width / 2, 100);
-            
-            ctx.fillStyle = '#d4c3a3'; ctx.font = 'italic 18px "Book Antiqua", serif';
+            const colon = titleSplash.indexOf(':');
+            const splashLabel = colon > 0 ? titleSplash.slice(0, colon) : '';
+            const splashName = colon > 0 ? titleSplash.slice(colon + 1).trim() : titleSplash;
+            if (splashLabel) {
+                ctx.fillStyle = C.mark; ctx.font = font(13, 700, false, "sc"); spacing(3);
+                ctx.fillText(splashLabel.toUpperCase(), W / 2 + 1.5, 92);
+                spacing(0);
+            }
+            let nameSize = 42;
+            for (;;) { ctx.font = font(nameSize, 800, false, "display"); if (ctx.measureText(splashName).width <= 700 || nameSize <= 22) break; nameSize -= 2; }
+            ctx.fillStyle = C.ink;
+            ctx.fillText(splashName, W / 2, 142);
+
+            ctx.fillStyle = C.line; ctx.fillRect(W / 2 - 24, 166, 48, 2);
+
+            ctx.fillStyle = C.inkSoft; ctx.font = font(17, 400, true);
             const quoteSplash = modesData[currentLevel].quote;
             const quoteParts = quoteSplash.split(' - ');
             const quoteBody = quoteParts[0];
             const quoteAuthor = quoteParts.length > 1 ? quoteParts[1] : '';
-            const maxWidth = 750;
+            const maxWidth = 640;
             const quoteWords = quoteBody.split(' ');
             let quoteLines = [];
             let quoteLine = '';
@@ -1961,92 +2653,99 @@ if (!boss.active) {
                 }
             }
             if (quoteLine) quoteLines.push(quoteLine);
-            let qy = 160;
+            let qy = 206;
             for (let ql of quoteLines) {
-                ctx.fillText(ql, canvas.width / 2, qy);
-                qy += 20;
+                ctx.fillText(ql, W / 2, qy);
+                qy += 24;
             }
             if (quoteAuthor) {
-                ctx.font = 'italic 14px "Book Antiqua", serif';
-                ctx.fillText('- ' + quoteAuthor, canvas.width / 2, qy + 5);
+                ctx.fillStyle = C.soft;
+                ctx.font = font(13, 500);
+                ctx.fillText(quoteAuthor, W / 2, qy + 4);
             }
-            
-            ctx.fillStyle = `rgba(184, 134, 11, ${0.5 + Math.sin(Date.now() / 300) * 0.5})`;
-            ctx.font = 'bold 20px sans-serif';
-            ctx.fillText('Press any key or tap to continue', canvas.width / 2, canvas.height - 40);
+
+            ctx.fillStyle = rgba(C.mark, T.print ? 1 : 0.55 + Math.sin(Date.now() / 300) * 0.45);
+            ctx.font = font(14, 600);
+            ctx.fillText('Press any key or tap to continue', W / 2, H - 40);
         } else if (gameState !== 'DEATH_FREEZE' && gameState !== 'WIN' && gameState !== 'MENU' && gameState !== 'PAUSE') {
             if (currentLevel === 0 && gameMode === 'CLASSIC') {
                 ctx.save();
-                
-                // Add control hints at the start of the level
+
+                // Control hints at the start of the level
                 if (player.x < 1000) {
-                    ctx.globalAlpha = 0.7 + Math.sin(Date.now() / 400) * 0.3;
-                    ctx.fillStyle = '#b8860b';
-                    ctx.font = 'bold 60px "Book Antiqua", serif';
+                    ctx.globalAlpha = 0.7 + Math.sin(Date.now() / 400) * 0.2;
+                    ctx.fillStyle = C.soft;
                     ctx.textAlign = 'center';
-                    
+
                     if (isTouchDevice) {
-                        // Mobile controls hint
-                        ctx.fillText('Controls down below', canvas.width / 2, 120);
-                        ctx.font = 'bold 30px sans-serif';
-                        ctx.fillText('↓', canvas.width / 2, 160);
-                        
-                        ctx.fillStyle = '#b8860b';
-                        ctx.font = 'italic 30px serif';
-                        ctx.fillText('Unmute your device for sound!', canvas.width / 2, 190);
-                        
-                        ctx.font = 'bold 80px sans-serif';
-                        ctx.fillText('→', canvas.width / 2, 240);
+                        ctx.font = font(32, 800);
+                        ctx.fillText('Controls down below', W / 2, 124);
+                        ctx.font = font(26, 700);
+                        ctx.fillText('↓', W / 2, 156);
+                        ctx.font = font(16, 500, true);
+                        ctx.fillText('Unmute your device for sound!', W / 2, 184);
+                        ctx.font = font(44, 700);
+                        ctx.fillText('→', W / 2, 228);
                     } else {
-                        // Desktop controls hint
-                        ctx.fillText('Controls: WASD or ← → ↑', canvas.width / 2, 120);
-                        
-                        ctx.fillStyle = '#b8860b';
-                        ctx.font = 'italic 30px serif';
-                        ctx.fillText('Unmute your device for sound!', canvas.width / 2, 150);
-                        
-                        ctx.font = 'bold 80px sans-serif';
-                        ctx.fillText('→', canvas.width / 2, 200);
-                        ctx.font = 'bold 300px sans-serif';
+                        ctx.font = font(32, 800);
+                        ctx.fillText('Controls: WASD or ← → ↑', W / 2, 128);
+                        ctx.font = font(16, 500, true);
+                        ctx.fillText('Unmute your device for sound!', W / 2, 156);
+                        ctx.font = font(44, 700);
+                        ctx.fillText('→', W / 2, 200);
                     }
                     ctx.textAlign = 'left';
                 }
                 if (player.x > 2800 && player.x < 32000) {
-                    ctx.globalAlpha = 0.7 + Math.sin(Date.now() / 450) * 0.3;
-                    ctx.fillStyle = '#b8860b';
-                    ctx.font = 'bold 40px sans-serif';
+                    ctx.globalAlpha = 0.7 + Math.sin(Date.now() / 450) * 0.2;
+                    ctx.fillStyle = C.soft;
+                    ctx.textAlign = 'left';
+                    ctx.font = font(36, 700);
                     ctx.fillText('↠', 380, 150);
-                    ctx.globalAlpha = 0.8;
-                    ctx.font = 'bold 25px "Book Antiqua", serif';
-                    ctx.fillText('Double tap to run!', 400, 190);
+                    ctx.globalAlpha = 0.85;
+                    ctx.font = font(20, 700);
+                    ctx.fillText('Double tap to run!', 400, 186);
                 }
-                
+
                 ctx.restore();
             }
-        } 
-            
-            if (gameMode === 'CLASSIC') { let progress = player.x / currentLevelData.goal.x; if (progress > 1) progress = 1; ctx.fillStyle = 'rgba(58, 37, 24, 0.28)'; ctx.fillRect(0, canvas.height - 10, canvas.width, 10); ctx.fillStyle = '#b8860b'; ctx.fillRect(0, canvas.height - 10, canvas.width * progress, 10); }
-            
-            ctx.textAlign = 'left';
-            ctx.fillStyle = '#1a100a';
-            ctx.font = 'bold 28px "Book Antiqua", serif';
-            const modeLabel = modesData[currentLevel].name.split(':')[0];
-            ctx.fillText(modeLabel, 28, 35);
-            
-            ctx.fillStyle = '#1a100a';
-            ctx.font = 'bold 28px "Book Antiqua", serif';
-            ctx.fillText(modesData[currentLevel].modeName, 28, 58);
+        }
 
-            const maxQuoteWidth = 420;
+            if (gameState !== 'SPLASH') {
+            // Soft paper band so the HUD stays readable over the level
+            const hudFade = ctx.createLinearGradient(0, 0, 0, 84);
+            hudFade.addColorStop(0, rgba(C.paper, 0.92));
+            hudFade.addColorStop(0.7, rgba(C.paper, 0.75));
+            hudFade.addColorStop(1, rgba(C.paper, 0));
+            if (!T.print) { ctx.fillStyle = hudFade; ctx.fillRect(0, 0, W, 84); }
+
+            if (gameMode === 'CLASSIC') {
+                let progress = player.x / currentLevelData.goal.x; if (progress > 1) progress = 1; if (progress < 0) progress = 0;
+                pill(24, H - 10, W - 48, 4, C.line);
+                if (progress > 0) pill(24, H - 10, Math.max(4, (W - 48) * progress), 4, C.mark);
+            }
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = (T.print && !T.mono) ? C.red : C.soft;
+            ctx.font = font(11, 700, false, "sc"); spacing(2);
+            const modeLabel = modesData[currentLevel].name.split(':')[0];
+            ctx.fillText(modeLabel.toUpperCase(), 24, 30);
+            spacing(0);
+
+            ctx.fillStyle = C.ink;
+            ctx.font = font(22, 800, false, "display");
+            ctx.fillText(modesData[currentLevel].modeName, 24, 54);
+
+            const maxQuoteWidth = 380;
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#1a100a';
-            ctx.font = 'italic 24px "Book Antiqua", serif';
+            ctx.fillStyle = C.inkSoft;
+            ctx.font = font(14, 400, true);
             const quoteText = modesData[currentLevel].quote;
-            
+
             const lastDashIndex = quoteText.lastIndexOf(' - ');
             const quoteBody = quoteText.substring(0, lastDashIndex);
             const author = quoteText.substring(lastDashIndex + 3);
-            
+
             const words = quoteBody.split(' ');
             let lines = [];
             let currentLine = '';
@@ -2060,73 +2759,70 @@ if (!boss.active) {
                 }
             }
             if (currentLine) lines.push(currentLine);
-            
-            const lineHeight = 18;
-            const totalHeight = lines.length * lineHeight + 20;
-            let startY = 22 + (70 - totalHeight) / 2;
+
+            let startY = 32;
             for (let line of lines) {
-                ctx.fillText(line, canvas.width / 2, startY);
-                startY += lineHeight;
+                ctx.fillText(line, W / 2, startY);
+                startY += 18;
             }
-            ctx.font = 'italic 21px "Book Antiqua", serif';
-            ctx.fillText('- ' + author, canvas.width / 2, startY + 5);
+            ctx.fillStyle = C.soft;
+            ctx.font = font(11, 500);
+            ctx.fillText(author, W / 2, startY + 1);
 
             ctx.textAlign = 'right';
             const mins = Math.floor(levelTime / 60), secs = Math.floor(levelTime % 60);
-            ctx.fillStyle = '#1a100a';
-            ctx.font = 'bold 28px "Book Antiqua", serif';
-            ctx.fillText(mins + ':' + secs.toString().padStart(2, '0'), canvas.width - 28, 35);
-            
-            ctx.fillStyle = '#1a100a';
-            ctx.font = 'bold 22px "Book Antiqua", serif';
-            ctx.fillText('Puncta: ' + player.score, canvas.width - 28, 58);
+            ctx.fillStyle = C.ink;
+            ctx.font = font(22, 800, false, "display");
+            ctx.fillText(mins + ':' + secs.toString().padStart(2, '0'), W - 24, 38);
 
-            ctx.textAlign = 'right';
-            let statusY = 85;
-            if (player.tempusTimer > 0) { ctx.fillStyle = '#1a100a'; ctx.font = 'bold 22px "Book Antiqua", serif'; ctx.fillText('Tempus Perfectum!', canvas.width - 28, statusY); statusY += 25; }
-            if (player.allaBreveTimer > 0) { ctx.fillStyle = '#00008b'; ctx.font = 'bold 22px "Book Antiqua", serif'; ctx.fillText('Proportio Dupla!', canvas.width - 28, statusY); statusY += 25; }
-            if (player.colorationTimer > 0) { ctx.fillStyle = '#1a100a'; ctx.font = 'bold 22px "Book Antiqua", serif'; ctx.fillText('Coloratio!', canvas.width - 28, statusY); statusY += 25; }
-            if (currentLevelData.hasFuga && player.history.length === 60) { ctx.fillStyle = '#cc0000'; ctx.font = 'bold 20px "Book Antiqua", serif'; ctx.fillText('Fuga: Canon pursues!', canvas.width - 28, statusY); statusY += 25; }
-            if (boss.active) { 
-                // Existing warning
-                ctx.fillStyle = '#8b0000'; 
-                ctx.font = 'bold 22px "Book Antiqua", serif'; 
-                ctx.fillText('CAVE DIABOLUM!', canvas.width - 28, statusY); 
-                
-                // New blinking shoot instruction
+            ctx.fillStyle = C.soft;
+            ctx.font = font(13, 600);
+            ctx.fillText('Puncta: ' + player.score, W - 24, 58);
+
+            let statusY = 70;
+            if (player.tempusTimer > 0) statusY = drawStatusPill('Tempus Perfectum!', C.ink, statusY);
+            if (player.allaBreveTimer > 0) statusY = drawStatusPill('Proportio Dupla!', C.blue, statusY);
+            if (player.colorationTimer > 0) statusY = drawStatusPill('Coloratio!', C.mark, statusY);
+            if (currentLevelData.hasFuga && player.history.length === 60) statusY = drawStatusPill('Fuga: Canon pursues!', C.red, statusY);
+            if (boss.active) {
+                statusY = drawStatusPill('CAVE DIABOLUM!', C.red, statusY);
+
+                // Blinking shoot instruction
                 ctx.textAlign = 'center';
-                ctx.font = 'bold 36px "Book Antiqua", serif';
-                if (Math.floor(Date.now() / 400) % 2 === 0) { // Blinks every 400ms
-                    ctx.fillText(isTouchDevice ? 'SHOOT!' : 'SHOOT WITH SPACEBAR!', canvas.width / 2, 120);
+                ctx.fillStyle = C.red;
+                ctx.font = font(26, 800); spacing(2);
+                if (Math.floor(Date.now() / 400) % 2 === 0) {
+                    ctx.fillText(isTouchDevice ? 'SHOOT!' : 'SHOOT WITH SPACEBAR!', W / 2, 120);
                 }
+                spacing(0);
             }
 
             if (!isTouchDevice) {
-                ctx.fillStyle = '#1a100a';
-                ctx.font = '14px "Book Antiqua", serif';
+                ctx.fillStyle = C.soft;
+                ctx.font = font(11, 500);
                 ctx.textAlign = 'center';
-                ctx.fillText('< > = Run/Sprint | ^ = Jump | SPACE = Shoot | ESC = Pause', canvas.width / 2, canvas.height - 8);
+                ctx.fillText('< > = Run/Sprint | ^ = Jump | SPACE = Shoot | ESC = Pause', W / 2, H - 18);
+            }
             }
         }
 
         if (gameState === 'DEATH_FREEZE') {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+            veil(0.8);
+
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#ff1111'; 
-            ctx.font = 'bold 56px "Book Antiqua", serif';
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#1a100a';
-            ctx.strokeText('CANTUS INTERRUPTUS', canvas.width / 2, canvas.height / 2 + 10);
-            ctx.fillText('CANTUS INTERRUPTUS', canvas.width / 2, canvas.height / 2 + 10);
-            
-            ctx.fillStyle = '#d4c3a3'; 
-            ctx.font = 'bold 18px serif'; 
-            ctx.fillText('Press any key or tap to continue', canvas.width / 2, canvas.height / 2 + 60);
-            
+            ctx.fillStyle = C.red;
+            ctx.font = font(44, 800, false, "display"); spacing(4);
+            ctx.fillText('CANTUS INTERRUPTUS', W / 2 + 2, H / 2 + 6);
+            spacing(0);
+
+            ctx.fillStyle = C.soft;
+            ctx.font = font(14, 600);
+            ctx.fillText('Press any key or tap to continue', W / 2, H / 2 + 48);
+
             if (gameMode === 'ENDLESS' || gameMode === 'GRADUS') {
-                ctx.fillText(`Spatium Ultimatum: ${endlessDistance}`, canvas.width / 2, canvas.height / 2 + 90);
+                ctx.fillStyle = C.ink;
+                ctx.font = font(15, 700);
+                ctx.fillText(`Spatium Ultimatum: ${endlessDistance}`, W / 2, H / 2 + 80);
             }
         }
 
@@ -2135,19 +2831,516 @@ if (!boss.active) {
         } else if (gameState === 'LEADERBOARD') {
             drawLeaderboard();
         } else if (gameState === 'INSTALL_PROMPT') {
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#f4ecd8';
+            veil(0.98);
+            ctx.fillStyle = C.ink;
             ctx.textAlign = 'center';
-            ctx.font = 'bold 32px "Book Antiqua", serif';
-            ctx.fillText('For optimal playing experience on iPhone,', canvas.width / 2, canvas.height / 2 - 30);
-            ctx.fillText('press the ••• button, press Share ', canvas.width / 2, canvas.height / 2 + 10);
-            ctx.fillText('and select "Add to Home Screen".', canvas.width / 2, canvas.height / 2 + 50);
-            
-            ctx.fillStyle = '#b8860b';
-            ctx.font = 'italic 18px "Book Antiqua", serif';
-            ctx.fillText('Tap anywhere to return', canvas.width / 2, canvas.height - 30);
+            ctx.font = font(22, 600);
+            ctx.fillText('For optimal playing experience on iPhone,', W / 2, H / 2 - 34);
+            ctx.fillText('press the ••• button, press Share ', W / 2, H / 2);
+            ctx.fillText('and select "Add to Home Screen".', W / 2, H / 2 + 34);
+
+            ctx.fillStyle = C.mark;
+            ctx.font = font(13, 600);
+            ctx.fillText('Tap anywhere to return', W / 2, H - 30);
         }
+    }
+
+    // ===== Cursus: a kart race along a staff, drawn as a pseudo-3D road =====
+    const KART = { SEG: 200, ROAD: 1000, DRAW: 170, CAM_H: 1000, HY: 166, VS: 200, LAPS: 3, KW: 0.14 };
+    KART.depth = 1 / Math.tan(50 * Math.PI / 180);
+    KART.playerZ = KART.CAM_H * KART.depth;
+    const RIVALS = [
+        { name: 'Maxima', note: 'MAXIMA', skill: 0.955 }, { name: 'Longa', note: 'LONGA', skill: 0.965 },
+        { name: 'Brevis', note: 'BREVIS', skill: 0.985 }, { name: 'Semibrevis', note: 'SEMIBREVIS', skill: 0.975 },
+        { name: 'Fusa', note: 'FUSA', skill: 0.995 }
+    ];
+    const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI'];
+    let kart = null, kartTrack = null;
+    const kmod = (n, m) => ((n % m) + m) % m;
+    const klerp = (a, b, t) => a + (b - a) * t;
+
+    function kartBuildTrack() {
+        const S = KART.SEG, segs = [];
+        const lastY = () => segs.length ? segs[segs.length - 1].p2.y : 0;
+        const add = (curve, y) => { const i = segs.length; segs.push({ i, curve, p1: { y: lastY(), z: i * S }, p2: { y, z: (i + 1) * S }, sprites: [] }); };
+        const easeIn = (a, b, t) => a + (b - a) * t * t;
+        const easeInOut = (a, b, t) => a + (b - a) * (-Math.cos(t * Math.PI) / 2 + 0.5);
+        const road = (enter, hold, leave, curve, hill) => {
+            const y0 = lastY(), y1 = y0 + hill * S, n = enter + hold + leave; let k = 0;
+            for (let i = 0; i < enter; i++) add(easeIn(0, curve, i / enter), easeInOut(y0, y1, ++k / n));
+            for (let i = 0; i < hold; i++) add(curve, easeInOut(y0, y1, ++k / n));
+            for (let i = 0; i < leave; i++) add(easeInOut(curve, 0, i / leave), easeInOut(y0, y1, ++k / n));
+        };
+        road(10, 60, 10, 0, 0);
+        road(30, 60, 30, 3, 0);
+        road(20, 50, 20, 0, 18);
+        road(30, 80, 30, -4, 0);
+        road(25, 40, 25, 0, -18);
+        road(25, 50, 25, 5, 0);
+        road(25, 50, 25, -5, 0);
+        road(20, 60, 20, 0, 26);
+        road(30, 90, 30, 3, -26);
+        road(25, 50, 25, -2.5, 0);
+        road(15, 50, 15, 0, 0);
+        const N = segs.length, r = rng(11), signs = ['O', 'C', 'O.', 'C.', 'C|'];
+        segs[3].sprites.push({ kind: 'banner', x: 0 });
+        for (let i = 14; i < N - 6; i++) {
+            const c = segs[i].curve;
+            // mensuration signs on the outside of every bend
+            if (Math.abs(c) > 1.5 && i % 6 === 0) segs[i].sprites.push({ kind: 'sign', x: c > 0 ? -1.3 : 1.3, sign: signs[(i / 6) % signs.length | 0], solid: true, hw: 0.13 });
+            if (i % 5 === 0 && r() < 0.75) { const side = r() < 0.5 ? -1 : 1; segs[i].sprites.push({ kind: r() < 0.8 ? 'tree' : 'leaf', x: side * (1.5 + r() * 2.2), solid: true, hw: 0.2, seed: r() }); }
+            if (i % 9 === 4 && r() < 0.5) segs[i].sprites.push({ kind: 'leaf', x: (r() < 0.5 ? -1 : 1) * (1.25 + r() * 0.3), solid: false, seed: r() });
+        }
+        const boxes = [];
+        [0.16, 0.47, 0.76].forEach(f => [-0.6, -0.2, 0.2, 0.6].forEach(x => boxes.push({ seg: Math.floor(N * f), x, hidden: 0 })));
+        return { segs, len: N * S, boxes };
+    }
+
+    function kartStart() {
+        if (!kartTrack) kartTrack = kartBuildTrack();
+        kartTrack.boxes.forEach(b => b.hidden = 0);
+        const S = KART.SEG;
+        resetPlayer(0, 0);
+        const racer = (o, k) => Object.assign({ x: k % 2 ? 0.42 : -0.42, total: -S * (2 + Math.floor(k / 2) * 3), speed: 0, lap: 0, item: null, itemT: 0, roll: 0, drift: 0, charge: 0, hop: 0, boost: 0, star: 0, spin: 0, finish: null, lean: 0 }, o);
+        const cars = RIVALS.map((r, i) => racer(Object.assign({ lane: 0 }, r), i < 4 ? i : 5));
+        cars.forEach(c => c.lane = c.x);
+        kart = {
+            t: 0, count: 3.6, done: false, doneT: 0, bg: 0, tempus: 0, banner: 0, shake: 0, frame: 0,
+            maxSpeed: S * 60 * 0.9 * speedSettings[difficultyIndex].mult,
+            p: racer({ name: 'Minima', note: 'MINIMA', me: true, upWas: false, rocket: 0 }, 4),
+            cars, flats: [], sharps: [], best: null
+        };
+        try { const b = parseFloat(localStorage.getItem('mensuratorKartBest')); if (b > 0) kart.best = b; } catch (e) {}
+        currentLevel = 4; levelTime = 0;
+        gameState = 'SPLASH';
+    }
+
+    const kartSeg = total => kartTrack.segs[Math.floor(kmod(total, kartTrack.len) / KART.SEG) % kartTrack.segs.length];
+    const kartRacers = () => [kart.p, ...kart.cars];
+    function kartOrder() {
+        return kartRacers().sort((a, b) => (a.finish != null && b.finish != null) ? a.finish - b.finish : a.finish != null ? -1 : b.finish != null ? 1 : b.total - a.total);
+    }
+    function kartPickItem(place) {
+        const tables = [
+            [['flat', 5], ['sharp', 4], ['allabreve', 1]],
+            [['sharp', 35], ['flat', 25], ['allabreve', 30], ['tempus', 5], ['ink', 5]],
+            [['allabreve', 35], ['ink', 20], ['tempus', 20], ['sharp', 25]]
+        ];
+        const t = tables[place === 1 ? 0 : place <= 3 ? 1 : 2];
+        let r = Math.random() * t.reduce((s, e) => s + e[1], 0);
+        for (const [k, w] of t) { if ((r -= w) < 0) return k; }
+        return t[0][0];
+    }
+    function kartSpin(r) {
+        if (r.star > 0 || r.spin > 0) return;
+        r.spin = 1; r.drift = 0; r.charge = 0;
+        playSound(r.me ? 'damage' : 'smash');
+    }
+    function kartUseItem(r) {
+        const it = r.item;
+        if (!it || r.roll > 0 || !kart || kart.count > 0) return;
+        r.item = null;
+        const L = kartTrack.len;
+        if (it === 'allabreve') { r.boost = 1.2; if (r.me) playSound('allaBreve'); }
+        else if (it === 'flat') { kart.flats.push({ z: kmod(r.total - 170, L), x: r.x }); if (r.me) playSound('shoot'); }
+        else if (it === 'sharp') { kart.sharps.push({ total: r.total + 170, x: r.x, speed: Math.max(r.speed, kart.maxSpeed) * 1.45, life: 4, owner: r, spin: 0 }); if (r.me) playSound('shoot'); }
+        else if (it === 'tempus') { kart.tempus = 3.5; playSound('tempus'); }
+        else if (it === 'ink') { r.star = 5; playSound('point'); }
+    }
+
+    function kartUpdate() {
+        const dt = 1 / 60, S = KART.SEG, L = kartTrack.len, N = kartTrack.segs.length, p = kart.p, max = kart.maxSpeed;
+        kart.frame++;
+        if (kart.count > 0) {
+            const before = Math.ceil(kart.count);
+            kart.count -= dt;
+            p.rocket = keys.up ? p.rocket + dt : 0;
+            if (Math.ceil(kart.count) !== before && before <= 3 && kart.count > 0) playSound('point');
+            if (kart.count <= 0) { playSound('allaBreve'); if (p.rocket > 0.1 && p.rocket < 1.1) p.boost = 1; p.upWas = keys.up; }
+            return;
+        }
+        if (!kart.done) kart.t += dt; else kart.doneT += dt;
+        if (kart.done && kart.doneT > 2.5 && gameState === 'PLAY') { gameState = 'WIN'; if (musicTimeout) clearTimeout(musicTimeout); }
+        if (kart.tempus > 0) kart.tempus -= dt;
+        if (kart.banner > 0) kart.banner -= dt;
+        if (kart.shake > 0) kart.shake -= dt;
+
+        // --- the player ---
+        const seg = kartSeg(p.total), pct = p.speed / max;
+        const auto = kart.done;
+        const ahead = kartTrack.segs[(seg.i + 10) % N];
+        const steer = auto ? Math.sign(Math.round((-ahead.curve * 0.08 - p.x) * 4)) : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+        const up = !auto && keys.up, down = !auto && keys.down;
+        // hop on the drift key; hold it through a bend for a burst of speed when released
+        if (up && !p.upWas) { p.hop = 0.22; playSound('jump'); if (steer !== 0 && pct > 0.4 && p.spin <= 0) { p.drift = steer; p.charge = 0; } }
+        if (p.drift && (!up || pct < 0.3 || p.spin > 0)) {
+            if (!up && p.spin <= 0 && p.charge > 0.75) { p.boost = p.charge > 1.6 ? 1.1 : 0.6; playSound('allaBreve'); }
+            p.drift = 0; p.charge = 0;
+        }
+        p.upWas = up;
+        if (p.hop > 0) p.hop -= dt;
+        const dx = dt * 2.2 * pct;
+        if (p.drift) { p.x += dx * (p.drift * 0.62 + steer * 0.55); p.charge += dt * (steer === p.drift ? 1.4 : 0.8); p.x -= dx * pct * seg.curve * 0.14; }
+        else { p.x += dx * steer; p.x -= dx * pct * seg.curve * 0.24; }
+        p.lean += ((p.drift ? p.drift * 1.6 : steer) - p.lean) * 0.2;
+
+        if (p.boost > 0) p.boost -= dt;
+        if (p.star > 0) { p.star -= dt; player.colorationTimer = Math.max(0, p.star * 60); } else player.colorationTimer = 0;
+        const top = max * (p.boost > 0 ? 1.3 : 1) * (p.star > 0 ? 1.15 : 1);
+        const off = Math.abs(p.x) > 1;
+        if (p.spin > 0) { p.spin -= dt; p.speed *= 0.94; }
+        else if (down) p.speed -= max * 1.2 * dt;
+        else if (p.speed < top) p.speed = Math.min(top, p.speed + max * (p.boost > 0 ? 1.6 : 0.3) * dt);
+        else p.speed = Math.max(top, p.speed - max * 0.4 * dt);
+        if (off && p.star <= 0 && p.speed > max * 0.35) p.speed -= max * 0.9 * dt;
+        p.speed = Math.max(0, p.speed);
+        p.x = Math.max(-2.3, Math.min(2.3, p.x));
+        if (off) for (const s of seg.sprites) {
+            if (s.solid && Math.abs(p.x - s.x) < s.hw + KART.KW) {
+                if (p.star > 0) break;
+                p.speed = Math.min(p.speed, max * 0.12); p.x += (p.x > s.x ? 1 : -1) * 0.07; kart.shake = 0.3; playSound('damage');
+                break;
+            }
+        }
+        const dz = p.speed * dt;
+        p.total += dz;
+        kart.bg += seg.curve * (dz / S) * 0.0016;
+
+        // --- rivals ---
+        for (const c of kart.cars) {
+            const cs = kartSeg(c.total), ca = kartTrack.segs[(cs.i + 12) % N];
+            if (c.boost > 0) c.boost -= dt;
+            if (c.spin > 0) { c.spin -= dt; c.speed *= 0.94; }
+            else {
+                const gap = (p.total - c.total) / L;
+                const rubber = Math.max(0.9, Math.min(1.15, 1 + gap * 0.8));
+                const ctop = max * c.skill * rubber * (c.boost > 0 ? 1.3 : 1) * (kart.tempus > 0 ? 0.6 : 1) * (1 - Math.abs(cs.curve) * 0.006);
+                c.speed = c.speed < ctop ? Math.min(ctop, c.speed + max * 0.3 * dt) : Math.max(ctop, c.speed - max * 0.6 * dt);
+                if (Math.random() < 0.004) c.lane = (Math.random() - 0.5) * 1.2;
+                // the inside of the coming bend, and round anyone slower ahead
+                let tx = c.lane - ca.curve * 0.09;
+                const block = kartRacers().find(o => o !== c && o.total - c.total > 0 && o.total - c.total < S * 8 && Math.abs(o.x - tx) < 0.3 && o.speed < c.speed);
+                if (block) tx = block.x > 0 ? block.x - 0.42 : block.x + 0.42;
+                tx = Math.max(-0.82, Math.min(0.82, tx));
+                c.x += (tx - c.x) * Math.min(1, dt * 2.5);
+                if (c.item) { c.itemT -= dt; if (c.itemT <= 0) kartUseItem(c); }
+            }
+            c.total += c.speed * dt;
+            if (c.finish == null && c.total >= KART.LAPS * L) c.finish = kart.t + kart.doneT;
+        }
+
+        // bumping
+        for (const c of kart.cars) {
+            const gz = c.total - p.total, ox = c.x - p.x;
+            if (Math.abs(gz) < 140 && Math.abs(ox) < KART.KW * 2) {
+                if (p.star > 0) { kartSpin(c); continue; }
+                const side = ox >= 0 ? 1 : -1;
+                if (gz > 0 && p.speed > c.speed) { p.speed = c.speed * 0.9; p.x -= side * 0.05; playSound('bounce'); }
+                else if (gz <= 0 && c.speed > p.speed) { c.speed = p.speed * 0.9; c.x += side * 0.05; }
+                else { p.x -= side * 0.02; c.x += side * 0.02; }
+            }
+        }
+
+        // item boxes
+        for (const b of kartTrack.boxes) {
+            if (b.hidden > 0) { b.hidden -= dt; continue; }
+            const bz = b.seg * S + S / 2;
+            for (const r of kartRacers()) {
+                const d = Math.abs(kmod(r.total, L) - bz);
+                if (Math.min(d, L - d) < 110 && Math.abs(r.x - b.x) < 0.17 && r.total > 0) {
+                    b.hidden = 2.5;
+                    if (!r.item && !(r.roll > 0)) {
+                        if (r.me) { if (!kart.done) { r.roll = 1.1; playSound('point'); } }
+                        else { r.item = ['allabreve', 'flat', 'sharp'][Math.random() * 3 | 0]; r.itemT = 1 + Math.random() * 3; }
+                    }
+                    break;
+                }
+            }
+        }
+        if (p.roll > 0) { p.roll -= dt; if (p.roll <= 0) p.item = kartPickItem(kartOrder().indexOf(p) + 1); }
+
+        // flats lie where they fell; sharps fly straight down the road
+        for (let i = kart.flats.length - 1; i >= 0; i--) {
+            const f = kart.flats[i];
+            for (const r of kartRacers()) {
+                const d = Math.abs(kmod(r.total, L) - f.z);
+                if (Math.min(d, L - d) < 90 && Math.abs(r.x - f.x) < 0.16) { kartSpin(r); kart.flats.splice(i, 1); break; }
+            }
+        }
+        for (let i = kart.sharps.length - 1; i >= 0; i--) {
+            const s = kart.sharps[i];
+            s.total += s.speed * dt; s.life -= dt; s.spin += dt * 12;
+            let hit = s.life <= 0;
+            if (!hit) for (const r of kartRacers()) {
+                if (r === s.owner && s.life > 3.6) continue;
+                if (Math.abs(r.total - s.total) < 130 && Math.abs(r.x - s.x) < 0.2) { kartSpin(r); hit = true; break; }
+            }
+            if (hit) kart.sharps.splice(i, 1);
+        }
+
+        // circuits and the finish
+        const lap = Math.floor(p.total / L) + 1;
+        if (lap > p.lap) {
+            p.lap = lap;
+            if (lap === KART.LAPS) { kart.banner = 2.5; playSound('tempus'); }
+            if (lap > KART.LAPS && p.finish == null) {
+                p.finish = kart.t; kart.done = true; p.item = null; p.roll = 0;
+                playSound('point');
+                if (!kart.best || p.finish < kart.best) { kart.best = p.finish; kart.newBest = true; try { localStorage.setItem('mensuratorKartBest', String(p.finish)); } catch (e) {} }
+            }
+        }
+    }
+
+    // ----- drawing -----
+    function kartTime(t) { if (t == null) return '–'; const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s < 10 ? '0' : ''}${s.toFixed(2)}`; }
+
+    function kartBackdrop(off) {
+        const HY = KART.HY;
+        ctx.fillStyle = C.line; ctx.fillRect(0, HY - 0.5, W, 1);
+        // far hills, then near hills with a village, cut like a woodblock
+        const ridge = (wx, a) => a * (0.55 + 0.3 * Math.sin(wx * 6.283) + 0.18 * Math.sin(wx * 17.1 + 1) + 0.08 * Math.sin(wx * 41.3 + 2));
+        [[0.5, 30, C.line, 1], [1, 46, C.ink, 1.4]].forEach(([par, amp, col, lw]) => {
+            const o = off * par + (par < 1 ? 0.37 : 0);
+            ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+            for (let X = 0; X <= W; X += 4) { const y = HY - ridge(X / W + o, amp); X ? ctx.lineTo(X, y) : ctx.moveTo(X, y); }
+            ctx.stroke();
+            if (par === 1) {
+                ctx.lineWidth = 0.8; ctx.beginPath();
+                for (let X = 2; X <= W; X += 5) { const h = ridge(X / W + o, amp), y = HY - h; ctx.moveTo(X, y + 3); ctx.lineTo(X - 1.5, y + 3 + h * 0.4); }
+                ctx.stroke();
+                // church towers stand on the ridge
+                ctx.lineWidth = 1.2; ctx.fillStyle = col;
+                [0.12, 0.47, 0.81].forEach((t, k) => {
+                    const X = kmod((t - o) * W, W * 1.0);
+                    if (X < -20 || X > W + 20) return;
+                    const y = HY - ridge(X / W + o, amp), w = 7 + k * 2, h = 18 + k * 6;
+                    ctx.strokeRect(X - w / 2, y - h, w, h);
+                    ctx.beginPath(); ctx.moveTo(X - w / 2 - 1, y - h); ctx.lineTo(X, y - h - w * 1.8); ctx.lineTo(X + w / 2 + 1, y - h); ctx.stroke();
+                    ctx.fillRect(X - 0.6, y - h - w * 1.8 - 6, 1.2, 6); ctx.fillRect(X - 2.5, y - h - w * 1.8 - 4.5, 5, 1.2);
+                    ctx.fillRect(X - 1, y - h * 0.6, 2, 4);
+                });
+            }
+        });
+    }
+
+    function kartTree(sx, sy, k, seed) {
+        // a woodcut tree: scalloped crown, a few cuts of shade, a plain trunk
+        ctx.save(); ctx.translate(sx, sy); ctx.scale(k, k);
+        ctx.fillStyle = C.ink; ctx.strokeStyle = C.ink;
+        ctx.fillRect(-24, -380, 48, 380);
+        const rx = 210 + seed * 70, ry = 250 + seed * 60, cy = -380 - ry * 0.85, rb = rx * 0.45;
+        const bumps = []; for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2 + seed; bumps.push([Math.cos(a) * rx * 0.7, cy + Math.sin(a) * ry * 0.7]); }
+        ctx.lineWidth = 34; ctx.beginPath(); bumps.forEach(([x, y]) => { ctx.moveTo(x + rb, y); ctx.arc(x, y, rb, 0, Math.PI * 2); }); ctx.stroke();
+        ctx.fillStyle = C.paper; ctx.beginPath(); bumps.forEach(([x, y]) => { ctx.moveTo(x + rb, y); ctx.arc(x, y, rb, 0, Math.PI * 2); }); ctx.ellipse(0, cy, rx * 0.75, ry * 0.75, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 12; ctx.beginPath();
+        for (let i = 0; i < 7; i++) { const x0 = rx * (0.05 + i * 0.09), y0 = cy - ry * 0.35 + i * ry * 0.13; ctx.moveTo(x0, y0); ctx.lineTo(x0 + rx * 0.3, y0 + 14); }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function kartKart(r, sx, sy, f) {
+        ctx.save();
+        ctx.translate(sx, sy - (r.hop > 0 ? Math.sin(r.hop / 0.22 * Math.PI) * 14 * f : 0));
+        ctx.scale(f * 1.25, f * 1.25);
+        if (r.spin > 0) ctx.rotate(Math.sin(r.spin * 18) * 0.5); else ctx.rotate(r.lean * 0.05);
+        const body = r.me ? C.ink : C.red;
+        ctx.fillStyle = rgba(C.soft, 0.3); ctx.beginPath(); ctx.ellipse(0, -2, 50, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = C.ink;
+        ctx.fillRect(-46, -26, 15, 26); ctx.fillRect(31, -26, 15, 26);
+        ctx.fillStyle = body;
+        ctx.fillRect(-38, -34, 76, 4.5); ctx.fillRect(-38, -14.5, 76, 4.5); ctx.fillRect(-38, -34, 3, 24); ctx.fillRect(35, -34, 3, 24);
+        ctx.fillRect(-31, -16, 62, 2);
+        drawMensuralNote(ctx, -12, -87, r.note, false, 1, r.me && r.star > 0);
+        // sparks while drifting, puffs while boosting
+        if (r.drift) {
+            ctx.fillStyle = r.charge > 1.6 ? C.red : r.charge > 0.75 ? C.ink : C.soft;
+            for (let i = 0; i < 4; i++) { const s = r.drift > 0 ? -1 : 1; lozenge(ctx, s * (40 + Math.random() * 16), -4 - Math.random() * 12, 2.5, 3.5, true); lozenge(ctx, -s * (40 + Math.random() * 6), -2 - Math.random() * 6, 2, 3, true); }
+        }
+        if (r.boost > 0) { ctx.fillStyle = rgba(C.soft, 0.5); for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc((Math.random() - 0.5) * 50, 4 + Math.random() * 10, 3 + Math.random() * 4, 0, Math.PI * 2); ctx.fill(); } }
+        ctx.restore();
+    }
+
+    function kartItemGlyph(it, x, y, s = 1) {
+        ctx.fillStyle = C.red; ctx.strokeStyle = C.red;
+        if (it === 'allabreve') { ctx.fillStyle = C.blue; ctx.strokeStyle = C.blue; printMensuration(ctx, x, y, 'C|', 12 * s); }
+        else if (it === 'tempus') { ctx.fillStyle = C.ink; ctx.strokeStyle = C.ink; printMensuration(ctx, x, y, 'O', 12 * s); }
+        else if (it === 'flat') printFlat(ctx, x - 4 * s, y + 13 * s, 0.8 * s);
+        else if (it === 'sharp') printSharp(ctx, x - 8 * s, y, 0.8 * s);
+        else if (it === 'ink') { ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(x, y + 4 * s, 9 * s, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(x - 4.5 * s, y - 11 * s, 9 * s, 8 * s); }
+    }
+
+    function kartDraw() {
+        const K = KART, tr = kartTrack, segs = tr.segs, N = segs.length, L = tr.len, S = K.SEG, p = kart.p;
+        const shake = kart.shake > 0 ? (Math.random() - 0.5) * 4 : 0;
+        ctx.save(); ctx.translate(shake, 0);
+        kartBackdrop(kart.bg);
+
+        const camZ = kmod(p.total - K.playerZ, L);
+        const base = segs[Math.floor(camZ / S) % N], basePct = (camZ % S) / S;
+        const pz = kmod(p.total, L), pseg = segs[Math.floor(pz / S) % N];
+        const camY = klerp(pseg.p1.y, pseg.p2.y, (pz % S) / S) + K.CAM_H, camX = p.x * K.ROAD;
+        const proj = (pt, xoff, z) => { const s = K.depth / z; return { x: W / 2 + s * (xoff - camX) * W / 2, y: K.HY + s * (camY - pt.y) * K.VS, w: s * K.ROAD * W / 2, s, z }; };
+
+        const paths = {};
+        const P = (key, b) => (paths[key + b] || (paths[key + b] = { key, b, path: new Path2D() })).path;
+        const strip = (path, n, f, u0, u1, pn = 0, pf = 0) => {
+            path.moveTo(n.x + u0 * n.w - pn, n.y); path.lineTo(n.x + u1 * n.w + pn, n.y);
+            path.lineTo(f.x + u1 * f.w + pf, f.y); path.lineTo(f.x + u0 * f.w - pf, f.y); path.closePath();
+        };
+        const mid = (a, b, t) => ({ x: klerp(a.x, b.x, t), y: klerp(a.y, b.y, t), w: klerp(a.w, b.w, t) });
+        let maxy = H, xo = 0, dxo = -(base.curve * basePct);
+        for (let n = 0; n < K.DRAW; n++) {
+            const seg = segs[(base.i + n) % N], loop = seg.i < base.i ? L : 0;
+            const a = proj(seg.p1, xo, seg.p1.z + loop - camZ), b = proj(seg.p2, xo + dxo, seg.p2.z + loop - camZ);
+            seg.a = a; seg.b = b; seg.frame = kart.frame + 0.5; seg.n = n; seg.clip = maxy; seg.ok = a.z > K.depth;
+            xo += dxo; dxo += seg.curve;
+            if (!seg.ok || b.y >= a.y || b.y >= maxy) continue;
+            const near = a.y > maxy ? mid(a, b, (a.y - maxy) / (a.y - b.y)) : a;
+            const bk = n < 40 ? 0 : n < 80 ? 1 : n < 125 ? 2 : 3;
+            strip(P('band', bk), near, b, -1, 1);
+            strip(P(Math.floor(seg.i / 2) % 2 ? 'ink' : 'red', bk), near, b, -1.1, -1);
+            strip(P(Math.floor(seg.i / 2) % 2 ? 'ink' : 'red', bk), near, b, 1, 1.1);
+            for (const u of [-0.8, -0.4, 0, 0.4, 0.8]) strip(P('staff', bk), near, b, u, u, Math.max(0.35, near.w * 0.007), Math.max(0.35, b.w * 0.007));
+            if (seg.i % 12 === 0 && seg.i > 0) strip(P('ink', bk), near, mid(a, b, 0.16), -1, 1);
+            if (seg.i === 0) { strip(P('ink', bk), mid(a, b, 0.0), mid(a, b, 0.1), -1, 1); strip(P('ink', bk), mid(a, b, 0.28), mid(a, b, 0.75), -1, 1); }
+            if (Math.floor(seg.i / 3) % 2 === 0) {
+                const hp = P('hatch', bk);
+                for (let y = Math.ceil(b.y); y <= near.y; y++) {
+                    if (y % (T.mono ? 4 : 3)) continue;
+                    const t = (a.y - y) / (a.y - b.y), xc = klerp(a.x, b.x, t), wc = klerp(a.w, b.w, t);
+                    const l = xc - wc * 1.16, rr = xc + wc * 1.16;
+                    if (l > 0) hp.rect(0, y, l, 0.8);
+                    if (rr < W) hp.rect(rr, y, W - rr, 0.8);
+                }
+            }
+            maxy = b.y;
+        }
+        const colorOf = { band: C.band, ink: C.ink, red: T.mono ? null : C.red, staff: C.staff, hatch: T.mono ? C.ink : C.line };
+        const alphaOf = [1, 0.85, 0.6, 0.35];
+        ['band', 'hatch', 'ink', 'red', 'staff'].forEach(key => [3, 2, 1, 0].forEach(b => {
+            const e = paths[key + b]; if (!e || !colorOf[key]) return;
+            ctx.globalAlpha = alphaOf[b]; ctx.fillStyle = colorOf[key]; ctx.fill(e.path);
+        }));
+        ctx.globalAlpha = 1;
+
+        // everything standing on the road, back to front
+        const bucket = new Map();
+        const put = (z, o) => { const i = Math.floor(kmod(z, L) / S) % N; (bucket.get(i) || bucket.set(i, []).get(i)).push([(kmod(z, L) % S) / S, o]); };
+        kartRacers().forEach(r => put(r.total, { kind: 'kart', r }));
+        tr.boxes.forEach(b => { if (b.hidden <= 0) put(b.seg * S + S / 2, { kind: 'box', x: b.x }); });
+        kart.flats.forEach(f => put(f.z, { kind: 'flat', x: f.x }));
+        kart.sharps.forEach(s => put(s.total, { kind: 'sharp', x: s.x, spin: s.spin }));
+        for (let n = K.DRAW - 1; n > 0; n--) {
+            const seg = segs[(base.i + n) % N];
+            if (!seg.ok) continue;
+            const items = (bucket.get(seg.i) || []).sort((u, v) => v[0] - u[0]);
+            const all = seg.sprites.map(s => [0.5, s]).concat(items);
+            for (const [pc, o] of all) {
+                const s = klerp(seg.a.s, seg.b.s, pc), x0 = klerp(seg.a.x, seg.b.x, pc), sy = klerp(seg.a.y, seg.b.y, pc);
+                const ox = o.kind === 'kart' ? o.r.x : o.x;
+                const sx = x0 + s * ox * K.ROAD * W / 2, k = s * W / 2;
+                if (sx < -1300 * k - 50 || sx > W + 1300 * k + 50) continue;
+                const clipped = sy > seg.clip;
+                if (clipped) { if (sy - 1000 * k > seg.clip) continue; ctx.save(); ctx.beginPath(); ctx.rect(-10, -10, W + 20, seg.clip + 10); ctx.clip(); }
+                if (o.kind === 'tree') kartTree(sx, sy, k, o.seed);
+                else if (o.kind === 'leaf') { ctx.fillStyle = C.red; ctx.strokeStyle = C.red; ctx.fillRect(sx - 8 * k, sy - 300 * k, 16 * k, 300 * k); fleuron(ctx, sx, sy - 300 * k, k * 14); }
+                else if (o.kind === 'sign') {
+                    ctx.fillStyle = C.ink; ctx.strokeStyle = C.ink;
+                    ctx.fillRect(sx - 12 * k, sy - 520 * k, 24 * k, 520 * k);
+                    ctx.lineWidth = Math.max(1, 16 * k); ctx.strokeRect(sx - 130 * k, sy - 780 * k, 260 * k, 260 * k);
+                    ctx.fillStyle = C.red; ctx.strokeStyle = C.red; printMensuration(ctx, sx, sy - 650 * k, o.sign, 85 * k);
+                } else if (o.kind === 'banner') {
+                    ctx.fillStyle = C.ink; const pw = Math.max(1, 30 * k), bx = 1.18 * K.ROAD * k;
+                    ctx.fillRect(sx - bx - pw / 2, sy - 1050 * k, pw, 1050 * k); ctx.fillRect(sx + bx - pw / 2, sy - 1050 * k, pw, 1050 * k);
+                    ctx.fillRect(sx - bx, sy - 1050 * k, bx * 2, 14 * k); ctx.fillRect(sx - bx, sy - 800 * k, bx * 2, 14 * k);
+                    ctx.fillStyle = (T.hand || T.mono) ? C.ink : C.red; ctx.textAlign = 'center';
+                    ctx.font = `${Math.max(1, 200 * k)}px ${T.display}`; if (!T.hand) spacing(30 * k);
+                    ctx.fillText(T.hand ? 'Finalis' : 'FINALIS', sx, sy - 855 * k); spacing(0);
+                } else if (o.kind === 'box') {
+                    const sz = 130 * k, by = sy - 80 * k - sz + Math.sin(kart.t * 3 + o.x * 5) * 15 * k;
+                    ctx.fillStyle = C.ink; ligHead(ctx, sx - sz / 2, by, sz, sz, false, 0);
+                    ctx.fillStyle = C.red; ctx.textAlign = 'center'; ctx.font = `${Math.max(1, sz * 0.8)}px ${T.display}`;
+                    ctx.fillText('?', sx, by + sz * 0.78);
+                } else if (o.kind === 'flat') { ctx.fillStyle = C.red; ctx.strokeStyle = C.red; printFlat(ctx, sx - 20 * k, sy - 10 * k, k * 5); }
+                else if (o.kind === 'sharp') { ctx.fillStyle = C.red; ctx.strokeStyle = C.red; ctx.save(); ctx.translate(sx, sy - 90 * k); ctx.rotate(o.spin); printSharp(ctx, -8 * k * 4.5, 0, k * 4.5); ctx.restore(); }
+                else if (o.kind === 'kart') {
+                    kartKart(o.r, sx, sy, k / 0.4);
+                    if (!o.r.me && k / 0.4 > 0.45) { ctx.fillStyle = C.soft; ctx.textAlign = 'center'; ctx.font = font(11 * Math.min(1.2, k / 0.4 + 0.3), 500, true); ctx.fillText(o.r.name, sx, sy - 100 * k / 0.4); }
+                }
+                if (clipped) ctx.restore();
+            }
+        }
+        ctx.restore();
+        kartHud();
+    }
+
+    function kartHud() {
+        const p = kart.p, order = kartOrder(), place = order.indexOf(p) + 1;
+        if (gameState === 'SPLASH') { kartSplash(); return; }
+        ctx.textAlign = 'left';
+        ctx.fillStyle = C.mark; ctx.font = font(13, 700, false, 'sc'); spacing(3); ctx.fillText('LOCUS', 26, 42); spacing(0);
+        ctx.fillStyle = C.red; ctx.font = font(40, 800, false, 'display'); ctx.fillText(ROMAN[place], 24, 84);
+        const pw = ctx.measureText(ROMAN[place]).width;
+        ctx.fillStyle = C.ink; ctx.font = font(18, 500, false, 'display'); ctx.fillText('/ VI', 32 + pw, 84);
+        ctx.font = font(15, 500, true); ctx.fillText(`Circuitus ${ROMAN[Math.max(1, Math.min(KART.LAPS, p.lap))]} / ${ROMAN[KART.LAPS]}`, 26, 108);
+
+        // item slot
+        const bx = W / 2 - 25, by = 18;
+        ctx.fillStyle = C.ink; ligHead(ctx, bx, by, 50, 50, false, 0);
+        if (p.roll > 0) kartItemGlyph(['allabreve', 'flat', 'sharp', 'tempus', 'ink'][Math.floor(kart.frame / 5) % 5], W / 2, by + 25, 1);
+        else if (p.item) kartItemGlyph(p.item, W / 2, by + 25, 1);
+
+        ctx.textAlign = 'right'; ctx.fillStyle = C.ink; ctx.font = font(26, 700, false, 'display');
+        ctx.fillText(kartTime(kart.t), W - 24, 52);
+        let y = 60;
+        if (kart.best) { ctx.fillStyle = C.soft; ctx.font = font(13, 500, true); ctx.fillText('Optimum ' + kartTime(kart.best), W - 24, y + 14); y += 22; }
+        if (kart.tempus > 0) y = drawStatusPill('Tempus perfectum', C.ink, y);
+        if (p.star > 0) y = drawStatusPill('Color', C.red, y);
+        if (p.boost > 0) y = drawStatusPill('Alla breve', C.blue, y);
+
+        ctx.textAlign = 'center';
+        if (kart.count > 0 && kart.count <= 3) {
+            ctx.fillStyle = C.red; ctx.font = font(84, 800, false, 'display');
+            ctx.fillText(ROMAN[Math.ceil(kart.count)], W / 2, 190);
+        } else if (kart.count <= 0 && kart.t < 0.9 && !kart.done) {
+            ctx.fillStyle = C.ink; ctx.font = font(56, 800, false, 'display'); ctx.fillText('Incipite!', W / 2, 180);
+        }
+        if (kart.count > 0) { ctx.fillStyle = C.soft; ctx.font = font(13, 500, true); ctx.fillText(isTouchDevice ? 'Hold the middle as I falls for a fast start' : 'Hold ↑ as I falls for a fast start', W / 2, 220); }
+        if (kart.banner > 0) { ctx.fillStyle = C.red; ctx.font = font(30, 700, true, 'display'); ctx.fillText('Circuitus ultimus', W / 2, 150); }
+        if (kart.done && gameState !== 'WIN') { ctx.fillStyle = C.red; ctx.font = font(60, 800, false, 'display'); ctx.fillText(place === 1 ? 'Victoria!' : 'Finis', W / 2, 180); }
+        if (gameState === 'WIN') kartResults(order);
+    }
+
+    function kartSplash() {
+        veil(0.95);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = C.mark; ctx.font = font(13, 700, false, 'sc'); spacing(3); ctx.fillText('CURSUS', W / 2 + 1.5, 92); spacing(0);
+        ctx.fillStyle = C.ink; ctx.font = font(42, 800, false, 'display'); ctx.fillText('Circus Maximus', W / 2, 142);
+        ctx.fillStyle = C.line; ctx.fillRect(W / 2 - 24, 166, 48, 2);
+        ctx.fillStyle = C.inkSoft; ctx.font = font(17, 400, true);
+        if (isTouchDevice) { ctx.fillText('Left edge and left of middle steer. Hold the right side to hop and drift.', W / 2, 206); ctx.fillText('The round button throws your item.', W / 2, 230); }
+        else { ctx.fillText('← → steer   ·   ↑ hop and drift   ·   ↓ brake   ·   Space item', W / 2, 206); ctx.fillText('Hold a drift through a bend, then let go for a burst of speed.', W / 2, 230); }
+        ctx.fillStyle = C.soft; ctx.font = font(13, 500); ctx.fillText('Three circuits against five rivals', W / 2, 258);
+        ctx.fillStyle = C.mark; ctx.font = font(14, 600); ctx.fillText('Press any key or tap to continue', W / 2, H - 40);
+    }
+
+    function kartResults(order) {
+        veil(0.93);
+        ctx.textAlign = 'center';
+        const place = order.indexOf(kart.p) + 1;
+        ctx.fillStyle = C.mark; ctx.font = font(13, 700, false, 'sc'); spacing(3); ctx.fillText('CURSUS', W / 2 + 1.5, 62); spacing(0);
+        ctx.fillStyle = C.ink; ctx.font = font(40, 800, false, 'display'); ctx.fillText(place === 1 ? 'Victoria!' : `Locus ${ROMAN[place]}`, W / 2, 106);
+        order.forEach((r, i) => {
+            const y = 146 + i * 28;
+            ctx.fillStyle = r.me ? C.red : C.ink;
+            ctx.font = font(18, r.me ? 700 : 500, false, 'display');
+            ctx.textAlign = 'right'; ctx.fillText(ROMAN[i + 1], 300, y);
+            ctx.textAlign = 'left'; ctx.fillText(r.name, 324, y);
+            ctx.textAlign = 'right'; ctx.font = font(16, 500); ctx.fillText(kartTime(r.finish), 520, y);
+        });
+        ctx.textAlign = 'center';
+        if (kart.best) { ctx.fillStyle = kart.newBest ? C.red : C.soft; ctx.font = font(14, 500, true); ctx.fillText((kart.newBest ? 'New optimum ' : 'Optimum ') + kartTime(kart.best), W / 2, 330); }
+        ctx.fillStyle = C.mark; ctx.font = font(14, 600); ctx.fillText('Press any key or tap to continue', W / 2, H - 30);
     }
 
     function loop(now) { 
@@ -2162,8 +3355,12 @@ if (!boss.active) {
             accumulator -= FIXED_DT_MS;
         }
         draw();
+        fx.render();
         requestAnimationFrame(loop); 
     }
+    let savedTheme = 'rubrica';
+    try { savedTheme = localStorage.getItem('mensuratorTheme') || 'rubrica'; } catch (e) {}
+    applyTheme(savedTheme);
     requestAnimationFrame(loop);
 </script>
 </body>
