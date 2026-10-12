@@ -115,12 +115,18 @@ main.about-page { max-width: 62rem; }
 /* Canon Canonum: original chart beside a typeset recreation */
 .page-title { margin: 0; text-align: center; font-weight: 500; font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1.2; }
 .canon {
+  position: relative;
+  justify-self: center;
+  width: 100%;
+  max-width: 30rem;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
-  gap: 2.5rem;
-  align-items: start;
+  justify-items: center;
 }
-.canon-img { display: block; width: 100%; max-width: 30rem; justify-self: center; }
+.canon.is-modern { max-width: 40rem; }
+.canon-img { display: block; width: 100%; max-width: 30rem; }
+.canon [hidden] { display: none; }
+.cc { width: 100%; }
+.canon-flip { position: absolute; top: 0; left: calc(100% + 1rem); white-space: nowrap; }
 .cc {
   --ink: #3b2a1c;
   --red: #b4352a;
@@ -153,8 +159,8 @@ main.about-page { max-width: 62rem; }
 .cc-notes { align-self: center; grid-auto-rows: 2.13rem; align-items: center; padding-left: .35rem; }
 .cc-mid { grid-auto-rows: auto; }
 
-@media (max-width: 900px) {
-  .canon { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 960px) {
+  .canon-flip { position: static; order: 1; margin-top: 1rem; font-size: .9rem; }
 }
 @media (max-width: 560px) {
   .cc { grid-template-columns: minmax(0, 1fr); }

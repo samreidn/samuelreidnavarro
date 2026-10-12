@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <header class="banner">
@@ -25,8 +25,9 @@
   <main class="wide">
     <h1 class="page-title">Canon Canonum</h1>
     <div class="canon">
-      <img class="canon-img" src="canon.png?v=2" alt="Canon Canonum" width="818" height="1642">
-      <div class="cc">
+      <button class="fs canon-flip" type="button" id="flip" aria-pressed="false">Modern view</button>
+      <img class="canon-img" id="old" src="canon.png?v=2" alt="Canon Canonum" width="818" height="1642">
+      <div class="cc" id="modern" hidden>
       <div class="cc-col">
         <div class="cc-row">
           <div class="cc-label">1</div>
@@ -165,6 +166,17 @@
       </div>
       </div>
     </div>
+    <script>
+      document.getElementById("flip").addEventListener("click", function () {
+        var old = document.getElementById("old"), modern = document.getElementById("modern");
+        var toModern = modern.hidden;
+        modern.hidden = !toModern;
+        old.hidden = toModern;
+        this.textContent = toModern ? "Original view" : "Modern view";
+        this.parentNode.classList.toggle("is-modern", toModern);
+        this.setAttribute("aria-pressed", toModern ? "true" : "false");
+      });
+    </script>
   </main>
 </body>
 </html>
