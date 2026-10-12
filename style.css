@@ -70,7 +70,7 @@ img { max-width: 100%; height: auto; }
 
 .portrait {
   display: block;
-  width: 18rem;
+  width: 26rem;
   max-width: 100%;
   border: 1px solid var(--line);
   border-radius: 4px;
