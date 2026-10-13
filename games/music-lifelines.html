@@ -285,7 +285,7 @@ button{font:inherit;color:inherit}
 
 <div class="app" id="app">
   <header class="top">
-    <div class="brand"><h1>Timelines</h1><span class="sub" id="sub">800 – today</span></div>
+    <div class="brand"><h1>Timelines</h1><span class="sub" id="sub">600 BC – today</span></div>
     <div class="modes" role="tablist" aria-label="View"><button class="mode" type="button" role="tab" data-mode="timeline" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h18M6 13h7M9 9h9M5 5h6"/></svg>Timeline</button><button class="mode" type="button" role="tab" data-mode="map" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>Map</button></div>
     <nav class="tabs" id="tabs" role="tablist" aria-label="Show"></nav>
     <div class="tools">
@@ -381,7 +381,8 @@ const GENRE_GROUPS = [
    automatically into the two bands below (they may overlap).
    Dates are conventional and approximate. b:null = until today. */
 const ERAS = [
-  { name:"Medieval",     a:800,  b:1400 },
+  { name:"Antiquity",    a:-600, b:500 },
+  { name:"Medieval",     a:500,  b:1400 },
   { name:"Renaissance",  a:1400, b:1600 },
   { name:"Baroque",      a:1600, b:1750 },
   { name:"Classical",    a:1750, b:1820 },
@@ -5116,6 +5117,225 @@ const THOMA = {
 };
 for (const id in THOMA) (LINKS[id] = LINKS[id] || {}).thoma = "https://musiktheorie.georgthoma.de/quellen/" + THOMA[id];
 
+/* ===================== THEORISTS FROM ANTIQUITY TO TODAY =====================
+   Added October 2026: 54 theorists from Pythagoras to Tymoczko; negative years are BC. */
+const THEORISTS_ADDED_3 = [
+{"id":"pythagoras","last":"Pythagoras","first":"","label":"Pythagoras","name":"Pythagoras of Samos","roles":["theorist"],"b":{"y":-570,"c":1,"place":"Samos"},"d":{"y":-495,"c":1,"place":"Metapontum"},"nat":"Greek (Ionia), later in southern Italy","origin":"Greek","areas":["Ancient world"],"places":["Samos","Croton (founded his school, c. 530 BC)","Metapontum"],"genres":["Treatises"],"langs":["Greek"],"text":"Credited with discovering that the octave, fifth and fourth come from the ratios 2:1, 3:2 and 4:3, the root of Pythagorean tuning and of the 'music of the spheres'; he left no writings."},
+{"id":"philolaus","last":"Philolaus","first":"","label":"Philolaus","name":"Philolaus of Croton","roles":["theorist"],"b":{"y":-470,"c":1,"place":"Croton"},"d":{"y":-385,"c":1},"nat":"Greek (southern Italy)","origin":"Greek","areas":["Ancient world"],"places":["Croton","Thebes"],"genres":["Treatises"],"langs":["Greek"],"text":"Pythagorean philosopher whose fragments are the earliest surviving account of the Pythagorean scale, dividing the octave into fifths, fourths and whole tones."},
+{"id":"archytas","last":"Archytas","first":"","label":"Archytas","name":"Archytas of Tarentum","roles":["theorist"],"b":{"y":-428,"c":1,"place":"Tarentum"},"d":{"y":-347,"c":1},"nat":"Greek (Tarentum, southern Italy)","origin":"Greek","areas":["Ancient world"],"places":["Tarentum (statesman and general; friend of Plato)"],"genres":["Treatises"],"langs":["Greek"],"text":"Pythagorean mathematician who worked out ratios for the enharmonic, chromatic and diatonic genera and first argued that pitch depends on the speed of motion."},
+{"id":"plato","last":"Plato","first":"","label":"Plato","roles":["theorist"],"b":{"y":-428,"c":1,"t":"428 or 427 BC","place":"Athens"},"d":{"y":-348,"c":1,"t":"348 or 347 BC","place":"Athens"},"nat":"Greek (Athens)","origin":"Greek","areas":["Ancient world"],"places":["Athens (founded the Academy, c. 387 BC)","Syracuse (visits)"],"genres":["Treatises"],"langs":["Greek"],"text":"The *Republic*, on which modes build or weaken character, and the *Timaeus*, which builds the world-soul from a Pythagorean scale; the source of most later ideas of music's moral power."},
+{"id":"aristotle","last":"Aristotle","first":"","label":"Aristotle","roles":["theorist"],"b":{"y":-384,"place":"Stagira"},"d":{"y":-322,"place":"Chalcis"},"nat":"Greek (Macedonia)","origin":"Greek","areas":["Ancient world"],"places":["Athens (Plato's Academy; founded the Lyceum, 335 BC)","Macedonia (tutor of Alexander)"],"genres":["Treatises"],"langs":["Greek"],"text":"Book VIII of the *Politics*, on music in education, catharsis and the character of the modes; his pupils, Aristoxenus among them, wrote the first true music treatises."},
+{"id":"aristoxenus","last":"Aristoxenus","first":"","label":"Aristoxenus","name":"Aristoxenus of Tarentum","roles":["theorist"],"b":{"y":-375,"c":1,"place":"Tarentum"},"d":{"y":-300,"c":1,"t":"after c. 320 BC"},"nat":"Greek (Tarentum)","origin":"Greek","areas":["Ancient world"],"places":["Tarentum","Athens (pupil of Aristotle at the Lyceum)"],"genres":["Treatises"],"langs":["Greek"],"text":"*Elementa harmonica* and *Elementa rhythmica*, which judged intervals by the ear rather than by number ratios; the founder of music theory as a science of what we hear."},
+{"id":"euclid","last":"Euclid","first":"","label":"Euclid","name":"Euclid (attributed)","roles":["theorist"],"fl":[-300,-300],"flt":"c. 300 BC","nat":"Greek (Alexandria)","origin":"Greek","areas":["Ancient world"],"places":["Alexandria"],"genres":["Treatises"],"langs":["Greek"],"text":"The *Sectio canonis* (Division of the Monochord), attributed to the author of the *Elements*, which proves the Pythagorean interval ratios step by step like geometry."},
+{"id":"vitruvius","last":"Vitruvius","first":"","label":"Vitruvius","name":"Vitruvius (Marcus Vitruvius Pollio)","roles":["theorist"],"fl":[-30,-15],"flt":"c. 30–15 BC","nat":"Roman","origin":"Roman","areas":["Ancient world"],"places":["Rome (military engineer under Julius Caesar and Augustus)"],"genres":["Treatises"],"langs":["Latin"],"text":"*De architectura*, whose Book V explains Aristoxenus' harmonics and describes bronze sounding vessels tuned to resonate in theatres."},
+{"id":"nicomachus","last":"Nicomachus","first":"","label":"Nicomachus","name":"Nicomachus of Gerasa","roles":["theorist"],"b":{"y":60,"c":1,"place":"Gerasa"},"d":{"y":120,"c":1},"nat":"Greek-speaking Syrian (Gerasa, Roman Arabia)","origin":"Greek","areas":["Ancient world"],"places":["Gerasa"],"genres":["Treatises"],"langs":["Greek"],"text":"*Manual of Harmonics*, with the story of Pythagoras hearing the ratios in a blacksmith's hammers, and an *Introduction to Arithmetic* that Boethius translated."},
+{"id":"ptolemy","last":"Ptolemy","first":"","label":"Ptolemy","name":"Claudius Ptolemy","roles":["theorist"],"b":{"y":100,"c":1},"d":{"y":170,"c":1,"place":"Alexandria"},"nat":"Greek (Roman Egypt)","origin":"Greek","areas":["Ancient world"],"places":["Alexandria"],"genres":["Treatises"],"langs":["Greek"],"text":"*Harmonics*, which combined reason and the ear, gave tunings with the pure 5:4 third, and linked the modes to the planets and the soul; the astronomer of the *Almagest*."},
+{"id":"cleonides","last":"Cleonides","first":"","label":"Cleonides","roles":["theorist"],"fl":[100,200],"flt":"probably 2nd century AD","nat":"Greek","origin":"Greek","areas":["Ancient world"],"places":["Unknown"],"genres":["Treatises"],"langs":["Greek"],"text":"*Eisagoge harmonike* (Introduction to Harmonics), the clearest short summary of Aristoxenus' system of notes, intervals, genera and the seven octave species."},
+{"id":"porphyry","last":"Porphyry","first":"","label":"Porphyry","name":"Porphyry of Tyre","roles":["theorist"],"b":{"y":234,"c":1,"place":"Tyre"},"d":{"y":305,"c":1,"place":"Rome"},"nat":"Phoenician Greek (Tyre)","origin":"Greek","areas":["Ancient world"],"places":["Athens","Rome (pupil of Plotinus)","Sicily"],"genres":["Treatises"],"langs":["Greek"],"text":"A commentary on Ptolemy's *Harmonics* that preserves many quotations from lost earlier writers on music."},
+{"id":"aristides","last":"Aristides Quintilianus","first":"","label":"Aristides Quintilianus","roles":["theorist"],"fl":[250,350],"flt":"probably 3rd or 4th century AD","nat":"Greek","origin":"Greek","areas":["Ancient world"],"places":["Unknown"],"genres":["Treatises"],"langs":["Greek"],"text":"*On Music* (*Peri mousikēs*), three books on harmonics, rhythm and metre, and the ethical and cosmic powers of music; the fullest ancient survey of the art."},
+{"id":"augustine","last":"Augustine","first":"","label":"Augustine","name":"Augustine of Hippo","roles":["theorist"],"b":{"y":354,"m":11,"d":13,"place":"Thagaste"},"d":{"y":430,"m":8,"d":28,"place":"Hippo Regius"},"nat":"Roman North African","origin":"Roman","areas":["Ancient world","Italy"],"places":["Carthage","Rome","Milan (baptized by Ambrose, 387)","Hippo Regius (bishop, from 395)"],"genres":["Treatises"],"langs":["Latin"],"text":"*De musica* (387–391), six books on rhythm and metre that end in a theology of number, and the *Confessions*, with his famous worry about being moved more by the singing than by the words."},
+{"id":"martianus","last":"Martianus Capella","first":"","label":"Martianus Capella","roles":["theorist"],"fl":[410,439],"flt":"early 5th century","nat":"Roman North African (Carthage)","origin":"Roman","areas":["Ancient world"],"places":["Carthage"],"genres":["Treatises"],"langs":["Latin"],"text":"*De nuptiis Philologiae et Mercurii*, an allegory of the seven liberal arts whose ninth book, *Harmonia*, was a standard medieval schoolbook on music."},
+{"id":"boethius","last":"Boethius","first":"","label":"Boethius","name":"Anicius Manlius Severinus Boethius","roles":["theorist"],"b":{"y":477,"c":1,"place":"Rome"},"d":{"y":524,"place":"Pavia"},"nat":"Roman","origin":"Roman","areas":["Ancient world","Italy"],"places":["Rome (consul, 510; master of offices under Theodoric)","Pavia (imprisoned and executed)"],"genres":["Treatises"],"langs":["Latin"],"text":"*De institutione musica*, which passed Greek harmonics to the Latin West and divided music into *mundana*, *humana* and *instrumentalis*; the foundation of medieval music theory, and *The Consolation of Philosophy*."},
+{"id":"cassiodorus","last":"Cassiodorus","first":"","label":"Cassiodorus","name":"Flavius Magnus Aurelius Cassiodorus","roles":["theorist"],"b":{"y":485,"c":1,"place":"Scylletium (Squillace), Calabria"},"d":{"y":585,"c":1,"place":"Vivarium, near Squillace"},"nat":"Roman (Ostrogothic Italy)","origin":"Roman","areas":["Ancient world","Italy"],"places":["Ravenna (minister of Theodoric)","Constantinople (c. 540–554)","Vivarium (his monastery, from c. 554)"],"genres":["Treatises"],"langs":["Latin"],"text":"*Institutiones*, a reading list for monks whose chapter on music became a standard summary, and a commentary on the Psalms."},
+{"id":"isidore","last":"Isidore of Seville","first":"","label":"Isidore of Seville","roles":["theorist"],"b":{"y":560,"c":1,"place":"Cartagena (?)"},"d":{"y":636,"m":4,"d":4,"place":"Seville"},"nat":"Hispano-Roman (Visigothic Spain)","origin":"Spanish","areas":["Iberia","Ancient world"],"places":["Seville (archbishop, from c. 600)"],"genres":["Treatises"],"langs":["Latin"],"text":"The *Etymologiae*, an encyclopedia whose Book III covers music, with the famous line that 'unless sounds are held in memory they perish, for they cannot be written down'."},
+{"id":"alkindi","last":"Al-Kindi","first":"","label":"Al-Kindi","name":"Abu Yusuf al-Kindi","roles":["theorist"],"b":{"y":801,"c":1,"place":"Basra"},"d":{"y":873,"c":1,"place":"Baghdad"},"nat":"Arab (Abbasid Caliphate)","origin":"Arab","areas":["Islamic world"],"places":["Baghdad (House of Wisdom)"],"genres":["Treatises"],"langs":["Arabic"],"text":"The first Arabic treatises on music, on the oud, rhythm and the healing effects of music, built on Greek harmonics; 'the philosopher of the Arabs'."},
+{"id":"alfarabi","last":"Al-Farabi","first":"","label":"Al-Farabi","name":"Abu Nasr al-Farabi (Alpharabius)","roles":["theorist"],"b":{"y":872,"c":1},"d":{"y":950,"c":1,"place":"Damascus"},"nat":"Central Asian (Abbasid Caliphate)","origin":"Persian","areas":["Islamic world"],"places":["Baghdad","Aleppo (court of Sayf al-Dawla)","Damascus"],"genres":["Treatises"],"langs":["Arabic"],"text":"*Kitab al-musiqa al-kabir* (The Great Book of Music), a vast treatise on intervals, tunings of the oud, rhythm and composition; the most important music theory of the medieval Islamic world."},
+{"id":"avicenna","last":"Avicenna","first":"","label":"Avicenna","name":"Avicenna (Ibn Sina)","roles":["theorist"],"b":{"y":980,"c":1,"place":"Afshana, near Bukhara"},"d":{"y":1037,"m":6,"place":"Hamadan"},"nat":"Persian (Samanid Bukhara)","origin":"Persian","areas":["Islamic world"],"places":["Bukhara","Isfahan","Hamadan"],"genres":["Treatises"],"langs":["Arabic","Persian"],"text":"The music section of *Kitab al-Shifa* (The Book of Healing), which refined al-Farabi's interval theory; the most famous physician and philosopher of his age."},
+{"id":"safiaddin","last":"Safi al-Din al-Urmawi","first":"","label":"Safi al-Din","name":"Safi al-Din al-Urmawi","roles":["composer","theorist"],"b":{"y":1216,"c":1,"place":"Urmia"},"d":{"y":1294,"place":"Baghdad"},"nat":"Persian (Urmia)","origin":"Persian","areas":["Islamic world"],"places":["Baghdad (court musician and librarian of the last Abbasid caliph; served the Mongol rulers after 1258)"],"genres":["Treatises"],"langs":["Arabic"],"text":"*Kitab al-adwar* (Book of Cycles), which set out a 17-note scale and a system of modes that became the basis of later maqam theory."},
+{"id":"enchiriadis","last":"Musica enchiriadis","first":"","label":"Musica enchiriadis","name":"Author of Musica enchiriadis","roles":["theorist"],"fl":[850,900],"flt":"late 9th century","nat":"Frankish (anonymous)","origin":"Frankish","areas":["France & Savoy","German lands & Austria"],"places":["Probably a monastery in northern France or the Rhineland"],"genres":["Treatises"],"langs":["Latin"],"text":"*Musica enchiriadis* and its companion *Scolica enchiriadis*, the earliest descriptions of polyphony (parallel organum) and of daseian notation."},
+{"id":"guilielmus","last":"Guilielmus Monachus","first":"","label":"Guilielmus Monachus","roles":["theorist"],"fl":[1480,1490],"flt":"late 15th century","nat":"Probably Italian (from Venice?)","origin":"Italian","areas":["Italy","British Isles"],"places":["Unknown; knew both English and Italian practice"],"genres":["Treatises"],"langs":["Latin"],"text":"*De preceptis artis musicae*, which explains improvised English gymel and fauxbourdon and how to compose them."},
+{"id":"burtius","last":"Burtius","first":"Nicolaus","label":"Burtius, N.","name":"Nicolaus Burtius (Niccolò Burzio)","roles":["theorist"],"b":{"y":1453,"c":1,"place":"Parma"},"d":{"y":1528,"after":1},"nat":"Italian (Parma)","origin":"Italian","areas":["Italy"],"places":["Parma","Bologna (studied with John Hothby)"],"genres":["Treatises"],"langs":["Latin"],"text":"*Musices opusculum* (1487), the first printed book on music with printed polyphony, which defended Guido's hexachords against Ramos de Pareja."},
+{"id":"lanfranco","last":"Lanfranco","first":"Giovanni Maria","roles":["theorist"],"b":{"y":1490,"c":1,"place":"Terenzo, near Parma"},"d":{"y":1545,"m":11,"place":"Parma"},"nat":"Italian (Parma)","origin":"Italian","areas":["Italy"],"places":["Brescia (cathedral maestro di cappella, 1528–36)","Verona","Parma (Steccata)"],"genres":["Treatises"],"langs":["Italian"],"text":"*Scintille di musica* (Brescia, 1533), a practical book in Italian that includes one of the earliest descriptions of a tempered tuning for keyboards and fretted instruments."},
+{"id":"listenius","last":"Listenius","first":"Nicolaus","roles":["theorist"],"fl":[1537,1549],"flt":"active 1537–1549","nat":"German","origin":"German","areas":["German lands & Austria"],"places":["Wittenberg"],"genres":["Treatises"],"langs":["Latin"],"text":"*Musica* (1537), a widely used school primer that first named *musica poetica* and called a composed piece an *opus perfectum et absolutum* that survives its maker."},
+{"id":"faber","last":"Faber","first":"Heinrich","roles":["theorist"],"b":{"y":1500,"before":1,"place":"Lichtenfels"},"d":{"y":1552,"m":2,"d":26,"place":"Oelsnitz"},"nat":"German (Franconia)","origin":"German","areas":["German lands & Austria"],"places":["Naumburg (rector of the St George school)","Wittenberg","Oelsnitz"],"genres":["Treatises"],"langs":["Latin"],"text":"*Compendiolum musicae pro incipientibus* (1548), a tiny Latin primer for schoolboys reprinted for over a century across Protestant Germany."},
+{"id":"pontio","last":"Pontio","first":"Pietro","roles":["composer","theorist"],"b":{"y":1532,"place":"Parma"},"d":{"y":1596,"place":"Parma"},"nat":"Italian (Parma)","origin":"Italian","areas":["Italy"],"places":["Bergamo (Santa Maria Maggiore)","Milan Cathedral","Parma (Steccata)"],"genres":["Treatises","Masses","Motets"],"langs":["Italian","Latin"],"text":"*Ragionamento di musica* (1588), on composing Masses, motets, madrigals and imitative entries, and *Dialogo* (1595)."},
+{"id":"dressler","last":"Dressler","first":"Gallus","roles":["composer","theorist"],"b":{"y":1533,"m":10,"d":16,"place":"Nebra"},"d":{"y":1580,"c":1,"place":"Zerbst"},"nat":"German (Thuringia)","origin":"German","areas":["German lands & Austria"],"places":["Magdeburg (cantor of the Latin school, 1558–75)","Zerbst"],"genres":["Treatises","Motets"],"langs":["Latin","German"],"text":"*Praecepta musicae poeticae* (1563), one of the first composition treatises to teach how to begin, continue and end a piece, using Josquin and Lassus as models."},
+{"id":"butler","last":"Butler","first":"Charles","roles":["theorist"],"b":{"y":1560,"c":1,"place":"Great Wycombe (?)"},"d":{"y":1647,"place":"Wootton St Lawrence"},"nat":"English","origin":"English","areas":["British Isles"],"places":["Oxford (Magdalen College)","Wootton St Lawrence, Hampshire (vicar, from 1600)"],"genres":["Treatises"],"langs":["English"],"text":"*The Principles of Musik in Singing and Setting* (1636), in his own reformed spelling; also *The Feminine Monarchie*, a beekeeping book with a four-part 'bee madrigal'."},
+{"id":"kepler","last":"Kepler","first":"Johannes","roles":["theorist"],"b":{"y":1571,"m":12,"d":27,"place":"Weil der Stadt"},"d":{"y":1630,"m":11,"d":15,"place":"Regensburg"},"nat":"German (Württemberg)","origin":"German","areas":["German lands & Austria","Central & Eastern Europe"],"places":["Graz","Prague (imperial mathematician to Rudolf II)","Linz"],"genres":["Treatises"],"langs":["Latin"],"text":"*Harmonices mundi* (1619), which found musical intervals in the speeds of the planets and gave each planet its own melody; it also contains his third law of planetary motion."},
+{"id":"descartes","last":"Descartes","first":"René","roles":["theorist"],"b":{"y":1596,"m":3,"d":31,"place":"La Haye (Descartes), Touraine"},"d":{"y":1650,"m":2,"d":11,"place":"Stockholm"},"nat":"French","origin":"French","areas":["France & Savoy","Low Countries","Scandinavia"],"places":["Breda (with the army of Maurice of Nassau, 1618)","Dutch Republic (1628–49)","Stockholm (Queen Christina)"],"genres":["Treatises"],"langs":["Latin"],"text":"*Compendium musicae* (written 1618, printed 1650), his first work, a short theory of consonance, the divisions of the octave and the passions that music arouses."},
+{"id":"penna","last":"Penna","first":"Lorenzo","roles":["composer","theorist"],"b":{"y":1613,"place":"Bologna"},"d":{"y":1693,"place":"Bologna"},"nat":"Italian (Bologna)","origin":"Italian","areas":["Italy"],"places":["Carmelite friar in Bologna, Mantua and Parma"],"genres":["Treatises","Masses"],"langs":["Italian"],"text":"*Li primi albori musicali* (1672), a popular primer on counterpoint and the first systematic rules for playing figured bass on the organ."},
+{"id":"huygens","last":"Huygens","first":"Christiaan","roles":["theorist"],"b":{"y":1629,"m":4,"d":14,"place":"The Hague"},"d":{"y":1695,"m":7,"d":8,"place":"The Hague"},"nat":"Dutch","origin":"Dutch","areas":["Low Countries","France & Savoy"],"places":["The Hague","Paris (Académie des sciences, 1666–81)"],"genres":["Treatises"],"langs":["Latin","French"],"text":"*Novus cyclus harmonicus*, which proposed dividing the octave into 31 equal steps to get near-pure thirds; also the pendulum clock and the wave theory of light."},
+{"id":"berardi","last":"Berardi","first":"Angelo","roles":["composer","theorist"],"b":{"y":1636,"c":1,"place":"Sant'Agata, Umbria"},"d":{"y":1694,"place":"Rome"},"nat":"Italian","origin":"Italian","areas":["Italy"],"places":["Viterbo","Tivoli","Spoleto","Rome (Santa Maria in Trastevere)"],"genres":["Treatises","Masses"],"langs":["Italian","Latin"],"text":"*Ragionamenti musicali* (1681), *Documenti armonici* (1687) and *Miscellanea musicale* (1689), which describe counterpoint and the old and new styles of the Roman school."},
+{"id":"gasparini","last":"Gasparini","first":"Francesco","roles":["composer","theorist"],"b":{"y":1661,"m":3,"d":19,"place":"Camaiore"},"d":{"y":1727,"m":3,"d":22,"place":"Rome"},"nat":"Italian (Tuscany)","origin":"Italian","areas":["Italy"],"places":["Rome","Venice (Ospedale della Pietà, 1701–13, where he hired Vivaldi)","Rome (St John Lateran)"],"genres":["Treatises","Opera & stage music","Cantatas"],"langs":["Italian"],"text":"*L'armonico pratico al cimbalo* (1708), the classic Italian guide to realizing figured bass at the harpsichord, plus some 60 operas and many cantatas; Domenico Scarlatti studied with him."},
+{"id":"niedt","last":"Niedt","first":"Friedrich Erhard","roles":["composer","theorist"],"b":{"y":1674,"place":"Jena"},"d":{"y":1708,"place":"Copenhagen"},"nat":"German (Thuringia)","origin":"German","areas":["German lands & Austria","Scandinavia"],"places":["Jena (law student)","Copenhagen (from c. 1704)"],"genres":["Treatises"],"langs":["German"],"text":"*Musicalische Handleitung* (1700–17), which teaches composition through figured bass and variation; Bach's pupils copied rules from it, and Mattheson edited the later parts."},
+{"id":"vallotti","last":"Vallotti","first":"Francesco Antonio","roles":["composer","theorist"],"b":{"y":1697,"m":6,"d":11,"place":"Vercelli"},"d":{"y":1780,"m":1,"d":10,"place":"Padua"},"nat":"Italian (Piedmont)","origin":"Italian","areas":["Italy"],"places":["Padua (Franciscan friar; maestro di cappella of the Basilica of St Anthony, from 1730)"],"genres":["Treatises","Masses","Motets"],"langs":["Italian","Latin"],"text":"*Della scienza teorica e pratica della moderna musica* (1779), the 'Paduan school' of harmony, and the well-tempered 'Vallotti temperament' still used for Baroque music."},
+{"id":"scheibe","last":"Scheibe","first":"Johann Adolph","roles":["composer","theorist"],"b":{"y":1708,"m":5,"d":5,"place":"Leipzig"},"d":{"y":1776,"m":4,"d":22,"place":"Copenhagen"},"nat":"German (Saxony), later in Denmark","origin":"German","areas":["German lands & Austria","Scandinavia"],"places":["Hamburg (editor of *Der critische Musicus*, 1737–40)","Copenhagen (royal Kapellmeister, 1740–47)"],"genres":["Treatises","Cantatas","Symphonies"],"langs":["German","Danish"],"text":"*Der critische Musicus* (1737–40), where he called Bach's music turgid and confused, starting the most famous music quarrel of the age, plus a treatise on intervals and modes."},
+{"id":"burney","last":"Burney","first":"Charles","roles":["composer","theorist"],"b":{"y":1726,"m":4,"d":7,"place":"Shrewsbury"},"d":{"y":1814,"m":4,"d":12,"place":"Chelsea, London"},"nat":"English","origin":"English","areas":["British Isles","France & Savoy","Italy","German lands & Austria"],"places":["London","Tours of France and Italy (1770) and Germany and the Low Countries (1772)"],"genres":["Treatises","Keyboard music"],"langs":["English"],"text":"*A General History of Music* (1776–89) and the diaries of his musical tours of Europe, lively first-hand reports on Gluck, C.P.E. Bach, Padre Martini and many others."},
+{"id":"momigny","last":"Momigny","first":"Jérôme-Joseph de","roles":["composer","theorist"],"b":{"y":1762,"m":1,"d":20,"place":"Philippeville"},"d":{"y":1842,"m":8,"d":25,"place":"Charenton"},"nat":"French (born in the Austrian Netherlands)","origin":"French","areas":["France & Savoy","Low Countries"],"places":["Lyon (organist; mayor of a city district, 1793)","Paris (music publisher, from 1800)"],"genres":["Treatises","Sonatas & chamber music"],"langs":["French"],"text":"*Cours complet d'harmonie et de composition* (1803–06), with the first detailed phrase-by-phrase analysis of a whole piece, Mozart's D minor String Quartet K. 421."},
+{"id":"jadassohn","last":"Jadassohn","first":"Salomon","roles":["composer","theorist"],"b":{"y":1831,"m":8,"d":13,"place":"Breslau"},"d":{"y":1902,"m":2,"d":1,"place":"Leipzig"},"nat":"German (Prussian Silesia)","origin":"German","areas":["German lands & Austria"],"places":["Weimar (pupil of Liszt)","Leipzig Conservatory (from 1871)"],"genres":["Treatises","Symphonies","Sonatas & chamber music"],"langs":["German"],"text":"A series of textbooks on harmony, counterpoint, canon, fugue and form used worldwide; his Leipzig pupils included Grieg, Busoni, Delius and Chadwick."},
+{"id":"prout","last":"Prout","first":"Ebenezer","roles":["composer","theorist"],"b":{"y":1835,"m":3,"d":1,"place":"Oundle"},"d":{"y":1909,"m":12,"d":5,"place":"Hackney, London"},"nat":"English","origin":"English","areas":["British Isles"],"places":["London (Royal Academy of Music)","Dublin (Professor of Music, from 1894)"],"genres":["Treatises","Symphonies","Sonatas & chamber music"],"langs":["English"],"text":"Textbooks on *Harmony* (1889), *Counterpoint*, *Fugue* and *Musical Form* that dominated English teaching for decades, and an edition of Handel's *Messiah*."},
+{"id":"dindy","last":"d'Indy","first":"Vincent","label":"d'Indy, V.","roles":["composer","theorist"],"b":{"y":1851,"m":3,"d":27,"place":"Paris"},"d":{"y":1931,"m":12,"d":2,"place":"Paris"},"nat":"French","origin":"French","areas":["France & Savoy"],"places":["Paris (pupil of Franck; co-founded the Schola Cantorum, 1894)"],"genres":["Treatises","Symphonies","Opera & stage music","Sonatas & chamber music"],"langs":["French"],"text":"*Cours de composition musicale* (1903–50), the Schola Cantorum's method built on Gregorian chant and Beethoven, plus the *Symphony on a French Mountain Air*."},
+{"id":"taneyev","last":"Taneyev","first":"Sergei","roles":["composer","theorist"],"b":{"y":1856,"m":11,"d":25,"place":"Vladimir"},"d":{"y":1915,"m":6,"d":19,"place":"Dyudkovo, near Moscow"},"nat":"Russian","origin":"Russian","areas":["Russia"],"places":["Moscow Conservatory (pupil of Tchaikovsky; director 1885–89)"],"genres":["Treatises","Sonatas & chamber music","Symphonies","Opera & stage music"],"langs":["Russian"],"text":"*Invertible Counterpoint in the Strict Style* (1909), a mathematical theory of counterpoint, plus the opera *Oresteia*; he taught Rachmaninoff, Scriabin and Medtner."},
+{"id":"reti","last":"Réti","first":"Rudolph","roles":["composer","theorist"],"b":{"y":1885,"m":11,"d":27,"place":"Užice, Serbia"},"d":{"y":1957,"m":2,"d":7,"place":"Montclair, New Jersey"},"nat":"Austrian (born in Serbia), later American","origin":"Austrian","areas":["German lands & Austria","Americas"],"places":["Vienna","United States (from 1938)"],"genres":["Treatises","Keyboard music"],"langs":["English","German"],"text":"*The Thematic Process in Music* (1951), which argued that whole works grow from a single motif."},
+{"id":"salzer","last":"Salzer","first":"Felix","roles":["theorist"],"b":{"y":1904,"m":6,"d":13,"place":"Vienna"},"d":{"y":1986,"m":8,"d":12,"place":"New York"},"nat":"Austrian, later American","origin":"Austrian","areas":["German lands & Austria","Americas"],"places":["Vienna (pupil of Schenker)","New York (Mannes College; Queens College)"],"genres":["Treatises"],"langs":["English","German"],"text":"*Structural Hearing* (1952), which brought Schenkerian analysis to America and extended it to music from the Middle Ages to the 20th century."},
+{"id":"delamotte","last":"de la Motte","first":"Diether","label":"de la Motte, D.","roles":["composer","theorist"],"b":{"y":1928,"m":3,"d":30,"place":"Bonn"},"d":{"y":2010,"m":7,"d":5},"nat":"German","origin":"German","areas":["German lands & Austria"],"places":["Hamburg (Musikhochschule)","Hanover","Vienna"],"genres":["Treatises"],"langs":["German"],"text":"*Harmonielehre* (1976) and *Kontrapunkt* (1981), which teach harmony and counterpoint style by style through real pieces; standard textbooks in German-speaking countries."},
+{"id":"lewin","last":"Lewin","first":"David","roles":["composer","theorist"],"b":{"y":1933,"m":7,"d":2,"place":"New York"},"d":{"y":2003,"m":5,"d":5,"place":"Cambridge, Massachusetts"},"nat":"American","origin":"American","areas":["Americas"],"places":["Princeton","Yale","Harvard (from 1985)"],"genres":["Treatises","Electronic music"],"langs":["English"],"text":"*Generalized Musical Intervals and Transformations* (1987), the founding text of transformational and neo-Riemannian theory."},
+{"id":"hepokoski","last":"Hepokoski","first":"James","roles":["theorist"],"b":{"y":1946},"d":{"alive":1},"nat":"American","origin":"American","areas":["Americas"],"places":["Yale"],"genres":["Treatises"],"langs":["English"],"text":"*Elements of Sonata Theory* (2006, with Warren Darcy), which reads sonata form as a set of norms and deformations that composers play against."},
+{"id":"caplin","last":"Caplin","first":"William E.","roles":["theorist"],"b":{"y":1948},"d":{"alive":1},"nat":"American, in Canada","origin":"American","areas":["Americas"],"places":["McGill University, Montreal"],"genres":["Treatises"],"langs":["English"],"text":"*Classical Form* (1998), which revived Schoenberg's idea of the 'sentence' and 'period' into a full theory of formal functions in Haydn, Mozart and Beethoven."},
+{"id":"gjerdingen","last":"Gjerdingen","first":"Robert","roles":["theorist"],"b":{"y":1952},"d":{"alive":1},"nat":"American","origin":"American","areas":["Americas"],"places":["Northwestern University"],"genres":["Treatises"],"langs":["English"],"text":"*Music in the Galant Style* (2007), which named the stock patterns ('Romanesca', 'Prinner', 'Monte' and others) that 18th-century composers learned from Neapolitan partimenti."},
+{"id":"tymoczko","last":"Tymoczko","first":"Dmitri","roles":["composer","theorist"],"b":{"y":1969},"d":{"alive":1},"nat":"American","origin":"American","areas":["Americas"],"places":["Princeton University"],"genres":["Treatises","Sonatas & chamber music"],"langs":["English"],"text":"*A Geometry of Music* (2011), which maps chords and voice leading onto geometric spaces, and *Tonality: An Owner's Manual* (2023)."}
+];
+for (const p of THEORISTS_ADDED_3) PEOPLE.push(p);
+Object.assign(LINKS, {
+"pythagoras":{"wiki":"Pythagoras"},
+"philolaus":{"wiki":"Philolaus"},
+"archytas":{"wiki":"Archytas"},
+"plato":{"wiki":"Plato"},
+"aristotle":{"wiki":"Aristotle"},
+"aristoxenus":{"wiki":"Aristoxenus"},
+"euclid":{"wiki":"Euclid"},
+"vitruvius":{"wiki":"Vitruvius"},
+"nicomachus":{"wiki":"Nicomachus"},
+"ptolemy":{"wiki":"Ptolemy"},
+"cleonides":{"wiki":"Cleonides"},
+"porphyry":{"wiki":"Porphyry_(philosopher)"},
+"aristides":{"wiki":"Aristides_Quintilianus"},
+"augustine":{"wiki":"Augustine_of_Hippo"},
+"martianus":{"wiki":"Martianus_Capella"},
+"boethius":{"wiki":"Boethius"},
+"cassiodorus":{"wiki":"Cassiodorus"},
+"isidore":{"wiki":"Isidore_of_Seville"},
+"alkindi":{"wiki":"Al-Kindi"},
+"alfarabi":{"wiki":"Al-Farabi"},
+"avicenna":{"wiki":"Avicenna"},
+"safiaddin":{"wiki":"Safi_al-Din_al-Urmawi"},
+"enchiriadis":{"wiki":"Musica_enchiriadis"},
+"guilielmus":{"wiki":"Guilielmus_Monachus"},
+"burtius":{"wiki":"Nicolaus_Burtius"},
+"lanfranco":{"wiki":"Giovanni_Maria_Lanfranco"},
+"listenius":{"wiki":"Nicolaus_Listenius"},
+"faber":{"wiki":"Heinrich_Faber"},
+"pontio":{"wiki":"Pietro_Pontio"},
+"dressler":{"wiki":"Gallus_Dressler"},
+"butler":{"wiki":"Charles_Butler_(beekeeper)"},
+"kepler":{"wiki":"Johannes_Kepler"},
+"descartes":{"wiki":"René_Descartes"},
+"penna":{"wiki":"Lorenzo_Penna"},
+"huygens":{"wiki":"Christiaan_Huygens"},
+"berardi":{"wiki":"Angelo_Berardi"},
+"gasparini":{"wiki":"Francesco_Gasparini","imslp":"Gasparini, Francesco","imslpGo":true},
+"niedt":{"wiki":"Friedrich_Erhard_Niedt"},
+"vallotti":{"wiki":"Francesco_Antonio_Vallotti"},
+"scheibe":{"wiki":"Johann_Adolph_Scheibe"},
+"burney":{"wiki":"Charles_Burney","imslp":"Burney, Charles","imslpGo":true},
+"momigny":{"wiki":"Jérôme-Joseph_de_Momigny"},
+"jadassohn":{"wiki":"Salomon_Jadassohn","imslp":"Jadassohn, Salomon","imslpGo":true},
+"prout":{"wiki":"Ebenezer_Prout","imslp":"Prout, Ebenezer","imslpGo":true},
+"dindy":{"wiki":"Vincent_d'Indy","imslp":"Indy, Vincent d'","imslpGo":true},
+"taneyev":{"wiki":"Sergei_Taneyev","imslp":"Taneyev, Sergey","imslpGo":true},
+"reti":{"wiki":"Rudolph_Réti"},
+"salzer":{"wiki":"Felix_Salzer"},
+"delamotte":{"wiki":"Diether_de_la_Motte"},
+"lewin":{"wiki":"David_Lewin"},
+"hepokoski":{"wiki":"James_Hepokoski"},
+"caplin":{"wiki":"William_Caplin"},
+"gjerdingen":{"wiki":"Robert_Gjerdingen"},
+"tymoczko":{"wiki":"Dmitri_Tymoczko"}
+});
+Object.assign(PLACES, {
+"samos":[37.692,26.94,"Samos"],
+"croton":[39.081,17.127,"Croton (Crotone)"],
+"metapontum":[40.383,16.817,"Metapontum"],
+"thebes":[38.32,23.319,"Thebes"],
+"syracuse":[37.075,15.286,"Syracuse"],
+"stagira":[40.533,23.75,"Stagira"],
+"pella":[40.756,22.524,"Pella"],
+"chalcis":[38.463,23.595,"Chalcis"],
+"alexandria":[31.2,29.918,"Alexandria"],
+"gerasa":[32.28,35.891,"Gerasa (Jerash)"],
+"tyre":[33.271,35.196,"Tyre"],
+"sicily":[37.6,14.015,"Sicily"],
+"thagaste":[36.286,7.951,"Thagaste (Souk Ahras)"],
+"carthage":[36.853,10.323,"Carthage"],
+"hippo":[36.883,7.75,"Hippo Regius (Annaba)"],
+"pavia":[45.185,9.159,"Pavia"],
+"squillace":[38.78,16.513,"Squillace"],
+"cartagena":[37.606,-0.986,"Cartagena"],
+"basra":[30.508,47.783,"Basra"],
+"baghdad":[33.315,44.366,"Baghdad"],
+"aleppo":[36.202,37.134,"Aleppo"],
+"damascus":[33.513,36.292,"Damascus"],
+"bukhara":[39.775,64.429,"Bukhara"],
+"hamadan":[34.799,48.515,"Hamadan"],
+"isfahan":[32.654,51.668,"Isfahan"],
+"urmia":[37.552,45.076,"Urmia"],
+"lichtenfels":[50.145,11.059,"Lichtenfels"],
+"naumburg":[51.15,11.81,"Naumburg"],
+"nebra":[51.288,11.578,"Nebra"],
+"zerbst":[51.967,12.084,"Zerbst"],
+"basingstoke":[51.266,-1.087,"Wootton St Lawrence, near Basingstoke"],
+"weildestadt":[48.75,8.871,"Weil der Stadt"],
+"sagan":[51.617,15.317,"Sagan (Żagań)"],
+"lahayedescartes":[46.974,0.7,"La Haye (Descartes)"],
+"breda":[51.589,4.776,"Breda"],
+"spoleto":[42.734,12.738,"Spoleto"],
+"camaiore":[43.94,10.302,"Camaiore"],
+"vercelli":[45.32,8.419,"Vercelli"],
+"shrewsbury":[52.707,-2.754,"Shrewsbury"],
+"philippeville":[50.196,4.543,"Philippeville"],
+"oundle":[52.481,-0.468,"Oundle"],
+"vladimir":[56.129,40.407,"Vladimir"],
+"uzice":[43.858,19.848,"Užice"],
+"cambridgema":[42.373,-71.119,"Cambridge, Massachusetts"],
+"montreal":[45.502,-73.567,"Montreal"]
+});
+Object.assign(ITIN, {
+"pythagoras":"-570 samos, -530 croton, -500 metapontum",
+"philolaus":"-470 croton, -420 thebes?",
+"archytas":"-428 taranto",
+"plato":"-428 athens, -367 syracuse, -365 athens",
+"aristotle":"-384 stagira, -367 athens, -343 pella, -335 athens, -322 chalcis",
+"aristoxenus":"-375 taranto, -340 athens",
+"euclid":"-300 alexandria",
+"vitruvius":"-30 rome",
+"nicomachus":"60 gerasa",
+"ptolemy":"100 alexandria",
+"cleonides":"",
+"porphyry":"234 tyre, 262 rome, 268 sicily?, 280 rome",
+"aristides":"",
+"augustine":"354 thagaste, 371 carthage, 383 rome, 384 milan, 388 thagaste, 391 hippo",
+"martianus":"410 carthage",
+"boethius":"477 rome, 523 pavia",
+"cassiodorus":"485 squillace, 507 ravenna, 540 constantinople, 554 squillace",
+"isidore":"560 cartagena?, 600 seville",
+"alkindi":"801 basra, 830 baghdad",
+"alfarabi":"901 baghdad, 942 aleppo, 948 damascus",
+"avicenna":"980 bukhara, 1015 hamadan, 1024 isfahan, 1037 hamadan",
+"safiaddin":"1216 urmia, 1235 baghdad",
+"enchiriadis":"",
+"guilielmus":"",
+"burtius":"1453 parma, 1470 bologna, 1487 parma",
+"lanfranco":"1490 parma, 1528 brescia, 1536 verona, 1540 parma",
+"listenius":"1537 wittenberg",
+"faber":"1500 lichtenfels, 1538 naumburg, 1551 oelsnitz",
+"pontio":"1532 parma, 1565 bergamo, 1577 milan, 1582 parma",
+"dressler":"1533 nebra, 1558 magdeburg, 1575 zerbst",
+"butler":"1579 oxford, 1600 basingstoke",
+"kepler":"1571 weildestadt, 1594 graz, 1600 prague, 1612 linz, 1628 sagan?, 1630 regensburg",
+"descartes":"1596 lahayedescartes, 1618 breda, 1628 amsterdam, 1649 stockholm",
+"penna":"1613 bologna, 1656 mantua, 1672 bologna",
+"huygens":"1629 thehague, 1666 paris, 1681 thehague",
+"berardi":"1636 spoleto?, 1673 tivoli, 1681 spoleto, 1693 rome",
+"gasparini":"1661 camaiore, 1682 rome, 1701 venice, 1716 rome",
+"niedt":"1674 jena, 1704 copenhagen",
+"vallotti":"1697 vercelli, 1722 padua",
+"scheibe":"1708 leipzig, 1736 hamburg, 1740 copenhagen",
+"burney":"1726 shrewsbury, 1744 london, 1770 paris, 1770 naples, 1772 berlin, 1773 london",
+"momigny":"1762 philippeville, 1785 lyon, 1800 paris",
+"jadassohn":"1831 wroclaw, 1849 weimar, 1852 leipzig",
+"prout":"1835 oundle, 1861 london, 1894 dublin",
+"dindy":"1851 paris",
+"taneyev":"1856 vladimir, 1866 moscow",
+"reti":"1885 uzice, 1900 vienna, 1938 newyork",
+"salzer":"1904 vienna, 1939 newyork",
+"delamotte":"1928 bonn, 1964 hamburg, 1982 hanover",
+"lewin":"1933 newyork, 1955 princeton, 1979 newhaven, 1985 cambridgema",
+"hepokoski":"1990 newhaven",
+"caplin":"1978 montreal",
+"gjerdingen":"1990 chicago",
+"tymoczko":"2002 princeton"
+});
+
 const CMGP = {"codax":92,"dinis":25,"alfonso":11,"airasnunes":16,"mendinho":103,"joaozorro":82,"paiosoares":116,"bernal":22,"torneol":107,"johandecangas":63,"ruigomes":144,"meogo":134,"guilhade":68,"charinho":115,"pedroamigo":117,"burgales":127,"asanches":337,"baiao":6,"fgsousa":42,"ambroa":122,"fvelho":49,"resende":160,"aboim":73,"pedrobarcelos":119,"vasconcelos":141,"scoelho":76,"jgaia":64,"eguarda":30,"ecoelho":29,"msoares":98,"esquio":37,"vgsoverosa":153,"gilsanches":56,"calheiros":46,"jsoarespaiva":77,"bonifacicalvo":23};
 for (const id in CMGP) if (LINKS[id]) LINKS[id].cmgp = CMGP[id];
 
@@ -5146,18 +5366,29 @@ for (const c in RANK) RANK[c].split(" ").forEach((id, i) => { IMP[id] = i < 5 ? 
    not crowded out by composers: places 1–3 → 5, 4–8 → 4, 9–15 → 3, 16–25 → 2. Anyone ranked in
    both lists keeps the higher level. */
 const THEORY_RANK = {
- 9: "hucbald aurelian regino",
- 10: "notkerlabeo gerbert",
- 11: "guido hermannus aribo berno wulfstan",
+ "-5": "pythagoras",
+ "-4": "philolaus",
+ "-3": "aristoxenus plato aristotle archytas",
+ "-2": "euclid",
+ 0: "vitruvius",
+ 1: "nicomachus",
+ 2: "ptolemy cleonides",
+ 3: "porphyry aristides",
+ 4: "augustine",
+ 5: "martianus",
+ 6: "boethius cassiodorus isidore",
+ 9: "hucbald enchiriadis alkindi aurelian regino",
+ 10: "alfarabi notkerlabeo gerbert",
+ 11: "guido hermannus avicenna aribo berno wulfstan",
  12: "cotto",
- 13: "franco garlandia jacobus anon4 petrus lambertus jerome gilzamora engelbert",
+ 13: "franco garlandia jacobus safiaddin anon4 petrus lambertus jerome gilzamora engelbert",
  14: "demuris vitry marchetto grocheio amerus odington bryennios ciconia power jacopo caserta egidiusfrancia tunsted vaillant",
- 15: "tinctoris gaffurius prosdocimus ugolino ramos spataro hothby mduran guglielmo anselmi schlick adamfulda virdung",
- 16: "zarlino glarean vicentino vgalilei mei burmeister artusi aron ornithoparchus magricola heyden hermannfinck salinas bermudo santamaria ortiz zacconi cerone calvisius banchieri campion morley ganassi",
- 17: "fux praetorius mersenne kircher lippius bernhard werckmeister doni scacchi simpson playford printz diletsky tosi nassarre sanz correa couperin john4 kuhnau jdetorres",
- 18: "rameau mattheson kirnberger koch padremartini heinichen cpebach quantz lmozart tartini jgwalther euler dalembert marpurg riepel sorge forkel sulzer chladni nichelmann kittel foerster geminiani avison rousseau eximeno soler albrechtsberger vogler turk reicha dalberg cherubini rodriguezhita hotteterre",
- 19: "schenker riemann gweber sechter hauptmann abmarx weinlig fetis helmholtz berlioz rimskykorsakov busoni dolmetsch",
- 20: "schoenberg hindemith messiaen babbitt forte tovey kurth schillinger piston hauer dahlhaus lbmeyer grussell schaeffer lerdahl jeppesen",
+ 15: "tinctoris gaffurius prosdocimus ugolino ramos burtius spataro hothby mduran guglielmo anselmi schlick adamfulda virdung",
+ 16: "zarlino glarean vicentino vgalilei mei burmeister dressler artusi aron listenius lanfranco ornithoparchus magricola heyden faber hermannfinck pontio salinas bermudo santamaria ortiz zacconi cerone calvisius banchieri campion morley guilielmus butler ganassi",
+ 17: "fux praetorius mersenne kepler kircher descartes lippius bernhard werckmeister huygens doni gasparini scacchi penna berardi simpson playford printz diletsky tosi nassarre sanz correa couperin john4 kuhnau jdetorres",
+ 18: "rameau mattheson kirnberger koch padremartini heinichen cpebach quantz lmozart tartini burney jgwalther euler dalembert marpurg vallotti riepel scheibe sorge forkel sulzer momigny chladni niedt nichelmann kittel foerster geminiani avison rousseau eximeno soler albrechtsberger vogler turk reicha dalberg cherubini rodriguezhita hotteterre",
+ 19: "schenker riemann gweber sechter hauptmann abmarx weinlig fetis helmholtz jadassohn dindy prout taneyev berlioz rimskykorsakov busoni dolmetsch",
+ 20: "schoenberg hindemith messiaen babbitt forte lewin tovey kurth schillinger salzer piston hauer dahlhaus lbmeyer reti caplin hepokoski gjerdingen tymoczko delamotte grussell schaeffer lerdahl jeppesen",
 };
 for (const c in THEORY_RANK) THEORY_RANK[c].split(" ").forEach((id, i) => {
   IMP[id] = Math.max(IMP[id] || 1, i < 3 ? 5 : i < 8 ? 4 : i < 15 ? 3 : i < 25 ? 2 : 1);
@@ -5166,7 +5397,7 @@ for (const c in THEORY_RANK) THEORY_RANK[c].split(" ").forEach((id, i) => {
 /* ===================== CONSTANTS ===================== */
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const MON3 = MONTHS.map(m => m.slice(0,3));
-const MIN_Y = 800, EDGE = 12;
+const MIN_Y = -600, EDGE = 12;   // negative years are BC
 const _now = new Date();
 const NOW_Y = _now.getFullYear() + (_now.getMonth() + (_now.getDate()-1)/31) / 12;
 const MAX_Y = NOW_Y;
@@ -5201,6 +5432,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 const rich = s => esc(s).replace(/\*(.+?)\*/g, "<i>$1</i>");
 const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const YS = y => y < 0 ? `${Math.round(-y)} BC` : String(y);   // year as text
 const PARTICLE = /^(de|da|dal|dall'|del|della|dei|di|du|des|van|von|der|den|ten|le|la|y|e|do|dos|das)$/i;
 const initials = f => f ? f.split(/[\s-]+/).filter(w => w && !PARTICLE.test(w)).map(w => w[0] + ".").join(" ") : "";
 
@@ -5238,15 +5470,15 @@ function fmt(dt){
   if (dt.c) s += "c. ";
   if (dt.d) s += dt.d + " ";
   if (dt.m) s += MONTHS[dt.m-1] + " ";
-  s += dt.y;
+  s += YS(dt.y);
   if (dt.q) s += " (?)";
   return s;
 }
 function shortSpan(p){
-  if (!p.b && p.fl) return "active " + (p.flt || (p.fl[0] === p.fl[1] ? p.fl[0] : p.fl.join("–")));
-  const yb = p.b.lo != null ? (p.b.hi - p.b.lo >= 1 ? "c. " : "") + Math.floor(p.b.lo) : (p.b.c ? "c. " : "") + p.b.y;
+  if (!p.b && p.fl) return "active " + (p.flt || flText(p));
+  const yb = p.b.lo != null ? (p.b.hi - p.b.lo >= 1 ? "c. " : "") + YS(Math.floor(p.b.lo)) : (p.b.c ? "c. " : "") + YS(p.b.y);
   if (p.d.alive) return "born " + yb;
-  const yd = p.d.lo != null ? Math.floor(p.d.lo) : (p.d.after ? "after " : "") + p.d.y;
+  const yd = p.d.lo != null ? YS(Math.floor(p.d.lo)) : (p.d.after ? "after " : "") + YS(p.d.y);
   return yb + "–" + yd;
 }
 function roman(n){
@@ -5286,7 +5518,7 @@ function matches(p, skipKey, roleOverride){
 }
 
 /* ===================== BUILD PEOPLE ===================== */
-const flText = p => p.fl[0] === p.fl[1] ? String(p.fl[0]) : p.fl.join("–");
+const flText = p => p.fl[0] === p.fl[1] ? YS(p.fl[0]) : p.fl.map(YS).join("–");
 function labelHTML(p){
   return esc(p.label) + (!p.b && p.fl ? `<span class="fl">fl. ${p.flt ? "c. " : ""}${flText(p)}</span>` : "");
 }
@@ -5648,7 +5880,7 @@ function drawAxis({label, minor}){
     const x = X(v);
     let txt, bold;
     if (mi > 0){ txt = MON3[mi]; bold = false; }
-    else { txt = String(yr); bold = yr % 100 === 0; }
+    else { txt = YS(yr); bold = yr % 100 === 0; }
     ctx.font = `${bold ? 700 : 500} ${bold ? 13.5 : 12.5}px ${FONT_UI}`;
     ctx.fillStyle = bold || mi === 0 ? colors.ink : colors.muted;
     ctx.fillText(txt, x, 29);
@@ -5661,13 +5893,14 @@ function drawOverview(){
   ctx.fillStyle = colors.rule; ctx.fillRect(0, 21, w, 1);
   ctx.font = `500 11px ${FONT_UI}`; ctx.textBaseline = "alphabetic";
   const every = w < 520 ? 400 : 200;
-  for (let c = 800; c <= MAX_Y; c += 100){
+  const c0 = Math.ceil(MIN_Y / 100) * 100;
+  for (let c = c0; c <= MAX_Y; c += 100){
     const x = Math.round(ovX(c, w)) + .5;
     ctx.fillStyle = colors.faint; ctx.fillRect(x - .5, 18, 1, 4);
-    if ((c - 800) % every === 0){
+    if ((c - c0) % every === 0){
       ctx.fillStyle = colors.muted;
-      ctx.textAlign = c === 800 ? "left" : "center";
-      ctx.fillText(String(c), c === 800 ? x - .5 : x, 32.5);
+      ctx.textAlign = c === c0 ? "left" : "center";
+      ctx.fillText(YS(c), c === c0 ? x - .5 : x, 32.5);
     }
   }
   for (const p of PEOPLE){
@@ -6000,7 +6233,8 @@ function applySearch(){
 function showHits(){
   if (mode !== "timeline" || !hits.length) return;
   const a = Math.min(...hits.map(p => p.g.start)), b = Math.max(...hits.map(p => p.g.end));
-  fitTo(a - 25, b + 25, true);
+  const pad = Math.max(25, (250 - (b - a)) / 2);   // keep about 250 years of context around a single match
+  fitTo(a - pad, b + pad, true);
   setTimeout(() => { const p = hits.filter(h => h.visible).sort((x, y) => x.g.start - y.g.start)[0]; if (p && p.lane != null) ensureVisible(p); }, 480);
 }
 function applyFilters(){
@@ -6175,7 +6409,7 @@ function mapZoomAt(sx, sy, f){
 }
 const SX = x => x * mv.k + mv.tx, SY = y => y * mv.k + mv.ty;
 // "1681–83, 1703–06"; empty when someone was there for the whole range
-const yy = (f, t) => f === t ? String(f) : f + "–" + (Math.floor(f/100) === Math.floor(t/100) ? String(t).slice(-2).padStart(2, "0") : t);
+const yy = (f, t) => f === t ? YS(f) : f < 0 ? YS(f) + "–" + YS(t) : f + "–" + (Math.floor(f/100) === Math.floor(t/100) ? String(t).slice(-2).padStart(2, "0") : t);
 function spanText(e){
   const s = e.spans || [[e.from, e.to]];
   if (s.length === 1 && s[0][0] <= Math.ceil(ymode.a) && s[0][1] >= Math.floor(ymode.b)) return "";
@@ -6202,7 +6436,7 @@ function eraAt(y){
 }
 function updateYearText(){
   const a = Math.floor(ymode.a), b = Math.floor(ymode.b);
-  $("yearTxt").innerHTML = ymode.range ? `<b>${a}–${b}</b><span>${esc(eraAt((a+b)/2))}</span>` : `<b>${a}</b><span>${esc(eraAt(ymode.a))}</span>`;
+  $("yearTxt").innerHTML = ymode.range ? `<b>${YS(a)}–${YS(b)}</b><span>${esc(eraAt((a+b)/2))}</span>` : `<b>${YS(a)}</b><span>${esc(eraAt(ymode.a))}</span>`;
 }
 function startPlay(){
   if (playing) return;
@@ -6441,7 +6675,9 @@ function drawScrub(){
   // century ticks
   ctx.font = `500 10px ${FONT_UI}`; ctx.fillStyle = colors.muted; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
   const every = w < 520 ? 400 : 200;
-  for (let c = 800; c <= MAX_Y; c += 100){ const x = scrubX(c); ctx.fillRect(Math.round(x), 40, 1, 3); if ((c - 800) % every === 0) ctx.fillText(c, x, h - 0.5); }
+  const c0 = Math.ceil(MIN_Y / 100) * 100;
+  for (let c = c0; c <= MAX_Y; c += 100){ const x = scrubX(c); ctx.fillRect(Math.round(x), 40, 1, 3); if ((c - c0) % every === 0){ ctx.textAlign = c === c0 ? "left" : "center"; ctx.fillText(YS(c), c === c0 ? x - 2 : x, h - 0.5); } }
+  ctx.textAlign = "center";
   // selection
   const xa = scrubX(ymode.a), xb = scrubX(ymode.b);
   ctx.fillStyle = colors.ink;
@@ -6563,14 +6799,14 @@ function evLine(ev){
   if (ev.kind === "born") what = `<span class="sym">✱</span>born${ev.at ? " in " + esc(ev.at.name) : ""}`;
   else if (ev.kind === "died") what = `<span class="sym">†</span>died${ev.at ? " in " + esc(ev.at.name) : ""}`;
   else what = `<span class="sym">→</span>${esc(ev.from.name)} to ${esc(ev.at.name)}`;
-  return `<li><button type="button" data-id="${p.id}"><span class="yr">${ev.y}</span><span>${sw}<span class="who">${esc(p.label)}</span> <span class="what">${what}</span></span></button></li>`;
+  return `<li><button type="button" data-id="${p.id}"><span class="yr">${YS(ev.y)}</span><span>${sw}<span class="who">${esc(p.label)}</span> <span class="what">${what}</span></span></button></li>`;
 }
 function renderPanel(){
   if (mode !== "map" || !mapReady) return;
   const a = Math.floor(ymode.a), b = Math.floor(ymode.b);
   const ents = currentEntries();
   const people = new Set(ents.filter(e => e.dead < 0 || ymode.range).map(e => e.p));
-  $("mpTitle").textContent = ymode.range ? `${a}–${b}` : String(a);
+  $("mpTitle").textContent = ymode.range ? `${YS(a)}–${YS(b)}` : YS(a);
   $("mpSub").textContent = `${people.size} ${people.size === 1 ? "person" : "people"} on the map`;
   let html = "";
   if (mapSel){
@@ -6599,7 +6835,7 @@ function renderPanel(){
   } else {
     const lo = ymode.range ? a : a - 15, hi = b;
     const evs = events.filter(ev => ev.p.visible && ev.y >= lo && ev.y <= hi);
-    html += `<div class="mp-sec">${ymode.range ? "Events in this range" : `Events ${lo}–${hi}`}</div>`;
+    html += `<div class="mp-sec">${ymode.range ? "Events in this range" : `Events ${YS(lo)}–${YS(hi)}`}</div>`;
     const list = ymode.range ? evs : evs.slice().reverse();
     html += list.length ? `<ul class="mp-list">${list.slice(0, 300).map(evLine).join("")}</ul>` : `<p class="mp-empty">No births, moves or deaths recorded in these years.</p>`;
     html += `<p class="fine">Places and years are approximate. Between known posts, people are shown at their last known place; a "?" marks someone whose whereabouts before their first known post are unknown.</p>`;
@@ -6614,7 +6850,7 @@ function renderPanel(){
     const Y = ymode.range ? null : ymode.a;
     let cur = -1; if (Y != null) p.it.forEach((s, i) => { if (s.y <= Y) cur = i; });
     const itin = `<div class="mp-sec">Where</div><ul class="itin">` + p.it.map((s, i) =>
-      `<li class="${i === cur ? "now" : ""}"><span class="y">${s.y}</span><span>${esc(s.name)}${s.q ? " (?)" : ""}${i === 0 && p.bornAt === s ? " (born)" : ""}${i === p.it.length - 1 && p.diedAt === s ? " (died)" : ""}</span></li>`).join("") + `</ul>
+      `<li class="${i === cur ? "now" : ""}"><span class="y">${YS(s.y)}</span><span>${esc(s.name)}${s.q ? " (?)" : ""}${i === 0 && p.bornAt === s ? " (born)" : ""}${i === p.it.length - 1 && p.diedAt === s ? " (died)" : ""}</span></li>`).join("") + `</ul>
       <button class="btn tl-link" type="button" data-tl="${p.id}">Show on the timeline</button>`;
     host.insertAdjacentHTML("afterend", itin);
   }
@@ -6703,7 +6939,7 @@ new ResizeObserver(() => resize()).observe(stage);
 if (document.fonts && document.fonts.ready){
   document.fonts.ready.then(() => { measureLabels(); pack(); place(); requestDraw(); });
 }
-$("sub").textContent = `${MIN_Y} – ${_now.getFullYear()}`;
+$("sub").textContent = `${YS(MIN_Y)} – ${_now.getFullYear()}`;
 try { if (localStorage.getItem(KEY + "-mode") === "map") setMode("map"); } catch(_){}
 })();
 </script>
