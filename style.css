@@ -72,8 +72,8 @@ main.about-page { max-width: 62rem; }
 .about {
   display: grid;
   grid-template-columns: 1fr 22rem;
-  gap: 2.5rem;
-  align-items: start;
+  gap: 3rem;
+  align-items: center;
 }
 @media (max-width: 760px) {
   .about { grid-template-columns: minmax(0, 1fr); }
@@ -86,7 +86,10 @@ main.about-page { max-width: 62rem; }
   border: 1px solid var(--line);
   border-radius: 4px;
 }
-.bio { margin: 0; text-align: justify; hyphens: auto; }
+.bio { font-size: 1.25rem; line-height: 1.75; text-wrap: pretty; }
+.bio p { margin: 0 0 1.1em; }
+.bio p:last-child { margin-bottom: 0; }
+.bio .name { font-variant: small-caps; letter-spacing: .04em; font-size: 1.08em; }
 
 .game {
   display: block;
