@@ -98,8 +98,9 @@ button{font:inherit;color:inherit}
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--fi,0px),#000 calc(100% - var(--fo,0px)),transparent 100%);
           mask-image:linear-gradient(90deg,transparent 0,#000 var(--fi,0px),#000 calc(100% - var(--fo,0px)),transparent 100%)}
 .person:not(.sel):hover .fill{filter:brightness(1.12) saturate(1.05)}
-.person.top5 .fill::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;border-radius:3px 3px 0 0;background:var(--gold)}
-.person.top5.sel .fill::after{display:none}
+.lanes.searching .person:not(.hit):not(.sel){opacity:.38}
+.person.hit{z-index:2}
+.person.hit .bar{outline:2px solid var(--ink);outline-offset:1px;border-radius:4px}
 .name{position:absolute;left:0;top:0;height:18px;margin:0;border:0;background:none;padding:0 6px;cursor:pointer;
   font-family:var(--f-sc);font-weight:500;font-size:13px;line-height:18px;letter-spacing:.02em;white-space:nowrap;color:var(--on-role)}
 .name .fl{font-family:var(--f-ui);font-style:italic;font-weight:400;font-size:12px;opacity:.85;margin-left:5px;letter-spacing:0}
@@ -5045,6 +5046,76 @@ Object.assign(ITIN, {
 "lerdahl":"1943 madison, 1991 newyork"
 });
 
+/* ===================== THEORISTS FROM GEORG THOMA'S SOURCE COLLECTION =====================
+   Added October 2026: the theorists of musiktheorie.georgthoma.de not yet in the timeline. */
+const THEORISTS_ADDED_2 = [
+{"id":"sorge","last":"Sorge","first":"Georg Andreas","roles":["composer","theorist"],"b":{"y":1703,"m":3,"d":21,"place":"Mellenbach, Schwarzburg"},"d":{"y":1778,"m":4,"d":4,"place":"Lobenstein"},"nat":"German (Thuringia)","origin":"German","areas":["German lands & Austria"],"places":["Lobenstein (court and town organist, from 1722)"],"genres":["Treatises","Keyboard music"],"langs":["German"],"text":"*Vorgemach der musicalischen Composition* (1745–47), a thorough-bass and harmony treatise that described combination tones, plus writings on temperament and organ music."},
+{"id":"nichelmann","last":"Nichelmann","first":"Christoph","roles":["composer","theorist"],"b":{"y":1717,"m":8,"d":13,"place":"Treuenbrietzen"},"d":{"y":1762,"m":7,"d":20,"place":"Berlin"},"nat":"German (Brandenburg)","origin":"German","areas":["German lands & Austria"],"places":["Leipzig (Thomasschule under J.S. Bach)","Hamburg","Berlin (second harpsichordist to Frederick the Great, 1745–56)"],"genres":["Treatises","Keyboard music","Concertos"],"langs":["German"],"text":"*Die Melodie nach ihrem Wesen sowohl, als nach ihren Eigenschaften* (1755), on melody as the heart of composition, which drew a sharp reply from C.P.E. Bach's circle, plus keyboard sonatas and concertos."},
+{"id":"sulzer","last":"Sulzer","first":"Johann Georg","roles":["theorist"],"b":{"y":1720,"m":10,"d":16,"place":"Winterthur"},"d":{"y":1779,"m":2,"d":27,"place":"Berlin"},"nat":"Swiss (Winterthur)","origin":"Swiss","areas":["Switzerland","German lands & Austria"],"places":["Berlin (Joachimsthal Gymnasium; Academy of Sciences)"],"genres":["Treatises"],"langs":["German"],"text":"*Allgemeine Theorie der schönen Künste* (1771–74), an encyclopedia of the arts whose music articles were written by Kirnberger and J.A.P. Schulz."},
+{"id":"kittel","last":"Kittel","first":"Johann Christian","roles":["composer","theorist"],"b":{"y":1732,"m":2,"d":18,"place":"Erfurt"},"d":{"y":1809,"place":"Erfurt"},"nat":"German (Thuringia)","origin":"German","areas":["German lands & Austria"],"places":["Leipzig (one of J.S. Bach's last pupils)","Langensalza","Erfurt (organist of the Predigerkirche, from 1762)"],"genres":["Treatises","Keyboard music"],"langs":["German"],"text":"*Der angehende praktische Organist* (1801–08), an organ method that passed on Bach's way of playing and harmonizing chorales, plus chorale preludes."},
+{"id":"foerster","last":"Förster","first":"Emanuel Aloys","roles":["composer","theorist"],"b":{"y":1748,"m":1,"d":26,"place":"Niedersteine, Silesia"},"d":{"y":1823,"m":11,"d":12,"place":"Vienna"},"nat":"Silesian (Bohemian crown lands), later Viennese","origin":"Austrian","areas":["German lands & Austria","Central & Eastern Europe"],"places":["Vienna (from c. 1779; teacher and composer)"],"genres":["Treatises","Sonatas & chamber music","Keyboard music"],"langs":["German"],"text":"*Anleitung zum General-Bass* (1805) and the *Practische Beyspiele* (1818), plus string quartets and quintets that Beethoven admired and learned from."},
+{"id":"forkel","last":"Forkel","first":"Johann Nikolaus","roles":["theorist"],"b":{"y":1749,"m":2,"d":22,"place":"Meeder, near Coburg"},"d":{"y":1818,"m":3,"d":20,"place":"Göttingen"},"nat":"German (Coburg)","origin":"German","areas":["German lands & Austria"],"places":["Göttingen (university organist and music director, from 1769)"],"genres":["Treatises","Keyboard music"],"langs":["German"],"text":"*Allgemeine Geschichte der Musik* (1788–1801), the first large German history of music, and *Über Johann Sebastian Bachs Leben, Kunst und Kunstwerke* (1802), the first Bach biography."},
+{"id":"chladni","last":"Chladni","first":"Ernst Florens Friedrich","roles":["theorist"],"b":{"y":1756,"m":11,"d":30,"place":"Wittenberg"},"d":{"y":1827,"m":4,"d":3,"place":"Breslau"},"nat":"German (Saxony)","origin":"German","areas":["German lands & Austria"],"places":["Wittenberg","Lecture tours across Europe with his instruments"],"genres":["Treatises"],"langs":["German"],"text":"*Entdeckungen über die Theorie des Klanges* (1787), with the 'Chladni figures' made by sand on vibrating plates, and *Die Akustik* (1802), which founded acoustics as a science; he also invented the euphon and the clavicylinder."},
+{"id":"dalberg","last":"Dalberg","first":"Johann Friedrich Hugo von","roles":["composer","theorist"],"b":{"y":1760,"place":"Herrnsheim, near Worms"},"d":{"y":1812,"place":"Aschaffenburg"},"nat":"German (Rhineland nobility)","origin":"German","areas":["German lands & Austria"],"places":["Trier, Worms and Speyer (cathedral canon)"],"genres":["Treatises","Lieder & art songs","Keyboard music"],"langs":["German"],"text":"*Untersuchungen über den Ursprung der Harmonie* (1800), essays on music aesthetics, songs and piano music; he also translated the Sanskrit poem *Gita Govinda*."},
+{"id":"weinlig","last":"Weinlig","first":"Christian Theodor","roles":["composer","theorist"],"b":{"y":1780,"m":7,"d":25,"place":"Dresden"},"d":{"y":1842,"m":3,"d":7,"place":"Leipzig"},"nat":"German (Saxony)","origin":"German","areas":["German lands & Austria","Italy"],"places":["Dresden (Kreuzkantor, 1814–17)","Bologna (studied with Stanislao Mattei)","Leipzig (Thomaskantor, 1823–42)"],"genres":["Treatises","Masses","Motets","Cantatas"],"langs":["German","Latin"],"text":"Lectures on harmony (1811–13, with Morgenroth) and *Theoretisch-praktische Anleitung zur Fuge* (1845); as Thomaskantor he taught Richard Wagner and Clara Schumann."}
+];
+for (const p of THEORISTS_ADDED_2) PEOPLE.push(p);
+Object.assign(LINKS, {
+"sorge":{"wiki":"Georg_Andreas_Sorge"},
+"nichelmann":{"wiki":"Christoph_Nichelmann","imslp":"Nichelmann, Christoph","imslpGo":true},
+"sulzer":{"wiki":"Johann_Georg_Sulzer"},
+"kittel":{"wiki":"Johann_Christian_Kittel","imslp":"Kittel, Johann Christian","imslpGo":true},
+"foerster":{"wiki":"Emanuel_Aloys_Förster","imslp":"Förster, Emanuel Aloys","imslpGo":true},
+"forkel":{"wiki":"Johann_Nikolaus_Forkel","imslp":"Forkel, Johann Nikolaus","imslpGo":true},
+"chladni":{"wiki":"Ernst_Chladni"},
+"dalberg":{"wiki":"Johann_Friedrich_Hugo_von_Dalberg"},
+"weinlig":{"wiki":"Christian_Theodor_Weinlig","imslp":"Weinlig, Christian Theodor","imslpGo":true}
+});
+Object.assign(PLACES, {
+"mellenbach":[50.64,11.13,"Mellenbach"],
+"lobenstein":[50.452,11.639,"Bad Lobenstein"],
+"treuenbrietzen":[52.097,12.871,"Treuenbrietzen"],
+"winterthur":[47.5,8.724,"Winterthur"],
+"langensalza":[51.11,10.646,"Langensalza"],
+"niedersteine":[50.519,16.493,"Niedersteine (Ścinawka Dolna)"],
+"meeder":[50.32,10.906,"Meeder"],
+"aschaffenburg":[49.977,9.152,"Aschaffenburg"]
+});
+Object.assign(ITIN, {
+"sorge":"1703 mellenbach, 1722 lobenstein",
+"nichelmann":"1717 treuenbrietzen, 1730 leipzig, 1733 hamburg, 1739 berlin",
+"sulzer":"1720 winterthur, 1747 berlin",
+"kittel":"1732 erfurt, 1748 leipzig, 1751 langensalza, 1756 erfurt",
+"foerster":"1748 niedersteine, 1779 vienna",
+"forkel":"1749 meeder, 1766 luneburg?, 1769 gottingen",
+"chladni":"1756 wittenberg, 1827 wroclaw",
+"dalberg":"1760 worms, 1787 trier, 1812 aschaffenburg",
+"weinlig":"1780 dresden, 1806 bologna?, 1814 dresden, 1823 leipzig"
+});
+/* Transcriptions of 18th- and 19th-century treatises in Georg Thoma's "Quellen der Musiktheorie". */
+const THOMA = {
+  "albrechtsberger":"albrechtsberger/johann-georg-albrechtsberger/",
+  "cpebach":"bach/carl-philipp-emanuel-bach/",
+  "chladni":"chladni/ernst-florens-friedrich-chladni/",
+  "dalberg":"dalberg/johann-friedrich-hugo-von-dalberg/",
+  "forkel":"forkel/johann-nikolaus-forkel/",
+  "foerster":"foerster/emanuel-aloys-foerster/",
+  "fux":"fux/johann-joseph-fux/",
+  "kirnberger":"kirnberger/johann-philipp-kirnberger/",
+  "kittel":"kittel/johann-christian-kittel/",
+  "koch":"koch/heinrich-christoph-koch/",
+  "marpurg":"marpurg/friedrich-wilhelm-marpurg/",
+  "padremartini":"martini/giovanni-battista-martini/",
+  "mattheson":"mattheson/johann-mattheson/",
+  "nichelmann":"nichelmann/christoph-nichelmann/",
+  "riepel":"riepel/joseph-riepel/",
+  "sorge":"sorge/georg-andreas-sorge/",
+  "sulzer":"sulzer/johann-georg-sulzer/",
+  "turk":"tuerk/daniel-gottlob-tuerk/",
+  "weinlig":"weinlig/christian-theodor-weinlig/",
+};
+for (const id in THOMA) (LINKS[id] = LINKS[id] || {}).thoma = "https://musiktheorie.georgthoma.de/quellen/" + THOMA[id];
+
 const CMGP = {"codax":92,"dinis":25,"alfonso":11,"airasnunes":16,"mendinho":103,"joaozorro":82,"paiosoares":116,"bernal":22,"torneol":107,"johandecangas":63,"ruigomes":144,"meogo":134,"guilhade":68,"charinho":115,"pedroamigo":117,"burgales":127,"asanches":337,"baiao":6,"fgsousa":42,"ambroa":122,"fvelho":49,"resende":160,"aboim":73,"pedrobarcelos":119,"vasconcelos":141,"scoelho":76,"jgaia":64,"eguarda":30,"ecoelho":29,"msoares":98,"esquio":37,"vgsoverosa":153,"gilsanches":56,"calheiros":46,"jsoarespaiva":77,"bonifacicalvo":23};
 for (const id in CMGP) if (LINKS[id]) LINKS[id].cmgp = CMGP[id];
 
@@ -5084,8 +5155,8 @@ const THEORY_RANK = {
  15: "tinctoris gaffurius prosdocimus ugolino ramos spataro hothby mduran guglielmo anselmi schlick adamfulda virdung",
  16: "zarlino glarean vicentino vgalilei mei burmeister artusi aron ornithoparchus magricola heyden hermannfinck salinas bermudo santamaria ortiz zacconi cerone calvisius banchieri campion morley ganassi",
  17: "fux praetorius mersenne kircher lippius bernhard werckmeister doni scacchi simpson playford printz diletsky tosi nassarre sanz correa couperin john4 kuhnau jdetorres",
- 18: "rameau mattheson kirnberger koch padremartini heinichen cpebach quantz lmozart tartini jgwalther euler dalembert marpurg riepel geminiani avison rousseau eximeno soler albrechtsberger vogler turk reicha cherubini rodriguezhita hotteterre",
- 19: "schenker riemann gweber sechter hauptmann abmarx fetis helmholtz berlioz rimskykorsakov busoni dolmetsch",
+ 18: "rameau mattheson kirnberger koch padremartini heinichen cpebach quantz lmozart tartini jgwalther euler dalembert marpurg riepel sorge forkel sulzer chladni nichelmann kittel foerster geminiani avison rousseau eximeno soler albrechtsberger vogler turk reicha dalberg cherubini rodriguezhita hotteterre",
+ 19: "schenker riemann gweber sechter hauptmann abmarx weinlig fetis helmholtz berlioz rimskykorsakov busoni dolmetsch",
  20: "schoenberg hindemith messiaen babbitt forte tovey kurth schillinger piston hauer dahlhaus lbmeyer grussell schaeffer lerdahl jeppesen",
 };
 for (const c in THEORY_RANK) THEORY_RANK[c].split(" ").forEach((id, i) => {
@@ -5200,13 +5271,12 @@ function zoomBonus(){
   const span = W / view.ppy;
   return span <= 90 ? 2 : span <= 260 ? 1 : 0;
 }
-function effImp(){ return state.q ? 1 : Math.max(1, state.imp - zoomBonus()); }
+function effImp(){ return Math.max(1, state.imp - zoomBonus()); }
 function vals(p, key){ return key === "origin" ? [p.origin] : (p[key] || []); }
 function matches(p, skipKey, roleOverride){
   const role = roleOverride ?? state.role;
   if (role !== "all" && !p.roles.includes(role)) return false;
-  if (state.q && !p.search.includes(norm(state.q))) return false;
-  if (p.imp < curImp && p !== pinP && p !== selected && p !== mapSel) return false;
+  if (p.imp < curImp && !p.hit && p !== pinP && p !== selected && p !== mapSel) return false;
   for (const f of FACETS){
     if (f.key === skipKey) continue;
     const set = state.f[f.key];
@@ -5232,7 +5302,7 @@ for (const p of PEOPLE){
   p.search = norm(p.name + " " + p.label);
   byId[p.id] = p;
   const el = document.createElement("div");
-  el.className = "person fresh" + (p.imp === 5 ? " top5" : ""); el.dataset.id = p.id;
+  el.className = "person fresh"; el.dataset.id = p.id;
   el.style.setProperty("--rc", `var(${ROLES[p.roles[0]].color})`);
   if (p.roles[1]) el.style.setProperty("--rc2", `var(${ROLES[p.roles[1]].color})`);
   const bar = document.createElement("div"); bar.className = "bar";
@@ -5271,6 +5341,7 @@ function buildInfo(p){
     L.imslp ? ext(imslpURL(L), "Scores on IMSLP") : "",
     L.cpdl  ? ext(cpdlURL(L.cpdl), "Scores on CPDL") : "",
     L.cmgp  ? ext(cmgpURL(L.cmgp), "Cantigas medievais (FCSH)") : "",
+    L.thoma ? ext(L.thoma, "Treatises (Quellen der Musiktheorie)") : "",
   ].join("");
   const section = (title, list) => !list || !list.length ? "" : `<div class="treat"><h4>${title}</h4><ul>` + list.map(tr => {
       const opts = (tr.links || []).map(([kind, src, url]) =>
@@ -5886,15 +5957,15 @@ facetsEl.addEventListener("click", e => {
 });
 function renderActive(){
   const pills = [];
-  if (state.q) pills.push(`<button class="pill" type="button" data-q="1">“${esc(state.q)}” <span class="x" aria-hidden="true">×</span></button>`);
+  const qpill = state.q ? `<span class="lab">Highlighting</span><button class="pill" type="button" data-q="1">“${esc(state.q)}” · ${hits.length} <span class="x" aria-hidden="true">×</span></button>` : "";
   let n = 0;
   for (const f of FACETS) for (const v of state.f[f.key]){
     n++;
     pills.push(`<button class="pill" type="button" data-k="${f.key}" data-v="${esc(v)}" aria-label="Remove ${esc(v)}">${esc(v)} <span class="x" aria-hidden="true">×</span></button>`);
   }
   badge.textContent = n ? n : "";
-  activebar.hidden = !pills.length;
-  activebar.innerHTML = pills.length ? `<span class="lab">Showing only</span>${pills.join("")}<button class="linkbtn" type="button" data-clear="1">Clear all</button>` : "";
+  activebar.hidden = !pills.length && !qpill;
+  activebar.innerHTML = qpill + (pills.length ? `<span class="lab">Showing only</span>${pills.join("")}` : "") + (pills.length || qpill ? `<button class="linkbtn" type="button" data-clear="1">Clear all</button>` : "");
 }
 activebar.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -5912,7 +5983,28 @@ $("emptyClear").addEventListener("click", () => { clearAll(); state.role = "all"
 let qTimer = 0;
 $("q").addEventListener("input", e => { clearTimeout(qTimer); qTimer = setTimeout(() => { state.q = e.target.value.trim(); applyFilters(); }, 120); });
 
+// search highlights the matching people and leaves everyone else in place, dimmed
+let hits = [], lastQ = "";
+function applySearch(){
+  const q = norm(state.q);
+  hits = [];
+  for (const p of PEOPLE){
+    p.hit = !!q && p.search.includes(q);
+    p.el.classList.toggle("hit", p.hit);
+    if (p.hit) hits.push(p);
+  }
+  lanesEl.classList.toggle("searching", !!q);
+  const changed = state.q !== lastQ; lastQ = state.q;
+  return changed && hits.length > 0;
+}
+function showHits(){
+  if (mode !== "timeline" || !hits.length) return;
+  const a = Math.min(...hits.map(p => p.g.start)), b = Math.max(...hits.map(p => p.g.end));
+  fitTo(a - 25, b + 25, true);
+  setTimeout(() => { const p = hits.filter(h => h.visible).sort((x, y) => x.g.start - y.g.start)[0]; if (p && p.lane != null) ensureVisible(p); }, 480);
+}
 function applyFilters(){
+  const jump = applySearch();
   curImp = effImp(); updateImpOut();
   let shown = 0;
   for (const p of PEOPLE){
@@ -5931,14 +6023,15 @@ function applyFilters(){
   requestAnimationFrame(() => PEOPLE.forEach(p => p.el.classList.remove("fresh")));
   saveSoon();
   if (mode === "map"){ if (mapSel && !mapSel.visible) mapSel = null; mapRequest(); renderPanel(); }
+  if (jump) showHits();
 }
 
 // importance slider
 const impEl = $("imp"), impOut = $("impOut");
 function updateImpOut(){
-  const zoomed = curImp < state.imp && !state.q;
-  impOut.innerHTML = state.q ? `all` : zoomed ? `${curImp}+<small>zoom</small>` : `${state.imp}+`;
-  impOut.title = state.q ? "Searching shows everyone" : zoomed ? `Set to ${state.imp}+; zoomed in, so ${curImp}+ is shown here` : "";
+  const zoomed = curImp < state.imp;
+  impOut.innerHTML = zoomed ? `${curImp}+<small>zoom</small>` : `${state.imp}+`;
+  impOut.title = zoomed ? `Set to ${state.imp}+; zoomed in, so ${curImp}+ is shown here` : "";
 }
 impEl.addEventListener("input", () => { state.imp = +impEl.value; applyFilters(); });
 let impTimer = 0;
@@ -6267,7 +6360,7 @@ function mapDraw(){
     ctx.fillStyle = n === 1 ? roleCol(c.list[0].p) : colors.ink;
     ctx.globalAlpha = c.list.every(e => e.dead >= 0) ? .45 : 1; ctx.fill(); ctx.globalAlpha = 1;
     ctx.lineWidth = 1.5; ctx.strokeStyle = colors.land; ctx.stroke();
-    if (mapCity === c.key){ ctx.beginPath(); ctx.arc(c.x, c.y, r + 4, 0, Math.PI*2); ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.5; ctx.stroke(); }
+    if (mapCity === c.key || c.list.some(e => e.p.hit)){ ctx.beginPath(); ctx.arc(c.x, c.y, r + 4, 0, Math.PI*2); ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.5; ctx.stroke(); }
     // births: expanding rings
     for (const e of c.list) if (e.born >= 0 && !ymode.range){
       ctx.beginPath(); ctx.arc(c.x, c.y, r + 4 + e.born * 14, 0, Math.PI*2);
@@ -6275,7 +6368,7 @@ function mapDraw(){
     }
     mapHits.push({ x0:c.x - r - 4, y0:c.y - r - 4, x1:c.x + r + 4, y1:c.y + r + 4, city:c });
     // label block
-    const sorted = c.list.slice().sort((a, b) => (a.dead >= 0) - (b.dead >= 0) || a.p.g.start - b.p.g.start);
+    const sorted = c.list.slice().sort((a, b) => b.p.hit - a.p.hit || (a.dead >= 0) - (b.dead >= 0) || a.p.g.start - b.p.g.start);
     const shown = sorted.slice(0, n > maxNames ? maxNames - 1 : maxNames);
     const lines = shown.map(e => {
       let t = shortName(e.p);
@@ -6310,7 +6403,7 @@ function mapDraw(){
       const y = pos.y0 + 13 + i*lh + lh/2 - 1;
       if (l.more){ ctx.font = FSMALL; haloText(ctx, l.t, pos.x0 + 3, y, colors.muted); ctx.font = FNAME;
         mapHits.push({ x0:pos.x0, y0:y - lh/2, x1:pos.x1, y1:y + lh/2, city:c }); return; }
-      const p = l.e.p, sel = mapSel === p;
+      const p = l.e.p, sel = mapSel === p || p.hit;
       ctx.font = sel ? `700 12.5px ${FONT_UI}` : FNAME;
       haloText(ctx, l.t, pos.x0 + 3, y, l.e.dead >= 0 ? colors.muted : (sel ? roleCol(p) : colors.ink));
       const tw = ctx.measureText(l.t).width;
