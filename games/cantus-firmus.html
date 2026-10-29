@@ -113,8 +113,8 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 #score .ledger{stroke:var(--leaf-ink)}
 #score use,#score .bar,#score .dot{fill:var(--leaf-ink)}
 #score use.clefhov{fill:var(--hov)}
-#score .it.hov use{fill:var(--del)}
-#score .it.hov .ledger{stroke:var(--del)}
+#score .it.hov use{fill:var(--hov)}
+#score .it.hov .ledger{stroke:var(--hov)}
 #score .it.dim{opacity:.28}
 #score use.sigghost{opacity:.26}
 #score use.sigghost.on{opacity:.85;fill:var(--hov)}
@@ -200,6 +200,53 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
   .ib svg{width:32px;height:32px}
 }
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ================= Layout v2: one control height, one rhythm ================= */
+:root{--h:40px}
+button,select,input[type=number]{height:var(--h);min-height:var(--h);font-size:16px}
+button{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 14px;white-space:nowrap}
+select{padding:0 10px}
+.ib{width:var(--h);padding:0}
+.ib svg{width:22px;height:22px;fill:currentColor}
+.tb{min-height:var(--h)}
+.cfitem{height:auto;min-height:0;display:block}
+.chev{width:11px;height:11px;fill:currentColor;flex:none}
+header.top{margin-bottom:10px}
+.tools{padding:4px 0 10px;position:static}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 8px}
+.bar .spacer,.transport .spacer{flex:1 1 16px}
+.vsep{width:1px;height:24px;background:var(--line);margin:0 6px;flex:none}
+.pop{position:relative}
+.popbtn{min-width:0}
+.popbtn svg:not(.chev){width:22px;height:22px;fill:currentColor}
+#accBtns{display:flex;gap:4px}
+#accBtns .ib svg{width:20px;height:22px}
+label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:16px}
+.libbtn{gap:8px}
+.leaf{margin-top:2px}
+.transport{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+#play{min-width:104px;font-size:16px}
+#play svg{width:13px;height:13px}
+.tempo-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.unitbtn{width:auto;padding:0 8px 0 4px;gap:2px}
+.unitbtn svg{width:30px;height:30px}
+.stepper button{min-width:var(--h);height:var(--h);padding:0;font-size:20px}
+.stepper input{height:var(--h);min-height:var(--h);font-size:16px}
+.tp-side{display:flex;flex-wrap:wrap;gap:18px 56px;align-items:flex-start;margin-top:12px;padding:14px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.tp-side[hidden]{display:none}
+.tune{display:contents;border:0;margin:0;padding:0}
+.tcol{display:grid;grid-template-columns:auto 150px 3.4em;gap:6px 12px;align-items:center;align-content:start}
+.tcol .tg{grid-column:1/-1;font-style:italic;color:var(--muted);font-size:15px;margin:0 0 2px}
+.tcol label{color:var(--muted);font-size:16px}
+.tcol input[type=range]{width:150px}
+.tcol output{font-variant-numeric:tabular-nums;font-size:15px;text-align:right}
+.tcol .check{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:8px}
+.tcol button{grid-column:1/-1;justify-self:start;margin-top:4px}
+#reg{width:176px}
+.grow{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.tp-side{flex-direction:row}
+.embedded .bar{padding-right:112px}
+@media (max-width:700px){ .embedded .bar{padding-right:0} .vsep{display:none} .bar .spacer,.transport .spacer{flex-basis:100%;height:0} }
 </style>
 </head>
 <body>
@@ -207,28 +254,18 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
 
 <main class="wrap">
   <header class="top">
-    <div>
-      <h1>Cantus firmus</h1>
-      <p class="lede">Write a cantus firmus in mensural notation and hear it back.</p>
-    </div>
-    <div class="share">
-      <div class="libwrap">
-        <button id="libBtn" class="libbtn" aria-haspopup="true" aria-expanded="false" aria-controls="library">Cantus firmi<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
-        <div id="library" class="library" role="dialog" aria-label="Cantus firmi to start from" hidden></div>
-      </div>
-      <button id="copyLink" title="Copy a link that opens this exact cantus firmus">Copy link</button>
-    </div>
+    <h1>Cantus firmus</h1>
+    <p class="lede">Write a cantus firmus in mensural notation and hear it back.</p>
   </header>
 
   <section class="tools" aria-label="Notation tools">
-    <div class="row">
-      <div class="grp pop" id="popDur">
-        <span class="gl" id="durLabel">Note value</span>
-        <button class="ib popbtn" id="durSum" aria-haspopup="true" aria-label="Note value"></button>
+    <div class="bar">
+      <div class="pop" id="popDur">
+        <span class="sr" id="durLabel">Note value</span>
+        <button class="tb popbtn" id="durSum" aria-haspopup="true" aria-label="Note value"></button>
         <div class="popbody"><div class="btns" id="durBtns" role="group" aria-labelledby="durLabel"></div></div>
       </div>
-      <div class="grp pop" id="popEnter">
-        <span class="gl">Enter</span>
+      <div class="pop" id="popEnter">
         <button class="tb popbtn" id="enterSum" aria-haspopup="true" aria-label="Enter notes or rests">Note</button>
         <div class="popbody">
           <div class="seg" role="group" aria-label="Enter notes or rests">
@@ -237,12 +274,8 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
           </div>
         </div>
       </div>
-      <div class="grp">
-        <span class="gl">Accidental</span>
-        <div class="btns" id="accBtns" role="group" aria-label="Accidental"></div>
-      </div>
-      <div class="grp pop" id="popXform">
-        <span class="gl">&nbsp;</span>
+      <div class="btns" id="accBtns" role="group" aria-label="Accidental"></div>
+      <div class="pop" id="popXform">
         <button class="tb popbtn" aria-haspopup="true">Transform melody<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
         <div class="popbody">
           <div class="btns col">
@@ -253,9 +286,16 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
           </div>
         </div>
       </div>
-      <span class="spacer"></span>
-      <label class="ctl">Size <input type="range" id="size" min="8" max="26" step="1"></label>
+      <div class="grow">
+      <label class="ctl">Size <input type="range" id="size" min="8" max="26" step="1" style="width:100px"></label>
       <button id="clear">Clear all notes</button>
+      <span class="vsep" aria-hidden="true"></span>
+      <div class="libwrap">
+        <button id="libBtn" class="libbtn" aria-haspopup="true" aria-expanded="false" aria-controls="library">Cantus firmi<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
+        <div id="library" class="library" role="dialog" aria-label="Cantus firmi to start from" hidden></div>
+      </div>
+      <button id="copyLink" title="Copy a link that opens this exact cantus firmus">Copy link</button>
+      </div>
     </div>
     <div hidden>
       <button id="stepUp"></button><button id="stepDown"></button>
@@ -271,54 +311,55 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
   </section>
   <p id="status" class="sr"></p>
 
-  <section class="transport" aria-label="Playback">
-    <div class="tp-play">
-      <button id="play" aria-label="Play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 13 7 2 13Z"/></svg><span>Play</span></button>
-      <button id="loop" aria-pressed="false" title="Repeat until stopped; adds a repeat sign at the end">Loop</button>
-      <button id="toggleSet" aria-expanded="true" aria-controls="tpSide" title="Show or hide the sound settings">Hide settings</button>
-    </div>
-
-    <div class="tactus">
-      <div class="tempo-row" role="group" aria-label="Tempo">
-        <div class="unitpick">
-          <button id="unitBtn" class="ib unitbtn" aria-haspopup="listbox" aria-expanded="false"></button>
-          <ul id="unitList" class="menu" role="listbox" aria-label="Note value that gets the beat" tabindex="-1" hidden></ul>
-        </div>
-        <span class="eq" aria-hidden="true">=</span>
-        <div class="stepper">
-          <button id="tempoDown" aria-label="Slower" title="Slower">−</button>
-          <input type="number" id="tempo" min="10" max="300" step="1" inputmode="numeric" aria-label="Beats per minute">
-          <button id="tempoUp" aria-label="Faster" title="Faster">+</button>
-        </div>
-        <button id="heart" class="ib small" aria-label="Semibrevis at the pulse: 67 per minute" title="Semibrevis = 67 per minute, a resting pulse (Gaffurius takes the semibrevis as one heartbeat)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
-        <button id="metro" aria-pressed="false" title="A click on every beat while playing">Metronome</button>
+  <section class="transport" aria-label="Playback and sound">
+    <button id="play" aria-label="Play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 13 7 2 13Z"/></svg><span>Play</span></button>
+    <button id="loop" aria-pressed="false" title="Repeat until stopped; adds a repeat sign at the end">Loop</button>
+    <button id="metro" aria-pressed="false" title="A click on every beat while playing">Metronome</button>
+    <span class="vsep" aria-hidden="true"></span>
+    <div class="tempo-row" role="group" aria-label="Tempo">
+      <div class="unitpick">
+        <button id="unitBtn" class="unitbtn" aria-haspopup="listbox" aria-expanded="false"></button>
+        <ul id="unitList" class="menu" role="listbox" aria-label="Note value that gets the beat" tabindex="-1" hidden></ul>
       </div>
+      <span class="eq" aria-hidden="true">=</span>
+      <div class="stepper">
+        <button id="tempoDown" aria-label="Slower" title="Slower">−</button>
+        <input type="number" id="tempo" min="10" max="300" step="1" inputmode="numeric" aria-label="Beats per minute">
+        <button id="tempoUp" aria-label="Faster" title="Faster">+</button>
+      </div>
+      <button id="heart" class="ib" aria-label="Semibrevis at the pulse: 67 per minute" title="Semibrevis = 67 per minute, a resting pulse (Gaffurius takes the semibrevis as one heartbeat)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
     </div>
+    <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1" style="width:100px"></label>
+    <div class="grow">
+    <label class="ctl">Pitch a′ =
+      <select id="ref">
+        <option value="415">415 Hz</option>
+        <option value="440">440 Hz</option>
+        <option value="466">466 Hz</option>
+      </select>
+    </label>
+    <label class="ctl">Sound
+      <select id="reg"><option value="gedackt">Gedackt 8′ (stopped flute)</option><option value="principal">Principal 8′</option><option value="plenum">Principal chorus (8′ 4′ 2′)</option><option value="flute">Open flute 8′</option><option value="regal">Regal (soft reed)</option><option value="sine">Sine</option><option value="custom">Your own (drawbars)</option></select>
+    </label>
+    <button id="toggleSet" aria-expanded="false" aria-controls="tpSide" title="Show or hide all the sound settings">Sound settings<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
+    </div>
+  </section>
 
-    <div class="tp-side" id="tpSide">
-      <label class="ctl">Pitch a′ =
-        <select id="ref">
-          <option value="415">415 Hz</option>
-          <option value="440">440 Hz</option>
-          <option value="466">466 Hz</option>
-        </select>
-      </label>
-      <label class="ctl">Sound
-        <select id="reg"><option value="gedackt">Gedackt 8′ (stopped flute)</option><option value="principal">Principal 8′</option><option value="plenum">Principal chorus (8′ 4′ 2′)</option><option value="flute">Open flute 8′</option><option value="regal">Regal (soft reed)</option><option value="sine">Sine</option><option value="custom">Your own (drawbars)</option></select>
-      </label>
-      <label class="ctl">Brightness <input type="range" id="bright" min="0" max="100" step="1"></label>
-      <label class="ctl">Room <input type="range" id="room" min="0" max="100" step="1"></label>
-      <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1"></label>
-      <div class="tune" id="tune" aria-label="Sound settings"></div>
+  <section class="tp-side" id="tpSide" aria-label="Sound settings" hidden>
+    <div class="tcol">
+      <div class="tg">Tone</div>
+      <label for="bright">Brightness</label><input type="range" id="bright" min="0" max="100" step="1"><output id="bo"></output>
+      <label for="room">Room</label><input type="range" id="room" min="0" max="100" step="1"><output id="ro"></output>
+      <label class="check"><input type="checkbox" id="audition"> Hear notes while editing</label>
       <button id="copySound" title="Copies the current sound settings as text, to send to whoever is tuning the sound">Copy sound settings</button>
-      <label class="ctl"><input type="checkbox" id="audition"> Hear notes while editing</label>
     </div>
+    <div class="tune" id="tune"></div>
   </section>
 
   <details class="help">
     <summary>How to enter and edit</summary>
-    <p>Pick a note value, then right-click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. Right-click exactly on a note (it turns red) to turn it into a rest of the same value; right-click exactly on a rest to remove it. Right-click anywhere else near a note or rest to enter a new note there. Drag a note with the right button to change its pitch. The left button selects: click a note, and Play and the space bar start from it. Click the clef to change it.</p>
-    <p>To change a note without removing it, select it: left-click it, or press and hold it on a touch screen. (On a touch screen a tap edits, as the right button does.) Value, rest and accidental buttons then change that note. With nothing selected, they apply to the next note you enter and to the note you just entered.</p>
+    <p>Pick a note value, then left-click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. A left-click on a rest puts a note in its place. Right-click a note to turn it into a rest of the same value; right-click a rest to remove it. Left-click a note to select it (Play and the space bar then start from it); drag it up or down to change its pitch. Click the clef to change it, or the faint B flat beside it to add one.</p>
+    <p>With a note selected, the value, rest and accidental buttons change that note. With nothing selected, they apply to the next note you enter. On a touch screen a tap edits a note (as the right button does) and press and hold selects it.</p>
     <table>
       <tr><td><kbd>A</kbd> to <kbd>G</kbd></td><td>Add that note, in the octave closest to the previous note</td></tr>
       <tr><td><kbd>R</kbd></td><td>Add a rest</td></tr>
@@ -452,7 +493,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: true
+  unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: false
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -553,7 +594,7 @@ function loadAll(){
     ui.audition = p.audition !== false;
     ui.loop = !!p.loop;
     ui.metro = !!p.metro;
-    ui.setOpen = p.setOpen !== false;
+    ui.setOpen = p.setOpen === true;
   }
   const fromLink = docFromHash();
   if (fromLink) {
@@ -839,9 +880,9 @@ function syncTools(){
   $('#durLabel').textContent = sel ? `Note value: ${DUR[shownDur].name.toLowerCase()}, selected`
                                    : `Note value: ${DUR[shownDur].name.toLowerCase()}`;
   const sb = document.querySelector('#durBtns button[data-d="' + shownDur + '"]');
-  if (sb) $('#durSum').innerHTML = sb.innerHTML;
+  if (sb) $('#durSum').innerHTML = sb.innerHTML + `<span>${DUR[shownDur].name}</span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg>`;
   const shownRest = sel ? sel.r : ui.inRest;
-  $('#enterSum').textContent = shownRest ? 'Rest' : 'Note';
+  $('#enterSum').innerHTML = (shownRest ? 'Rest' : 'Note') + '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg>';
   setPressed($('#modeNote'), !shownRest); setPressed($('#modeRest'), shownRest);
   const ti = targetIndex(), t = ti !== null ? doc.notes[ti] : null;
   document.querySelectorAll('#accBtns button').forEach(b => {
@@ -876,7 +917,7 @@ function syncSettings(){
   setPressed($('#metro'), ui.metro);
   $('#ref').value = String(ui.ref);
   $('#vol').value = ui.vol;
-  $('#reg').value = ui.reg; $('#bright').value = ui.bright; $('#room').value = ui.room;
+  $('#reg').value = ui.reg; $('#bright').value = ui.bright; $('#room').value = ui.room; syncOut();
   $('#audition').checked = ui.audition;
   setPressed($('#loop'), ui.loop);
 }
@@ -1011,6 +1052,7 @@ function hit(x, y, fat){
     let on;
     if (it.n.r) { const cx = it.hx + it.w / 2; on = Math.abs(x - cx) <= 0.6 + mx && y >= line.staffTop + 0.5 - my && y <= line.staffTop + 3.5 + my; }
     else on = x >= it.hx - mx && x <= it.hx + it.headW + mx && Math.abs(y - (line.staffTop + 4 - it.pos * 0.5)) <= 0.65 + my;
+    if (it.n.r && !fat) return {type: 'repl', i: it.i, li, pos};    /* mouse: a rest is replaced by a note, wherever on it you are */
     if (on) return {type: 'item', i: it.i, li};
     if (it.n.r) return {type: 'repl', i: it.i, li, pos};
     return {type: 'gap', idx: x < it.hx + it.headW / 2 ? it.i : it.i + 1, li, pos};
@@ -1035,25 +1077,29 @@ scoreEl.addEventListener('pointerdown', e => {
   e.preventDefault();
   scoreEl.focus({preventScroll: true});
   const isMouse = e.pointerType === 'mouse';
-  /* with a mouse: the right button edits (insert, rest, remove, drag), the left button selects.
-     Touch keeps tap = edit, press and hold = select. */
-  const selectClick = e.shiftKey || (isMouse ? e.button === 0 : e.button === 2);
+  /* mouse: left button places and selects, right button turns a note into a rest and removes rests.
+     Touch: a tap edits (as the right button would), press and hold selects. */
   const p = toSp(e), h = hit(p.x, p.y, !isMouse);
   const wasOpen = !$('#clefMenu').hidden;
   closeClefMenu(false);
   if (h.type === 'clef') { if (e.button === 0 && !wasOpen) openClefMenu(h.li); return; }
   if (h.type === 'sig') { if (e.button === 0) mutate(() => { doc.bflat = !doc.bflat; }); return; }
+  if (isMouse && e.button === 2) {
+    if (h.type === 'item') mutate(() => { const n = doc.notes[h.i]; n.r = true; n.a = ''; ui.sel = null; ui.caret = h.i + 1; ui.hover = null; });
+    else if (h.type === 'repl') mutate(() => { doc.notes.splice(h.i, 1); ui.sel = null; ui.caret = h.i; ui.hover = null; });
+    return;
+  }
+  if (!isMouse && e.button === 2) { if (h.type === 'item') selectItem(h.i); return; }
   if (h.type === 'item') {
-    /* right-click or Shift-click: select without changing anything */
-    if (selectClick) { selectItem(h.i); return; }
+    if (isMouse && e.shiftKey) { selectItem(h.i); return; }
     const n = doc.notes[h.i];
-    drag = {i: h.i, y0: p.y, s0: n.s, rest: n.r, before: snapshot(), moved: false, held: false};
+    drag = {i: h.i, y0: p.y, s0: n.s, rest: n.r, before: snapshot(), moved: false, held: false, sel: isMouse};
     /* press and hold: select (the touch-screen way to select) */
     drag.timer = setTimeout(() => { if (drag && !drag.moved) { drag.held = true; selectItem(drag.i); } }, 450);
     try { scoreEl.setPointerCapture(e.pointerId); } catch (err) {}
     return;
   }
-  if (selectClick) { if (ui.sel !== null) { ui.sel = null; render(); } return; }
+  if (e.button !== 0) return;
   if (h.type === 'repl') {
     mutate(() => { const o = doc.notes[h.i]; doc.notes[h.i] = {d: o.d, r: false, s: clampStep(CLEFS[doc.clef].bottom + h.pos), a: ''}; ui.sel = null; ui.caret = h.i + 1; ui.hover = null; });
     audition(doc.notes[h.i]);
@@ -1091,7 +1137,8 @@ function endPress(cancelled){
   scoreEl.style.cursor = '';
   if (d.moved) { if (snapshot() !== d.before) pushUndo(d.before); save(); render(); return; }
   if (cancelled || d.held) { render(); return; }
-  /* a plain click: a note becomes a rest of the same value, a rest disappears */
+  if (d.sel && !d.rest) { selectItem(d.i); return; }   /* mouse: a plain left click selects */
+  /* touch tap: a note becomes a rest of the same value, a rest disappears */
   if (d.rest) mutate(() => { doc.notes.splice(d.i, 1); ui.sel = null; ui.caret = d.i; ui.hover = null; });
   else mutate(() => { const n = doc.notes[d.i]; n.r = true; n.a = ''; ui.sel = null; ui.caret = d.i + 1; });
 }
@@ -1269,11 +1316,11 @@ const TUNE = [
 ];
 function buildTune(){
   const box = $('#tune');
-  let html = '<div class="tg">Pipe speech</div>';
+  let html = '<div class="tcol"><div class="tg">Pipe speech</div>';
   TUNE.forEach(t => { html += `<label for="tn-${t.k}">${t.label}</label><input type="range" id="tn-${t.k}" min="${t.min}" max="${t.max}" step="${t.step}"><output id="to-${t.k}"></output>`; });
-  html += '<div class="tg">Harmonics, as organ drawbars</div>';
+  html += '</div><div class="tcol"><div class="tg">Harmonics, as organ drawbars</div>';
   FEET.forEach((f, i) => { html += `<label for="db-${i}">${f}</label><input type="range" id="db-${i}" min="0" max="100" step="1"><output id="do-${i}"></output>`; });
-  box.innerHTML = html;
+  box.innerHTML = html + '</div>';
   TUNE.forEach(t => {
     $('#tn-' + t.k).addEventListener('input', e => { ui[t.k] = Number(e.target.value); syncTune(); save(); });
     $('#tn-' + t.k).addEventListener('change', testTone);
@@ -1414,10 +1461,10 @@ function setPlayButton(on){
 /* Tempo and tactus                                                    */
 /* ------------------------------------------------------------------ */
 function closePops(){ document.querySelectorAll('.pop.open').forEach(p => p.classList.remove('open')); }
+function syncOut(){ $('#bo').textContent = ui.bright; $('#ro').textContent = ui.room; }
 function applySettingsOpen(){
   $('.tp-side').hidden = !ui.setOpen;
   $('#toggleSet').setAttribute('aria-expanded', ui.setOpen ? 'true' : 'false');
-  $('#toggleSet').textContent = ui.setOpen ? 'Hide settings' : 'Settings';
 }
 const PULSE = 67;   /* Gaffurius: the semibrevis lasts one pulse of someone breathing quietly */
 const INK = '#1F1A14', PAPER = '#F2E6C6';
@@ -1825,9 +1872,9 @@ function wire(){
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => window.prompt('Copy this:', t));
     else window.prompt('Copy this:', t);
   });
-  $('#bright').addEventListener('input', e => { ui.bright = Number(e.target.value); save(); });
+  $('#bright').addEventListener('input', e => { ui.bright = Number(e.target.value); syncOut(); save(); });
   $('#bright').addEventListener('change', testTone);
-  $('#room').addEventListener('input', e => { ui.room = Number(e.target.value); if (audio.wet) audio.wet.gain.setTargetAtTime(roomLevel(), audio.ctx.currentTime, 0.03); save(); });
+  $('#room').addEventListener('input', e => { ui.room = Number(e.target.value); syncOut(); if (audio.wet) audio.wet.gain.setTargetAtTime(roomLevel(), audio.ctx.currentTime, 0.03); save(); });
   $('#room').addEventListener('change', testTone);
   $('#audition').addEventListener('change', e => { ui.audition = e.target.checked; save(); });
   $('#copyLink').addEventListener('click', copyLink);
