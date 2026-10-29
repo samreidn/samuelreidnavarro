@@ -356,7 +356,6 @@ button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--
     </div>
     </div>
     <div class="tempo-row podg" role="group" aria-label="Tempo">
-      <button id="tempus" class="ib"></button>
       <div class="unitpick">
         <button id="unitBtn" class="unitbtn" aria-haspopup="listbox" aria-expanded="false"></button>
         <ul id="unitList" class="menu" role="listbox" aria-label="Note value that gets the beat" tabindex="-1" hidden></ul>
@@ -368,7 +367,7 @@ button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--
         <button id="tempoUp" aria-label="Faster" title="Faster">+</button>
       </div>
       <button id="tap" title="Tap the beat twice or more: the tempo follows your taps">Tap</button>
-      <button id="heart" class="ib" aria-label="Semibrevis at the pulse: 67 per minute" title="Semibrevis = 67 per minute, a resting pulse (Gaffurius takes the semibrevis as one heartbeat)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
+      <button id="heart" class="ib" aria-label="Semibrevis at the pulse: 60 per minute" title="Semibrevis = 60 per minute, a resting pulse (Gaffurius takes the semibrevis as one heartbeat)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
     </div>
     <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1" style="width:84px"></label>
     <div class="grow podg">
@@ -534,7 +533,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  beat: 'hand', tempus: 'C', unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: false
+  beat: 'hand', tempus: 'C', unit: 'S', tempo: 60, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: false
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -619,7 +618,7 @@ function loadAll(){
     if (p.size >= 8 && p.size <= 26) ui.size = p.size;
     if (DUR[p.unit]) ui.unit = p.unit;
     else if (({4:'B', 2:'S', 1:'M'})[p.unit]) ui.unit = ({4:'B', 2:'S', 1:'M'})[p.unit];
-    if (p.tempo >= 10 && p.tempo <= 300) ui.tempo = p.tempo;
+    if (p.tempo >= 10 && p.tempo <= 300) ui.tempo = p.tempo === 67 ? 60 : p.tempo;   /* 67 was the old default */
     if ([415,440,466].includes(p.ref)) ui.ref = p.ref;
     if (p.vol >= 0 && p.vol <= 100) ui.vol = p.vol;
     if (REGISTERS[p.reg]) ui.reg = p.reg;
@@ -962,7 +961,7 @@ function syncSettings(){
   $('#size').value = ui.size;
   $('#tempo').value = ui.tempo;
   syncUnit();
-  syncBeat(); syncTempus();
+  syncBeat();
   $('#ref').value = String(ui.ref);
   $('#vol').value = ui.vol;
   $('#reg').value = ui.reg; $('#bright').value = ui.bright; $('#room').value = ui.room; syncOut();
@@ -1523,7 +1522,7 @@ function applySettingsOpen(){
   $('.tp-side').hidden = !ui.setOpen;
   $('#toggleSet').setAttribute('aria-expanded', ui.setOpen ? 'true' : 'false');
 }
-const PULSE = 67;   /* Gaffurius: the semibrevis lasts one pulse of someone breathing quietly */
+const PULSE = 60;   /* Gaffurius: the semibrevis lasts one pulse of someone breathing quietly */
 const INK = '#1F1A14', PAPER = '#F2E6C6';
 const HAND_SVG = (() => {
   const hatch = (n, f) => Array.from({length: n}, (_, i) => f(i)).join('');
@@ -1545,15 +1544,8 @@ const HAND_SVG = (() => {
 <path d="M50 84 L56 86 M50 94 L56 96 M50 104 L56 106 M50 114 L56 116 M50 124 L56 126 M50 134 L56 136 M50 144 L56 146" stroke-width="1.2"/>
 </g>`;
 })();
-function syncTempus(){
-  const b = $('#tempus'); if (!b) return;
-  const O = ui.tempus === 'O';
-  b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${O ? '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>' : '<path d="M17.1 6.9A8 8 0 1 0 17.1 17.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg>`;
-  b.setAttribute('aria-label', O ? 'Tempus perfectum, a brevis is three semibreves. Switch to tempus imperfectum' : 'Tempus imperfectum, a brevis is two semibreves. Switch to tempus perfectum');
-  b.title = O ? 'Tempus perfectum (O): a brevis lasts three semibreves, and the hand stays down for two beats' : 'Tempus imperfectum (C): a brevis lasts two semibreves. Click for tempus perfectum (O)';
-}
 function setTempus(t){
-  ui.tempus = t; syncTempus(); save(); render(); replayIfPlaying();
+  ui.tempus = t; save(); render(); replayIfPlaying();
 }
 function syncBeat(){
   document.querySelectorAll('#beatList button').forEach(b => setPressed(b, b.dataset.beat === ui.beat));
@@ -1676,9 +1668,8 @@ function wireTempo(){
     ui.unit = 'S'; syncUnit();
     ui.tempo = PULSE; $('#tempo').value = PULSE; save();
     replayIfPlaying();
-    toast('Semibrevis = 67 per minute: the pulse of someone at rest.');
+    toast('Semibrevis = 60 per minute: the pulse of someone at rest.');
   });
-  $('#tempus').addEventListener('click', () => setTempus(ui.tempus === 'O' ? 'C' : 'O'));
   document.querySelectorAll('#beatList button').forEach(b => b.addEventListener('click', () => {
     ui.beat = b.dataset.beat; syncBeat(); save(); replayIfPlaying();
   }));
