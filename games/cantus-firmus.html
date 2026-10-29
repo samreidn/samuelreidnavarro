@@ -17,10 +17,10 @@
 -->
 <style>
 :root{
-  --ground:#FBF7EF; --surface:#F4EDE0; --text:#3B3125; --muted:#7D6F5B; --line:#D6C8B0;
-  --accent:#24479A; --accent-ink:#F6EEDA;
-  --leaf:#F3E8CC; --leaf-ink:#1F1A14; --leaf-muted:#7A6A4E; --rule:#B4513F;
-  --sel:#24479A; --hov:#4B66A8; --play:#C0331C; --del:#C2301B;
+  --ground:#FBF7EF; --surface:#F4EDE0; --text:#2A2218; --muted:#7D6F5B; --line:#D6C8B0;
+  --accent:#8E2A1E; --accent-ink:#F7F2E6;
+  --leaf:#F3E8CC; --leaf-ink:#2A2218; --leaf-muted:#7A6A4E; --rule:#8E2A1E;
+  --sel:#8E2A1E; --hov:#B8624A; --play:#8E2A1E; --del:#8E2A1E;
   --paper:none;
   color-scheme: light;
 }
@@ -107,7 +107,7 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 #title:focus-visible{outline:none;border-bottom-color:var(--sel)}
 #title::placeholder{color:rgba(31,26,20,.42)}
 #score{margin-top:4px;cursor:crosshair;touch-action:manipulation;user-select:none;-webkit-user-select:none;border-radius:2px}
-#score:focus-visible{outline:1.5px solid rgba(36,71,154,.38);outline-offset:6px}
+#score:focus-visible{outline:1.5px solid rgba(142,42,30,.4);outline-offset:6px}
 #score svg{display:block;overflow:visible}
 #score .staff{stroke:var(--rule)}
 #score .ledger{stroke:var(--leaf-ink)}
@@ -247,6 +247,40 @@ label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font
 .tp-side{flex-direction:row}
 .embedded .bar{padding-right:112px}
 @media (max-width:700px){ .embedded .bar{padding-right:0} .vsep{display:none} .bar .spacer,.transport .spacer{flex-basis:100%;height:0} }
+/* ================= Design E: grouped pods, one red, parchment score ================= */
+:root{--h:34px}
+button,select,input[type=number]{height:var(--h);min-height:var(--h)}
+button{background:transparent;border:0;border-radius:9px;padding:0 13px;font-size:17px}
+button:hover:not(:disabled){background:rgba(255,255,255,.72);border-color:transparent}
+button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--accent-ink)}
+.podg{display:inline-flex;align-items:center;gap:2px;padding:3px;border-radius:11px;background:rgba(42,34,24,.075);flex-wrap:nowrap}
+.podg .ib{width:var(--h);height:var(--h)}
+.podg .ib svg{width:20px;height:22px}
+.podg .unitbtn svg:not(.chev){width:26px;height:26px}
+.podg #heart svg{width:20px;height:20px}
+.bar{gap:10px 12px}
+.grow{gap:12px}
+.libbtn,.libbtn:hover:not(:disabled){color:var(--text)}
+.libbtn{background:transparent}
+.libwrap{display:inline-flex}
+.podg select{background:transparent;border:0;border-radius:9px;padding:0 6px;color:var(--text)}
+.podg select:hover{background:rgba(255,255,255,.72)}
+.podg label.ctl{gap:2px;padding-left:10px}
+.podg .stepper button,.podg .stepper button:first-child,.podg .stepper button:last-child{border-radius:9px;margin:0}
+.podg .stepper input{background:transparent;border:0;border-radius:0;font-size:19px;width:3.2em;padding:0}
+.podg .unitbtn{width:auto}
+.tempo-row{flex-wrap:nowrap;gap:2px}
+.tempo-row .eq{padding:0 2px;font-size:20px;color:var(--muted)}
+#play{width:60px;height:60px;min-width:0;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink)}
+#play:hover:not(:disabled){background:var(--text);color:var(--accent-ink)}
+#play span{display:none}
+#play svg{width:22px;height:22px}
+.transport{border-top:0;padding-top:0;margin-top:16px;gap:10px 12px;align-items:center}
+.transport .popbody{top:auto;bottom:calc(100% - 2px)}
+.handbox{color:#2A2218}
+.handbox[data-beat="pendulum"] #handRot,.handbox[data-beat="hand"] #pendG{display:none}
+.handbox[data-beat="tick"]{display:none}
+@media (max-width:700px){ .podg{flex-wrap:wrap} }
 </style>
 </head>
 <body>
@@ -260,6 +294,7 @@ label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font
 
   <section class="tools" aria-label="Notation tools">
     <div class="bar">
+      <div class="podg">
       <div class="pop" id="popDur">
         <span class="sr" id="durLabel">Note value</span>
         <button class="tb popbtn" id="durSum" aria-haspopup="true" aria-label="Note value"></button>
@@ -274,8 +309,9 @@ label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font
           </div>
         </div>
       </div>
-      <div class="btns" id="accBtns" role="group" aria-label="Accidental"></div>
-      <div class="pop" id="popXform">
+      </div>
+      <div class="podg"><div class="btns" id="accBtns" role="group" aria-label="Accidental"></div></div>
+      <div class="podg"><div class="pop" id="popXform">
         <button class="tb popbtn" aria-haspopup="true">Transform melody<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
         <div class="popbody">
           <div class="btns col">
@@ -285,16 +321,17 @@ label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font
             <button class="tb" id="hlv" title="Halves every note and rest: brevis becomes semibrevis, and so on">Halve all values</button>
           </div>
         </div>
-      </div>
+      </div></div>
       <div class="grow">
       <label class="ctl">Size <input type="range" id="size" min="8" max="26" step="1" style="width:100px"></label>
-      <button id="clear">Clear all notes</button>
-      <span class="vsep" aria-hidden="true"></span>
+      <div class="podg">
+      <button id="clear">Clear</button>
       <div class="libwrap">
         <button id="libBtn" class="libbtn" aria-haspopup="true" aria-expanded="false" aria-controls="library">Cantus firmi<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
         <div id="library" class="library" role="dialog" aria-label="Cantus firmi to start from" hidden></div>
       </div>
       <button id="copyLink" title="Copy a link that opens this exact cantus firmus">Copy link</button>
+      </div>
       </div>
     </div>
     <div hidden>
@@ -304,7 +341,7 @@ label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font
   </section>
 
   <section class="leaf" aria-label="Score">
-    <div class="handbox" title="The tactus: the hand drops on one beat and lifts on the next" aria-hidden="true"><svg viewBox="-20 -36 236 190"><g id="handRot"></g></svg></div>
+    <div class="handbox" title="The tactus: the hand drops on one beat and lifts on the next" aria-hidden="true"><svg viewBox="-20 -36 236 190"><g id="handRot"></g><g id="pendG"><path d="M66 158 H130 L120 142 H76Z" fill="currentColor"/><g id="pendRot"><line x1="98" y1="150" x2="98" y2="-16" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><rect x="84" y="14" width="28" height="34" rx="4" fill="currentColor"/></g></g></svg></div>
     <input id="title" type="text" maxlength="120" placeholder="Untitled cantus firmus" aria-label="Title" spellcheck="false">
     <div id="score" tabindex="0" role="application" aria-label="Staff. Click to add notes; use the keyboard shortcuts listed below." aria-describedby="status"></div>
     <ul id="clefMenu" class="menu" role="listbox" aria-label="Clef" tabindex="-1" hidden></ul>
@@ -313,10 +350,18 @@ label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font
 
   <section class="transport" aria-label="Playback and sound">
     <button id="play" aria-label="Play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 13 7 2 13Z"/></svg><span>Play</span></button>
+    <div class="podg">
     <button id="loop" aria-pressed="false" title="Repeat until stopped; adds a repeat sign at the end">Loop</button>
-    <button id="metro" aria-pressed="false" title="A click on every beat while playing">Metronome</button>
-    <span class="vsep" aria-hidden="true"></span>
-    <div class="tempo-row" role="group" aria-label="Tempo">
+    <div class="pop" id="popMetro">
+      <button class="tb popbtn" id="metro" aria-haspopup="true" title="How the beat is shown or heard">Metronome<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
+      <div class="popbody"><div class="btns col" id="beatList" role="group" aria-label="Beat">
+        <button class="tb" data-beat="hand" aria-pressed="true">Hand (tactus)</button>
+        <button class="tb" data-beat="pendulum" aria-pressed="false">Pendulum metronome</button>
+        <button class="tb" data-beat="tick" aria-pressed="false">Audible tick</button>
+      </div></div>
+    </div>
+    </div>
+    <div class="tempo-row podg" role="group" aria-label="Tempo">
       <div class="unitpick">
         <button id="unitBtn" class="unitbtn" aria-haspopup="listbox" aria-expanded="false"></button>
         <ul id="unitList" class="menu" role="listbox" aria-label="Note value that gets the beat" tabindex="-1" hidden></ul>
@@ -330,7 +375,7 @@ label.ctl{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font
       <button id="heart" class="ib" aria-label="Semibrevis at the pulse: 67 per minute" title="Semibrevis = 67 per minute, a resting pulse (Gaffurius takes the semibrevis as one heartbeat)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
     </div>
     <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1" style="width:100px"></label>
-    <div class="grow">
+    <div class="grow podg">
     <label class="ctl">Pitch a′ =
       <select id="ref">
         <option value="415">415 Hz</option>
@@ -493,7 +538,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: false
+  beat: 'hand', unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: false
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -538,7 +583,7 @@ function save(){
   try {
     localStorage.setItem(STORE, JSON.stringify({doc, prefs: {
       inDur: ui.inDur, size: ui.size, unit: ui.unit, tempo: ui.tempo, ref: ui.ref,
-      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, metro: ui.metro, setOpen: ui.setOpen
+      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, beat: ui.beat, setOpen: ui.setOpen
     }}));
   } catch (e) { /* storage unavailable: work continues, just not kept */ }
 }
@@ -593,7 +638,7 @@ function loadAll(){
     if (Array.isArray(p.draw) && (p.draw.length === 8 || p.draw.length === 12) && p.draw.every(v => v >= 0 && v <= 100)) ui.draw = p.draw.concat([0, 0, 0, 0]).slice(0, 12);
     ui.audition = p.audition !== false;
     ui.loop = !!p.loop;
-    ui.metro = !!p.metro;
+    ui.beat = ['hand','pendulum','tick'].includes(p.beat) ? p.beat : (p.metro ? 'tick' : 'hand');
     ui.setOpen = p.setOpen === true;
   }
   const fromLink = docFromHash();
@@ -817,8 +862,6 @@ function drawScore(L, exp){
       o += `<rect class="bar" x="${f(bx)}" y="${f(top)}" width="0.16" height="4"/>`;
       o += `<rect class="bar" x="${f(bx + 0.4)}" y="${f(top)}" width="0.5" height="4"/>`;
     }
-    if (!exp && !doc.notes.length)
-      o += `<text class="hint" x="${f(L.noteStart + 0.6)}" y="${f(top + 2.4)}">Click on the staff to add the first note</text>`;
   });
   return o;
 }
@@ -914,7 +957,7 @@ function syncSettings(){
   $('#size').value = ui.size;
   $('#tempo').value = ui.tempo;
   syncUnit();
-  setPressed($('#metro'), ui.metro);
+  syncBeat();
   $('#ref').value = String(ui.ref);
   $('#vol').value = ui.vol;
   $('#reg').value = ui.reg; $('#bright').value = ui.bright; $('#room').value = ui.room; syncOut();
@@ -1391,7 +1434,7 @@ function startPlayback(from){
     tl.push({i, t0: t, t1: t + d});
     t += d;
   }
-  if (ui.metro) {
+  if (ui.beat === 'tick') {
     for (let k = Math.ceil(offset / beat - 1e-6); origin + k * beat < t - 0.02; k++)
       audio.voices.push(metroClick(ctx, audio.master, origin + k * beat));
   }
@@ -1410,6 +1453,7 @@ function tick(){
   const cur = tlObj.tl.find(x => now >= x.t0 && now < x.t1);
   setPlaying(cur ? cur.i : -1);
   /* tactus: a quick drop on one beat, a quick lift on the next, held still in between */
+  if (ui.beat === 'pendulum') setPend(now < tlObj.origin ? 24 : 24 * Math.cos(Math.PI * (now - tlObj.origin) / tlObj.beat));
   if (now < tlObj.tl[0].t0) setHand(0);
   else {
     const el = now - tlObj.origin, bi = Math.floor(el / tlObj.beat), t = el - bi * tlObj.beat;
@@ -1440,7 +1484,7 @@ function stopPlayback(){
   audio.timeline = null;
   setPlaying(-1);
   setPlayButton(false);
-  setHand(0);
+  setHand(0); setPend(0);
 }
 /* After a tempo or metronome change, carry on from the note that was sounding. */
 function replayIfPlaying(){
@@ -1488,6 +1532,19 @@ const HAND_SVG = (() => {
 <path d="M50 84 L56 86 M50 94 L56 96 M50 104 L56 106 M50 114 L56 116 M50 124 L56 126 M50 134 L56 136 M50 144 L56 146" stroke-width="1.2"/>
 </g>`;
 })();
+function syncBeat(){
+  document.querySelectorAll('#beatList button').forEach(b => setPressed(b, b.dataset.beat === ui.beat));
+  const hb = document.querySelector('.handbox'); if (hb) hb.dataset.beat = ui.beat;
+}
+let pendEl = null, pendAngle = 99;
+function setPend(deg){
+  if (!pendEl) pendEl = document.getElementById('pendRot');
+  if (!pendEl) return;
+  const a = Math.round(deg * 10) / 10;
+  if (a === pendAngle) return;
+  pendAngle = a;
+  pendEl.setAttribute('transform', `rotate(${a} 98 150)`);
+}
 let handEl = null, handAngle = -1;
 function setHand(deg){
   if (!handEl) return;
@@ -1498,7 +1555,7 @@ function setHand(deg){
 }
 const CHEV = '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg>';
 function buildTactus(){
-  handEl = $('#handRot');
+  handEl = $('#handRot'); syncBeat();
   handEl.innerHTML = HAND_SVG;
   setHand(0);
   const list = $('#unitList');
@@ -1591,9 +1648,9 @@ function wireTempo(){
     replayIfPlaying();
     toast('Semibrevis = 67 per minute: the pulse of someone at rest.');
   });
-  $('#metro').addEventListener('click', () => {
-    ui.metro = !ui.metro; setPressed($('#metro'), ui.metro); save(); replayIfPlaying();
-  });
+  document.querySelectorAll('#beatList button').forEach(b => b.addEventListener('click', () => {
+    ui.beat = b.dataset.beat; syncBeat(); save(); replayIfPlaying();
+  }));
 }
 
 /* ------------------------------------------------------------------ */
