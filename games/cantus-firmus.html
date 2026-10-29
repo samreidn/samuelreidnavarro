@@ -115,6 +115,7 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 #score use.clefhov{fill:var(--hov)}
 #score .it.hov use{fill:var(--hov)}
 #score .it.hov .ledger{stroke:var(--hov)}
+#score .menshov{stroke:var(--hov)}
 #score .it.dim{opacity:.28}
 #score use.sigghost{opacity:.26}
 #score use.sigghost.on{opacity:.85;fill:var(--hov)}
@@ -355,6 +356,7 @@ button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--
     </div>
     </div>
     <div class="tempo-row podg" role="group" aria-label="Tempo">
+      <button id="tempus" class="ib"></button>
       <div class="unitpick">
         <button id="unitBtn" class="unitbtn" aria-haspopup="listbox" aria-expanded="false"></button>
         <ul id="unitList" class="menu" role="listbox" aria-label="Note value that gets the beat" tabindex="-1" hidden></ul>
@@ -532,7 +534,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  beat: 'hand', unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: false
+  beat: 'hand', tempus: 'C', unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: false
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -577,7 +579,7 @@ function save(){
   try {
     localStorage.setItem(STORE, JSON.stringify({doc, prefs: {
       inDur: ui.inDur, size: ui.size, unit: ui.unit, tempo: ui.tempo, ref: ui.ref,
-      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, beat: ui.beat
+      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, beat: ui.beat, tempus: ui.tempus
     }}));
   } catch (e) { /* storage unavailable: work continues, just not kept */ }
 }
@@ -632,6 +634,7 @@ function loadAll(){
     if (Array.isArray(p.draw) && (p.draw.length === 8 || p.draw.length === 12) && p.draw.every(v => v >= 0 && v <= 100)) ui.draw = p.draw.concat([0, 0, 0, 0]).slice(0, 12);
     ui.audition = p.audition !== false;
     ui.loop = !!p.loop;
+    ui.tempus = p.tempus === 'O' ? 'O' : 'C';
     ui.beat = ['hand','pendulum','tick'].includes(p.beat) ? p.beat : (p.metro ? 'tick' : 'hand');
   }
   const fromLink = docFromHash();
@@ -709,6 +712,8 @@ function layout(){
   L.clefEnd = L.clefX + gw(clef.g) + 0.25;
   L.sigPos = sigPos(clef); L.sigX = x - 0.25; L.sigEnd = L.sigX + gw('fl') + 0.25;
   if (doc.bflat) x += 1.35;
+  L.mensX = Math.max(x, L.sigEnd + 0.3); L.mensEnd = L.mensX + 2.2;
+  x = L.mensEnd - 0.3;
   L.noteStart = x + 0.7;
   L.limit = L.staffR - 2.6;                     /* leaves room for a custos */
 
@@ -770,6 +775,12 @@ function restGlyph(d, cx, top){
   if (d === 'Mx') return use('rL', cx - 0.45, y) + use('rL', cx + 0.26, y);
   const k = REST[d];
   return use(k, cx - gw(k) / 2, y);
+}
+function mensSign(cx, cy, hov){
+  const r = 1.05, a = `fill="none" stroke="currentColor" stroke-width="0.2" stroke-linecap="round"${hov ? ' class="menshov"' : ''}`;
+  if (ui.tempus === 'O') return `<circle cx="${f(cx)}" cy="${f(cy)}" r="${r}" ${a}/>`;
+  const x1 = cx + r * 0.643, y1 = cy - r * 0.766, y2 = cy + r * 0.766;
+  return `<path d="M${f(x1)} ${f(y1)}A${r} ${r} 0 1 0 ${f(x1)} ${f(y2)}" ${a}/>`;
 }
 function drawItem(it, top, exp){
   const n = it.n, cls = ['it'];
@@ -840,6 +851,7 @@ function drawScore(L, exp){
     if (doc.bflat) o += use('fl', L.sigX, fy, hv === 'sig' ? ' class="clefhov"' : '');
     else if (!exp && (hv === 'clef' || hv === 'sig' || COARSE))
       o += use('fl', L.sigX, fy, ` class="sigghost${hv === 'sig' ? ' on' : ''}"`);
+    o += mensSign(L.mensX + 1.1, top + 2, hv === 'mens');
     for (const it of line.items) o += drawItem(it, top, exp);
     /* custos: points to the first note of the next line */
     if (!isLast) {
@@ -950,7 +962,7 @@ function syncSettings(){
   $('#size').value = ui.size;
   $('#tempo').value = ui.tempo;
   syncUnit();
-  syncBeat();
+  syncBeat(); syncTempus();
   $('#ref').value = String(ui.ref);
   $('#vol').value = ui.vol;
   $('#reg').value = ui.reg; $('#bright').value = ui.bright; $('#room').value = ui.room; syncOut();
@@ -972,6 +984,8 @@ function updateStatus(){
     msg = 'Click to change the clef.';
   } else if (h && h.type === 'repl') {
     msg = `Click to put a ${DUR[doc.notes[h.i].d].name.toLowerCase()} here instead of the rest. Click exactly on the rest to remove it.`;
+  } else if (h && h.type === 'mens') {
+    msg = ui.tempus === 'O' ? 'Tempus perfectum: a brevis lasts three semibreves. Click for tempus imperfectum.' : 'Tempus imperfectum: a brevis lasts two semibreves. Click for tempus perfectum.';
   } else if (h && h.type === 'sig') {
     msg = doc.bflat ? 'Click to remove the B flat from the signature.' : 'Click to put a B flat in the signature.';
   } else if (h && h.type === 'item') {
@@ -1082,6 +1096,7 @@ function hit(x, y, fat){
   if (li < 0) li = y < lines[0].bandTop ? 0 : lines.length - 1;
   const line = lines[li];
   if (x <= lay.sigEnd && y >= line.staffTop - 2.5 && y <= line.staffTop + 6.5) return {type: x <= lay.clefEnd ? 'clef' : 'sig', li};
+  if (x > lay.sigEnd && x <= lay.mensEnd && y >= line.staffTop - 0.6 && y <= line.staffTop + 4.6) return {type: 'mens', li};
   const pos = Math.max(-8, Math.min(16, Math.round((line.staffTop + 4 - y) / 0.5)));
   for (const it of line.items) if (x >= it.x0 - 0.15 && x <= it.x1 + 0.15) {
     /* directly on the glyph: act on it. Anywhere else near it: enter a note instead */
@@ -1120,6 +1135,7 @@ scoreEl.addEventListener('pointerdown', e => {
   const wasOpen = !$('#clefMenu').hidden;
   closeClefMenu(false);
   if (h.type === 'clef') { if (e.button === 0 && !wasOpen) openClefMenu(h.li); return; }
+  if (h.type === 'mens') { if (e.button === 0) setTempus(ui.tempus === 'O' ? 'C' : 'O'); return; }
   if (h.type === 'sig') { if (e.button === 0) mutate(() => { doc.bflat = !doc.bflat; }); return; }
   if (isMouse && e.button === 2) {
     if (h.type === 'item') mutate(() => { const n = doc.notes[h.i]; n.r = true; n.a = ''; ui.sel = null; ui.caret = h.i + 1; ui.hover = null; });
@@ -1406,7 +1422,9 @@ function metroClick(ctx, dest, t){
   return {osc: o, g};
 }
 const beatSeconds = () => 60 / ui.tempo;
-const secondsPerMinim = () => beatSeconds() / DUR[ui.unit].m;
+/* Tempus perfectum: the brevis (and the longer notes) count three semibreves, not two */
+const mv = k => DUR[k].m * (ui.tempus === 'O' && DUR[k].m >= 4 ? 1.5 : 1);
+const secondsPerMinim = () => beatSeconds() / mv(ui.unit);
 
 /* Plays from note `from`; beats and the hand stay aligned with the start of the piece. */
 function startPlayback(from){
@@ -1417,13 +1435,13 @@ function startPlayback(from){
   from = Math.max(0, Math.min(doc.notes.length - 1, from || 0));
   const spm = secondsPerMinim(), beat = beatSeconds();
   let offset = 0;
-  for (let i = 0; i < from; i++) offset += DUR[doc.notes[i].d].m * spm;
+  for (let i = 0; i < from; i++) offset += mv(doc.notes[i].d) * spm;
   const t0 = ctx.currentTime + 0.12;
   const origin = t0 - offset;                 /* where the piece "began" */
   let t = t0;
   const tl = [];
   for (let i = from; i < doc.notes.length; i++) {
-    const n = doc.notes[i], d = DUR[n.d].m * spm;
+    const n = doc.notes[i], d = mv(n.d) * spm;
     if (!n.r) audio.voices.push(Synth.voice(ctx, audio.bus, freqOf(n), t, t + d - 0.012));
     tl.push({i, t0: t, t1: t + d});
     t += d;
@@ -1451,7 +1469,8 @@ function tick(){
   if (now < tlObj.tl[0].t0) setHand(0);
   else {
     const el = now - tlObj.origin, bi = Math.floor(el / tlObj.beat), t = el - bi * tlObj.beat;
-    const down = bi % 2 === 0, from = down && bi > 0 ? 45 : 0, to = down ? 0 : 45;   /* the first downbeat: no movement */
+    const N = ui.tempus === 'O' ? 3 : 2, ph = bi % N;   /* imperfectum: down, up. perfectum: down, (still down), up */
+    const from = ph === 0 && bi > 0 ? 45 : 0, to = ph === N - 1 ? 45 : 0;   /* the first downbeat: no movement */
     const p = Math.min(1, t / Math.min(0.09, tlObj.beat * 0.3)), e = 1 - Math.pow(1 - p, 3);
     setHand(from + (to - from) * e);
   }
@@ -1526,6 +1545,16 @@ const HAND_SVG = (() => {
 <path d="M50 84 L56 86 M50 94 L56 96 M50 104 L56 106 M50 114 L56 116 M50 124 L56 126 M50 134 L56 136 M50 144 L56 146" stroke-width="1.2"/>
 </g>`;
 })();
+function syncTempus(){
+  const b = $('#tempus'); if (!b) return;
+  const O = ui.tempus === 'O';
+  b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${O ? '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>' : '<path d="M17.1 6.9A8 8 0 1 0 17.1 17.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg>`;
+  b.setAttribute('aria-label', O ? 'Tempus perfectum, a brevis is three semibreves. Switch to tempus imperfectum' : 'Tempus imperfectum, a brevis is two semibreves. Switch to tempus perfectum');
+  b.title = O ? 'Tempus perfectum (O): a brevis lasts three semibreves, and the hand stays down for two beats' : 'Tempus imperfectum (C): a brevis lasts two semibreves. Click for tempus perfectum (O)';
+}
+function setTempus(t){
+  ui.tempus = t; syncTempus(); save(); render(); replayIfPlaying();
+}
 function syncBeat(){
   document.querySelectorAll('#beatList button').forEach(b => setPressed(b, b.dataset.beat === ui.beat));
   const hb = document.querySelector('.handbox'); if (hb) hb.dataset.beat = ui.beat;
@@ -1649,6 +1678,7 @@ function wireTempo(){
     replayIfPlaying();
     toast('Semibrevis = 67 per minute: the pulse of someone at rest.');
   });
+  $('#tempus').addEventListener('click', () => setTempus(ui.tempus === 'O' ? 'C' : 'O'));
   document.querySelectorAll('#beatList button').forEach(b => b.addEventListener('click', () => {
     ui.beat = b.dataset.beat; syncBeat(); save(); replayIfPlaying();
   }));
