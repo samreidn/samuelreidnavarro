@@ -296,7 +296,7 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
         </select>
       </label>
       <label class="ctl">Sound
-        <select id="reg"><option value="gedackt">Gedackt 8′ (stopped flute)</option><option value="principal">Principal 8′</option><option value="regal">Regal (soft reed)</option><option value="sine">Sine</option><option value="custom">Your own (drawbars)</option></select>
+        <select id="reg"><option value="gedackt">Gedackt 8′ (stopped flute)</option><option value="principal">Principal 8′</option><option value="plenum">Principal chorus (8′ 4′ 2′)</option><option value="flute">Open flute 8′</option><option value="regal">Regal (soft reed)</option><option value="sine">Sine</option><option value="custom">Your own (drawbars)</option></select>
       </label>
       <label class="ctl">Brightness <input type="range" id="bright" min="0" max="100" step="1"></label>
       <label class="ctl">Room <input type="range" id="room" min="0" max="100" step="1"></label>
@@ -444,7 +444,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  unit: 'S', tempo: 72, ref: 440, vol: 70, reg: 'gedackt', bright: 50, room: 30, atk: 15, rel: 120, chiff: 40, ens: 1.6, draw: [100, 3, 28, 2, 10, 1, 4, 0], audition: true, loop: false, metro: false
+  unit: 'S', tempo: 72, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 15, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -489,7 +489,7 @@ function save(){
   try {
     localStorage.setItem(STORE, JSON.stringify({doc, prefs: {
       inDur: ui.inDur, size: ui.size, unit: ui.unit, tempo: ui.tempo, ref: ui.ref,
-      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, draw: ui.draw, audition: ui.audition, loop: ui.loop, metro: ui.metro
+      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, metro: ui.metro
     }}));
   } catch (e) { /* storage unavailable: work continues, just not kept */ }
 }
@@ -539,7 +539,9 @@ function loadAll(){
     if (p.rel >= 10 && p.rel <= 800) ui.rel = p.rel;
     if (p.chiff >= 0 && p.chiff <= 100) ui.chiff = p.chiff;
     if (p.ens >= 0 && p.ens <= 12) ui.ens = p.ens;
-    if (Array.isArray(p.draw) && p.draw.length === 8 && p.draw.every(v => v >= 0 && v <= 100)) ui.draw = p.draw;
+    if (p.wind >= 0 && p.wind <= 100) ui.wind = p.wind;
+    if (p.scoop >= 0 && p.scoop <= 30) ui.scoop = p.scoop;
+    if (Array.isArray(p.draw) && (p.draw.length === 8 || p.draw.length === 12) && p.draw.every(v => v >= 0 && v <= 100)) ui.draw = p.draw.concat([0, 0, 0, 0]).slice(0, 12);
     ui.audition = p.audition !== false;
     ui.loop = !!p.loop;
     ui.metro = !!p.metro;
@@ -1130,77 +1132,102 @@ function ensureAudio(){
     audio.master.connect(audio.ctx.destination);
     /* organ bus: dry signal plus a church-like room (a generated impulse response) */
     audio.bus = audio.ctx.createGain();
-    audio.bus.connect(audio.master);
-    const sr = audio.ctx.sampleRate, len = Math.floor(sr * 2.6), ir = audio.ctx.createBuffer(2, len, sr);
+    const lp = audio.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7500; lp.Q.value = 0.5;
+    audio.bus.connect(lp); lp.connect(audio.master);
+    /* a stone room: a few early reflections, then a dense tail that loses its treble as it fades (about 3.5 s) */
+    const sr = audio.ctx.sampleRate, len = Math.floor(sr * 5), pre = Math.floor(sr * 0.028), ir = audio.ctx.createBuffer(2, len, sr);
     for (let c = 0; c < 2; c++) {
       const d = ir.getChannelData(c);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2) * Math.exp(-i / sr * 1.4);
+      let y = 0;
+      for (let i = pre; i < len; i++) {
+        const t = (i - pre) / sr;
+        const a = 0.5 * Math.exp(-t * 0.9) + 0.03;           /* low-pass coefficient: bright at first, dark later */
+        y += a * ((Math.random() * 2 - 1) - y);
+        d[i] = y * Math.exp(-t * 1.97) * Math.min(1, t * 40);
+      }
+      [0.013, 0.021, 0.034, 0.047, 0.061, 0.083].forEach((dt, j) => { d[pre + Math.floor((dt + c * 0.004) * sr)] += (j % 2 ? -1 : 1) * 0.5 / (1 + j * 0.4); });
     }
     const conv = audio.ctx.createConvolver(); conv.buffer = ir;
     audio.wet = audio.ctx.createGain(); audio.wet.gain.value = roomLevel();
-    audio.bus.connect(conv); conv.connect(audio.wet); audio.wet.connect(audio.master);
+    lp.connect(conv); conv.connect(audio.wet); audio.wet.connect(audio.master);
   }
   if (audio.ctx.state === 'suspended') audio.ctx.resume();
   return audio.ctx;
 }
-const roomLevel = () => ui.room / 100 * 1.1;
+const roomLevel = () => ui.room / 100 * 2.2;
 const masterLevel = () => Math.pow(ui.vol / 100, 1.6) * 0.9;
 /* Organ registers: strength of each harmonic (1 = the note itself, 2 = its octave, ...) */
 const REGISTERS = {
   gedackt:   {name: "Gedackt 8′ (stopped flute)", h: [1, .03, .28, .02, .1, .01, .035]},
-  principal: {name: "Principal 8′",               h: [1, .7, .5, .4, .3, .22, .16, .12, .08, .05]},
-  regal:     {name: "Regal (soft reed)",          h: Array.from({length: 14}, (_, i) => Math.pow(i + 1, -0.85))},
+  principal: {name: "Principal 8′",               h: [1, .8, .6, .5, .35, .3, .22, .16, .12, .08, .06, .04]},
+  plenum:    {name: "Principal chorus (8′ 4′ 2′)", h: [1, .9, .55, .85, .3, .4, .25, .55, .2, .25, .15, .3]},
+  flute:     {name: "Open flute 8′",              h: [1, .35, .12, .05, .02]},
+  regal:     {name: "Regal (soft reed)",          h: Array.from({length: 12}, (_, i) => Math.pow(i + 1, -0.85))},
   sine:      {name: "Sine",                       h: [1]},
   custom:    {name: "Your own (drawbars)",        get h(){ return ui.draw.map(v => v / 100); }}
 };
-const FEET = ["8′", "4′", "2⅔′", "2′", "1⅗′", "1⅓′", "1⅐′", "1′"];
-const padDraw = h => Array.from({length: 8}, (_, i) => Math.round((h[i] || 0) * 100));
-const waveCache = {};
-function organWave(ctx){
-  const key = ui.reg + '/' + ui.bright + (ui.reg === 'custom' ? '/' + ui.draw.join(',') : '');
-  if (waveCache[key]) return waveCache[key];
-  const base = REGISTERS[ui.reg].h, imag = new Float32Array(base.length + 1);
-  /* brightness tilts the upper harmonics up or down; the middle setting leaves the register as it is */
-  base.forEach((a, i) => { imag[i + 1] = a * Math.pow(2, (ui.bright / 100 - 0.5) * i * 0.55); });
-  return (waveCache[key] = ctx.createPeriodicWave(new Float32Array(base.length + 1), imag));
+const FEET = ["8′", "4′", "2⅔′", "2′", "1⅗′", "1⅓′", "1⅐′", "1′", "8/9′", "4/5′", "8/11′", "2/3′"];
+const padDraw = h => Array.from({length: 12}, (_, i) => Math.round((h[i] || 0) * 100));
+/* amplitudes of the harmonics for the current register, tilted by the brightness setting */
+function organAmps(){
+  const base = REGISTERS[ui.reg].h;
+  return base.map((a, i) => a * Math.pow(2, (ui.bright / 100 - 0.5) * i * 0.55));
 }
 let chiffBuf = null;
+let noiseBuf = null;
 const Synth = {
-  level: 0.3,
+  level: 0.28,
+  /* Each harmonic is its own sine with its own small tuning error and its own speech time: the upper
+     ones speak a little sooner, the whole pipe starts a few cents sharp and settles, and a breath of
+     wind and a puff of air accompany it. Together that is what makes it a pipe and not a tone. */
   voice(ctx, dest, freq, t0, t1){
-    const g = ctx.createGain();
+    const out = ctx.createGain();
     const atk = ui.atk / 1000, rel = Math.min(ui.rel / 1000, (t1 - t0) * 0.4);
-    g.gain.setValueAtTime(0, t0);
-    g.gain.linearRampToValueAtTime(this.level, t0 + atk);
-    g.gain.setValueAtTime(this.level, Math.max(t0 + atk, t1 - rel));
-    g.gain.linearRampToValueAtTime(0, t1);
-    const wave = organWave(ctx), parts = [];
-    /* two pipes a hair apart, as in an ensemble, so the tone breathes a little */
-    [-ui.ens, ui.ens].forEach(cents => {
-      const o = ctx.createOscillator();
-      o.setPeriodicWave(wave);
-      o.frequency.setValueAtTime(freq, t0);
-      o.detune.setValueAtTime(cents, t0);
-      const og = ctx.createGain(); og.gain.value = 0.5;
-      o.connect(og); og.connect(g);
-      o.start(t0); o.stop(t1 + 0.03);
-      parts.push(o);
+    out.gain.setValueAtTime(1, t0);
+    out.gain.setValueAtTime(1, Math.max(t0 + 0.01, t1 - rel));
+    out.gain.linearRampToValueAtTime(0, t1);
+    const amps = organAmps();
+    const power = Math.sqrt(amps.reduce((s, a) => s + a * a, 0)) || 1, parts = [];
+    amps.forEach((a, i) => {
+      const k = i + 1, f = freq * k;
+      if (a < 0.008 || f > 15000) return;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.setValueAtTime(f, t0);
+      const cents = (Math.random() * 2 - 1) * ui.ens;
+      o.detune.setValueAtTime(cents + ui.scoop, t0);
+      o.detune.setTargetAtTime(cents, t0, 0.035);
+      const at = Math.max(0.004, atk * (1 - 0.4 * Math.min(1, i / 11)));
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(this.level * 0.7 * a / power, t0 + at);
+      o.connect(g); g.connect(out);
+      o.start(t0); o.stop(t1 + 0.03); parts.push(o);
     });
-    /* the small spit of air when a pipe speaks */
-    if (ui.reg !== 'sine' && ui.chiff > 0) {
-      if (!chiffBuf) {
-        chiffBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.09), ctx.sampleRate);
-        const d = chiffBuf.getChannelData(0);
-        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2);
-      }
-      const n = ctx.createBufferSource(); n.buffer = chiffBuf;
-      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = Math.min(9000, freq * 3); bp.Q.value = 3;
-      const ng = ctx.createGain(); ng.gain.value = 0.4 * this.level * ui.chiff / 100;
-      n.connect(bp); bp.connect(ng); ng.connect(g);
-      n.start(t0); parts.push(n);
+    if (!noiseBuf) {
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     }
-    g.connect(dest);
-    return {osc: {stop(t){ parts.forEach(p => { try { p.stop(t); } catch (e) {} }); }}, g};
+    /* the breath of the wind in the pipe */
+    if (ui.wind > 0) {
+      const n = ctx.createBufferSource(); n.buffer = noiseBuf; n.loop = true;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = Math.min(6000, freq * 2.5); bp.Q.value = 0.9;
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0, t0); ng.gain.linearRampToValueAtTime(0.1 * this.level * ui.wind / 100, t0 + Math.max(0.03, atk));
+      n.connect(bp); bp.connect(ng); ng.connect(out);
+      n.start(t0); n.stop(t1 + 0.03); parts.push(n);
+    }
+    /* the puff of air as the pipe speaks */
+    if (ui.chiff > 0) {
+      const n = ctx.createBufferSource(); n.buffer = noiseBuf;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = Math.min(9000, freq * 3); bp.Q.value = 3;
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.5 * this.level * ui.chiff / 100, t0);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+      n.connect(bp); bp.connect(ng); ng.connect(out);
+      n.start(t0, Math.random() * 0.8); n.stop(t0 + 0.12); parts.push(n);
+    }
+    out.connect(dest);
+    return {osc: {stop(t){ parts.forEach(p => { try { p.stop(t); } catch (e) {} }); }}, g: out};
   }
 };
 function silence(v, now){
@@ -1215,7 +1242,9 @@ const TUNE = [
   {k: 'atk',   label: 'Attack',   min: 0, max: 300, step: 1,   unit: ' ms'},
   {k: 'rel',   label: 'Release',  min: 10, max: 600, step: 5,  unit: ' ms'},
   {k: 'chiff', label: 'Chiff',    min: 0, max: 100, step: 1,   unit: ''},
-  {k: 'ens',   label: 'Ensemble', min: 0, max: 12, step: 0.1,  unit: ' ct'}
+  {k: 'ens',   label: 'Ensemble', min: 0, max: 12, step: 0.1,  unit: ' ct'},
+  {k: 'wind',  label: 'Wind',     min: 0, max: 100, step: 1,   unit: ''},
+  {k: 'scoop', label: 'Scoop',    min: 0, max: 30, step: 1,    unit: ' ct'}
 ];
 function buildTune(){
   const box = $('#tune');
@@ -1757,7 +1786,7 @@ function wire(){
     syncTune(); save(); testTone();
   });
   $('#copySound').addEventListener('click', () => {
-    const t = `Sound: ${REGISTERS[ui.reg].name}; brightness ${ui.bright}; room ${ui.room}; attack ${ui.atk} ms; release ${ui.rel} ms; chiff ${ui.chiff}; ensemble ${ui.ens} cents; drawbars ${FEET.map((f, i) => f + '=' + ui.draw[i]).join(' ')}; volume ${ui.vol}`;
+    const t = `Sound: ${REGISTERS[ui.reg].name}; brightness ${ui.bright}; room ${ui.room}; attack ${ui.atk} ms; release ${ui.rel} ms; chiff ${ui.chiff}; wind ${ui.wind}; scoop ${ui.scoop} cents; ensemble ${ui.ens} cents; drawbars ${FEET.map((f, i) => f + '=' + ui.draw[i]).join(' ')}; volume ${ui.vol}`;
     const done = () => { $('#copySound').textContent = 'Copied'; setTimeout(() => { $('#copySound').textContent = 'Copy sound settings'; }, 1500); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => window.prompt('Copy this:', t));
     else window.prompt('Copy this:', t);
