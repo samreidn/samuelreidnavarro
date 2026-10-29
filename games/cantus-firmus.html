@@ -300,15 +300,7 @@ button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--
         <button class="tb popbtn" id="durSum" aria-haspopup="true" aria-label="Note value"></button>
         <div class="popbody"><div class="btns" id="durBtns" role="group" aria-labelledby="durLabel"></div></div>
       </div>
-      <div class="pop" id="popEnter">
-        <button class="tb popbtn" id="enterSum" aria-haspopup="true" aria-label="Enter notes or rests">Note</button>
-        <div class="popbody">
-          <div class="seg" role="group" aria-label="Enter notes or rests">
-            <button class="tb" id="modeNote" aria-pressed="true" title="Enter notes">Note</button>
-            <button class="tb" id="modeRest" aria-pressed="false" title="Enter rests (R)">Rest</button>
-          </div>
-        </div>
-      </div>
+      <button class="ib" id="restBtn" aria-pressed="false" aria-label="Enter rests" title="Enter rests (R)"></button>
       </div>
       <div class="podg"><div class="btns" id="accBtns" role="group" aria-label="Accidental"></div></div>
       <div class="podg"><div class="pop" id="popXform">
@@ -583,7 +575,7 @@ function save(){
   try {
     localStorage.setItem(STORE, JSON.stringify({doc, prefs: {
       inDur: ui.inDur, size: ui.size, unit: ui.unit, tempo: ui.tempo, ref: ui.ref,
-      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, beat: ui.beat, setOpen: ui.setOpen
+      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, beat: ui.beat
     }}));
   } catch (e) { /* storage unavailable: work continues, just not kept */ }
 }
@@ -639,7 +631,6 @@ function loadAll(){
     ui.audition = p.audition !== false;
     ui.loop = !!p.loop;
     ui.beat = ['hand','pendulum','tick'].includes(p.beat) ? p.beat : (p.metro ? 'tick' : 'hand');
-    ui.setOpen = p.setOpen === true;
   }
   const fromLink = docFromHash();
   if (fromLink) {
@@ -900,6 +891,7 @@ function buildTools(){
     b.addEventListener('click', () => setDur(k));
     durBtns.appendChild(b);
   });
+  $('#restBtn').innerHTML = iconSVG('rB', 1.4);
   const accBtns = $('#accBtns');
   Object.entries(ACC).forEach(([a, A]) => {
     const b = document.createElement('button');
@@ -923,10 +915,9 @@ function syncTools(){
   $('#durLabel').textContent = sel ? `Note value: ${DUR[shownDur].name.toLowerCase()}, selected`
                                    : `Note value: ${DUR[shownDur].name.toLowerCase()}`;
   const sb = document.querySelector('#durBtns button[data-d="' + shownDur + '"]');
-  if (sb) $('#durSum').innerHTML = sb.innerHTML + `<span>${DUR[shownDur].name}</span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg>`;
+  if (sb) $('#durSum').innerHTML = sb.innerHTML + `<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg>`;
   const shownRest = sel ? sel.r : ui.inRest;
-  $('#enterSum').innerHTML = (shownRest ? 'Rest' : 'Note') + '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg>';
-  setPressed($('#modeNote'), !shownRest); setPressed($('#modeRest'), shownRest);
+  setPressed($('#restBtn'), shownRest);
   const ti = targetIndex(), t = ti !== null ? doc.notes[ti] : null;
   document.querySelectorAll('#accBtns button').forEach(b => {
     setPressed(b, !!t && !t.r && t.a === b.dataset.a);
@@ -1029,6 +1020,7 @@ function typeRest(){
 }
 function setDur(k){
   ui.inDur = k;
+  if (ui.sel === null) ui.inRest = false;
   if (ui.sel !== null) mutate(() => { doc.notes[ui.sel].d = k; });
   else { save(); render(); }
 }
@@ -1878,8 +1870,7 @@ function toast(msg){
 /* Wiring                                                              */
 /* ------------------------------------------------------------------ */
 function wire(){
-  $('#modeNote').addEventListener('click', () => setRestMode(false));
-  $('#modeRest').addEventListener('click', () => setRestMode(true));
+  $('#restBtn').addEventListener('click', () => setRestMode(!(ui.sel !== null ? doc.notes[ui.sel].r : ui.inRest)));
   $('#stepUp').addEventListener('click', () => stepPitch(1));
   $('#stepDown').addEventListener('click', () => stepPitch(-1));
   $('#del').addEventListener('click', deleteTarget);
