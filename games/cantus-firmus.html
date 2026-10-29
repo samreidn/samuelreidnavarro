@@ -25,6 +25,7 @@
   color-scheme: light;
 }
 *{box-sizing:border-box}
+.embedded #title{display:none}
 .embedded header.top .lede, .embedded header.top h1{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .embedded header.top{justify-content:flex-end;padding-right:112px;margin-bottom:6px}
 html{-webkit-text-size-adjust:100%}
@@ -68,7 +69,7 @@ input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;margin:0}
 
 .tools{background:var(--ground);padding:6px 0 12px;z-index:5}
 @media (min-width:760px) and (min-height:620px){ .tools{position:sticky;top:0} }
-.tools .row{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
+.tools .row{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:flex-start}
 .grp{display:flex;flex-direction:column;gap:5px}
 .gl{font-size:14px;color:var(--muted);font-style:italic;white-space:nowrap}
 .btns{display:flex;gap:4px;flex-wrap:wrap}
@@ -80,6 +81,21 @@ input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;margin:0}
 .seg button:first-child{border-radius:6px 0 0 6px}
 .seg button:last-child{border-radius:0 6px 6px 0;margin-left:-1px}
 .tb{min-height:44px}
+.pop{position:relative}
+.popbtn{min-width:56px}
+.popbtn .chev{width:11px;height:11px;fill:currentColor;margin-left:8px}
+.popbody{display:none;position:absolute;left:-6px;top:calc(100% - 2px);z-index:15;padding:6px;background:var(--surface);
+  border:1px solid var(--line);border-radius:8px;box-shadow:0 12px 28px -12px rgba(0,0,0,.4)}
+.pop:hover .popbody,.pop:focus-within .popbody,.pop.open .popbody{display:block}
+.popbody{width:max-content}
+.popbody .btns:not(.col){flex-wrap:nowrap}
+.popbody .col{flex-direction:column}
+.popbody .col .tb{justify-content:flex-start;text-align:left;white-space:nowrap}
+.btns.stack{flex-direction:column;gap:3px}
+.btns.stack .ib{height:34px}
+.tools .row .spacer{flex:1}
+.tools .row .ctl{align-self:flex-start;margin-top:20px}
+.tools .row #clear{align-self:flex-start;margin-top:15px}
 
 .settings{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;margin:2px 0 12px}
 label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
@@ -97,7 +113,7 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 #score svg{display:block;overflow:visible}
 #score .staff{stroke:var(--rule)}
 #score .ledger{stroke:var(--leaf-ink)}
-#score use,#score .bar{fill:var(--leaf-ink)}
+#score use,#score .bar,#score .dot{fill:var(--leaf-ink)}
 #score use.clefhov{fill:var(--hov)}
 #score .it.hov use{fill:var(--del)}
 #score .it.hov .ledger{stroke:var(--del)}
@@ -115,7 +131,7 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 #score .caret{fill:var(--sel);opacity:.75}
 #score .hint{fill:var(--leaf-muted);font:italic 1.15px "IM Fell English","Palatino Linotype",Palatino,Georgia,serif}
 
-.status{min-height:1.5em;margin:10px 2px 0;color:var(--muted);font-style:italic}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .transport{display:flex;flex-wrap:wrap;align-items:flex-start;gap:18px 34px;margin-top:16px;padding-top:18px;border-top:1px solid var(--line)}
 .tp-play{display:flex;gap:8px;align-items:center}
 #play{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-width:110px;font-size:17px;
@@ -163,6 +179,7 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 .tune label{color:var(--muted);font-size:16px}
 .tune input[type=range]{width:150px}
 .tune output{font-variant-numeric:tabular-nums;font-size:15px;color:var(--text);text-align:right}
+.tp-side[hidden]{display:none}
 .tp-side{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 
 details.help{margin-top:26px;max-width:760px}
@@ -207,53 +224,46 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
 
   <section class="tools" aria-label="Notation tools">
     <div class="row">
-      <div class="grp">
+      <div class="grp pop" id="popDur">
         <span class="gl" id="durLabel">Note value</span>
-        <div class="btns" id="durBtns" role="group" aria-labelledby="durLabel"></div>
+        <button class="ib popbtn" id="durSum" aria-haspopup="true" aria-label="Note value"></button>
+        <div class="popbody"><div class="btns" id="durBtns" role="group" aria-labelledby="durLabel"></div></div>
       </div>
-      <div class="grp">
+      <div class="grp pop" id="popEnter">
         <span class="gl">Enter</span>
-        <div class="seg" role="group" aria-label="Enter notes or rests">
-          <button class="tb" id="modeNote" aria-pressed="true" title="Enter notes">Note</button>
-          <button class="tb" id="modeRest" aria-pressed="false" title="Enter rests (R)">Rest</button>
+        <button class="tb popbtn" id="enterSum" aria-haspopup="true" aria-label="Enter notes or rests">Note</button>
+        <div class="popbody">
+          <div class="seg" role="group" aria-label="Enter notes or rests">
+            <button class="tb" id="modeNote" aria-pressed="true" title="Enter notes">Note</button>
+            <button class="tb" id="modeRest" aria-pressed="false" title="Enter rests (R)">Rest</button>
+          </div>
         </div>
       </div>
       <div class="grp">
         <span class="gl">Accidental</span>
-        <div class="btns" id="accBtns" role="group" aria-label="Accidental"></div>
+        <div class="btns stack" id="accBtns" role="group" aria-label="Accidental"></div>
       </div>
-      <div class="grp">
-        <span class="gl">Pitch</span>
-        <div class="btns">
-          <button class="ib small" id="stepUp" title="Step up (↑)" aria-label="Step up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6 20.5 16.5 18.4 18.3 12 10.4 5.6 18.3 3.5 16.5Z"/></svg></button>
-          <button class="ib small" id="stepDown" title="Step down (↓)" aria-label="Step down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18 20.5 7.5 18.4 5.7 12 13.6 5.6 5.7 3.5 7.5Z"/></svg></button>
+      <div class="grp pop" id="popXform">
+        <span class="gl">&nbsp;</span>
+        <button class="tb popbtn" aria-haspopup="true">Transform melody<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
+        <div class="popbody">
+          <div class="btns col">
+            <button class="tb" id="octdn" title="Move the whole cantus firmus down an octave">Octave down</button>
+            <button class="tb" id="octup" title="Move the whole cantus firmus up an octave">Octave up</button>
+            <button class="tb" id="dbl" title="Doubles every note and rest: brevis becomes longa, and so on">Double all values</button>
+            <button class="tb" id="hlv" title="Halves every note and rest: brevis becomes semibrevis, and so on">Halve all values</button>
+          </div>
         </div>
       </div>
-      <div class="grp">
-        <span class="gl">Edit</span>
-        <div class="btns">
-          <button class="tb" id="del" title="Delete (Backspace)">Delete</button>
-          <button class="tb" id="undo" title="Undo (Ctrl/⌘ Z)">Undo</button>
-          <button class="tb" id="redo" title="Redo (Ctrl/⌘ Shift Z)">Redo</button>
-        </div>
-      </div>
-      <div class="grp">
-        <span class="gl">Whole melody</span>
-        <div class="btns">
-          <button class="tb" id="octdn" title="Move the whole cantus firmus down an octave">Octave down</button>
-          <button class="tb" id="octup" title="Move the whole cantus firmus up an octave">Octave up</button>
-          <button class="tb" id="dbl" title="Doubles every note and rest: brevis becomes longa, and so on">Double</button>
-          <button class="tb" id="hlv" title="Halves every note and rest: brevis becomes semibrevis, and so on">Halve</button>
-        </div>
-      </div>
+      <span class="spacer"></span>
+      <label class="ctl">Size <input type="range" id="size" min="8" max="26" step="1"></label>
+      <button id="clear">Clear all notes</button>
+    </div>
+    <div hidden>
+      <button id="stepUp"></button><button id="stepDown"></button>
+      <button id="del"></button><button id="undo"></button><button id="redo"></button>
     </div>
   </section>
-
-  <div class="settings">
-    <label class="ctl">Size <input type="range" id="size" min="8" max="26" step="1"></label>
-    <span class="spacer"></span>
-    <button id="clear">Clear all notes</button>
-  </div>
 
   <section class="leaf" aria-label="Score">
     <div class="handbox" title="The tactus: the hand drops on one beat and lifts on the next" aria-hidden="true"><svg viewBox="-20 -36 236 190"><g id="handRot"></g></svg></div>
@@ -261,12 +271,13 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
     <div id="score" tabindex="0" role="application" aria-label="Staff. Click to add notes; use the keyboard shortcuts listed below." aria-describedby="status"></div>
     <ul id="clefMenu" class="menu" role="listbox" aria-label="Clef" tabindex="-1" hidden></ul>
   </section>
-  <p id="status" class="status"></p>
+  <p id="status" class="sr"></p>
 
   <section class="transport" aria-label="Playback">
     <div class="tp-play">
       <button id="play" aria-label="Play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 13 7 2 13Z"/></svg><span>Play</span></button>
-      <button id="loop" aria-pressed="false" title="Repeat until stopped">Loop</button>
+      <button id="loop" aria-pressed="false" title="Repeat until stopped; adds a repeat sign at the end">Loop</button>
+      <button id="toggleSet" aria-expanded="true" aria-controls="tpSide" title="Show or hide the sound settings">Hide settings</button>
     </div>
 
     <div class="tactus">
@@ -281,13 +292,12 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
           <input type="number" id="tempo" min="10" max="300" step="1" inputmode="numeric" aria-label="Beats per minute">
           <button id="tempoUp" aria-label="Faster" title="Faster">+</button>
         </div>
-        <span class="permin">per minute</span>
-        <button id="heart" class="ib small" aria-label="Semibrevis at the pulse: 72 per minute" title="Semibrevis = 72, the pulse of someone breathing quietly (Gaffurius, Practica musicae, 1496)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
+        <button id="heart" class="ib small" aria-label="Semibrevis at the pulse: 67 per minute" title="Semibrevis = 67 per minute, a resting pulse (Gaffurius takes the semibrevis as one heartbeat)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
         <button id="metro" aria-pressed="false" title="A click on every beat while playing">Metronome</button>
       </div>
     </div>
 
-    <div class="tp-side">
+    <div class="tp-side" id="tpSide">
       <label class="ctl">Pitch a′ =
         <select id="ref">
           <option value="415">415 Hz</option>
@@ -444,7 +454,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  unit: 'S', tempo: 72, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 15, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false
+  unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 15, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: true
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -489,7 +499,7 @@ function save(){
   try {
     localStorage.setItem(STORE, JSON.stringify({doc, prefs: {
       inDur: ui.inDur, size: ui.size, unit: ui.unit, tempo: ui.tempo, ref: ui.ref,
-      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, metro: ui.metro
+      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, wind: ui.wind, scoop: ui.scoop, draw: ui.draw, audition: ui.audition, loop: ui.loop, metro: ui.metro, setOpen: ui.setOpen
     }}));
   } catch (e) { /* storage unavailable: work continues, just not kept */ }
 }
@@ -545,6 +555,7 @@ function loadAll(){
     ui.audition = p.audition !== false;
     ui.loop = !!p.loop;
     ui.metro = !!p.metro;
+    ui.setOpen = p.setOpen !== false;
   }
   const fromLink = docFromHash();
   if (fromLink) {
@@ -763,6 +774,7 @@ function drawScore(L, exp){
     }
     const bx = exp ? L.finalX : (L.barX ?? L.finalX);
     if (isLast && bx !== null) {
+      if (ui.loop && !exp) o += `<circle class="dot" cx="${f(bx - 0.5)}" cy="${f(top + 1.5)}" r="0.2"/><circle class="dot" cx="${f(bx - 0.5)}" cy="${f(top + 2.5)}" r="0.2"/>`;
       o += `<rect class="bar" x="${f(bx)}" y="${f(top)}" width="0.16" height="4"/>`;
       o += `<rect class="bar" x="${f(bx + 0.4)}" y="${f(top)}" width="0.5" height="4"/>`;
     }
@@ -828,7 +840,10 @@ function syncTools(){
   document.querySelectorAll('#durBtns button').forEach(b => setPressed(b, b.dataset.d === shownDur));
   $('#durLabel').textContent = sel ? `Note value: ${DUR[shownDur].name.toLowerCase()}, selected`
                                    : `Note value: ${DUR[shownDur].name.toLowerCase()}`;
+  const sb = document.querySelector('#durBtns button[data-d="' + shownDur + '"]');
+  if (sb) $('#durSum').innerHTML = sb.innerHTML;
   const shownRest = sel ? sel.r : ui.inRest;
+  $('#enterSum').textContent = shownRest ? 'Rest' : 'Note';
   setPressed($('#modeNote'), !shownRest); setPressed($('#modeRest'), shownRest);
   const ti = targetIndex(), t = ti !== null ? doc.notes[ti] : null;
   document.querySelectorAll('#accBtns button').forEach(b => {
@@ -1392,7 +1407,13 @@ function setPlayButton(on){
 /* ------------------------------------------------------------------ */
 /* Tempo and tactus                                                    */
 /* ------------------------------------------------------------------ */
-const PULSE = 72;   /* Gaffurius: the semibrevis lasts one pulse of someone breathing quietly */
+function closePops(){ document.querySelectorAll('.pop.open').forEach(p => p.classList.remove('open')); }
+function applySettingsOpen(){
+  $('.tp-side').hidden = !ui.setOpen;
+  $('#toggleSet').setAttribute('aria-expanded', ui.setOpen ? 'true' : 'false');
+  $('#toggleSet').textContent = ui.setOpen ? 'Hide settings' : 'Settings';
+}
+const PULSE = 67;   /* Gaffurius: the semibrevis lasts one pulse of someone breathing quietly */
 const INK = '#1F1A14', PAPER = '#F2E6C6';
 const HAND_SVG = (() => {
   const hatch = (n, f) => Array.from({length: n}, (_, i) => f(i)).join('');
@@ -1515,7 +1536,7 @@ function wireTempo(){
     ui.unit = 'S'; syncUnit();
     ui.tempo = PULSE; $('#tempo').value = PULSE; save();
     replayIfPlaying();
-    toast('Semibrevis = 72: one pulse of someone breathing quietly, as Gaffurius has it.');
+    toast('Semibrevis = 67 per minute: the pulse of someone at rest.');
   });
   $('#metro').addEventListener('click', () => {
     ui.metro = !ui.metro; setPressed($('#metro'), ui.metro); save(); replayIfPlaying();
@@ -1771,7 +1792,14 @@ function wire(){
   });
   $('#size').addEventListener('input', e => { ui.size = Number(e.target.value); save(); render(); });
   $('#play').addEventListener('click', togglePlay);
-  $('#loop').addEventListener('click', () => { ui.loop = !ui.loop; setPressed($('#loop'), ui.loop); save(); });
+  document.querySelectorAll('.pop').forEach(p => {
+    p.querySelector('.popbtn').addEventListener('click', e => { e.stopPropagation(); const was = p.classList.contains('open'); closePops(); if (!was) p.classList.add('open'); });
+    p.querySelector('.popbody').addEventListener('click', e => { if (e.target.closest('button')) setTimeout(() => { closePops(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }, 0); });
+  });
+  document.addEventListener('click', () => closePops());
+  $('#toggleSet').addEventListener('click', () => { ui.setOpen = !ui.setOpen; applySettingsOpen(); save(); });
+  applySettingsOpen();
+  $('#loop').addEventListener('click', () => { ui.loop = !ui.loop; setPressed($('#loop'), ui.loop); save(); render(); });
   wireTempo();
   $('#ref').addEventListener('change', e => { ui.ref = Number(e.target.value); stopPlayback(); save(); });
   $('#vol').addEventListener('input', e => {
