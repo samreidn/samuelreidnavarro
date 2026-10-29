@@ -399,7 +399,7 @@ button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--
   <details class="help">
     <summary>How to enter and edit</summary>
     <p>Pick a note value, then left-click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. A left-click on a rest puts a note in its place. Right-click a note to turn it into a rest of the same value; right-click a rest to remove it. Left-click a note to select it (Play and the space bar then start from it); drag it up or down to change its pitch. Click the clef to change it, or the faint B flat beside it to add one.</p>
-    <p>With a note selected, the value, rest and accidental buttons change that note. With nothing selected, they apply to the next note you enter. On a touch screen a tap edits a note (as the right button does) and press and hold selects it.</p>
+    <p>With a note selected, the value, rest and accidental buttons change that note. With nothing selected, they apply to the next note you enter. On a touch screen, tap a note to select it. Tap an empty place on the staff to preview a note there, and tap the same place again to put it down. Press and hold a note to turn it into a rest, or to remove a rest. Scrolling the page with a finger on the score does nothing to it.</p>
     <table>
       <tr><td><kbd>A</kbd> to <kbd>G</kbd></td><td>Add that note, in the octave closest to the previous note</td></tr>
       <tr><td><kbd>R</kbd></td><td>Add a rest</td></tr>
@@ -1123,11 +1123,55 @@ function selectItem(i){
   render();
 }
 scoreEl.addEventListener('contextmenu', e => e.preventDefault());
+/* Touch: nothing happens on the first contact, so the page can be scrolled with a finger on the score.
+   A short tap selects a note, or previews a note on the staff (tap the same spot again to place it).
+   Press and hold on a note turns it into a rest (a rest is removed). A tap that turns into a scroll does nothing. */
+let touchPress = null;
+function cancelTouch(){ if (touchPress) { clearTimeout(touchPress.timer); touchPress = null; } }
+function touchDown(e){
+  cancelTouch();
+  const p = toSp(e), h = hit(p.x, p.y, true);
+  scoreEl.focus({preventScroll: true});
+  const t = touchPress = {h, x: e.clientX, y: e.clientY, id: e.pointerId, held: false};
+  t.timer = setTimeout(() => {
+    if (touchPress !== t || t.h.type !== 'item') return;
+    t.held = true;
+    const i = t.h.i;
+    mutate(() => {
+      const n = doc.notes[i];
+      if (n.r) { doc.notes.splice(i, 1); ui.sel = null; ui.caret = i; }
+      else { n.r = true; n.a = ''; ui.sel = null; ui.caret = i + 1; }
+      ui.hover = null;
+    });
+  }, 500);
+}
+function touchUp(cancelled){
+  const t = touchPress;
+  if (!t) return;
+  touchPress = null; clearTimeout(t.timer);
+  if (cancelled || t.held) return;
+  const h = t.h;
+  const wasOpen = !$('#clefMenu').hidden;
+  closeClefMenu(false);
+  if (h.type === 'clef') { if (!wasOpen) openClefMenu(h.li); return; }
+  if (h.type === 'mens') { setTempus(ui.tempus === 'O' ? 'C' : 'O'); return; }
+  if (h.type === 'sig') { mutate(() => { doc.bflat = !doc.bflat; }); return; }
+  if (h.type === 'item') { ui.hover = null; selectItem(h.i); return; }
+  const c = ui.hover;
+  const same = c && c.type === h.type && c.li === h.li && (h.type === 'repl' ? c.i === h.i : c.idx === h.idx) && Math.abs(c.pos - h.pos) <= 1;
+  if (!same) { ui.hover = h; render(); return; }
+  ui.hover = null;
+  if (c.type === 'repl') {
+    mutate(() => { const o = doc.notes[c.i]; doc.notes[c.i] = {d: o.d, r: false, s: clampStep(CLEFS[doc.clef].bottom + c.pos), a: ''}; ui.sel = null; ui.caret = c.i + 1; });
+    audition(doc.notes[c.i]);
+  } else insertAt(c.idx, {d: ui.inDur, r: ui.inRest, s: clampStep(CLEFS[doc.clef].bottom + c.pos), a: ''});
+}
 scoreEl.addEventListener('pointerdown', e => {
   if (!lay || (e.button !== 0 && e.button !== 2)) return;
+  if (e.pointerType !== 'mouse') { touchDown(e); return; }
   e.preventDefault();
   scoreEl.focus({preventScroll: true});
-  const isMouse = e.pointerType === 'mouse';
+  const isMouse = true;
   /* mouse: left button places and selects, right button turns a note into a rest and removes rests.
      Touch: a tap edits (as the right button would), press and hold selects. */
   const p = toSp(e), h = hit(p.x, p.y, !isMouse);
@@ -1161,6 +1205,7 @@ scoreEl.addEventListener('pointerdown', e => {
 });
 scoreEl.addEventListener('pointermove', e => {
   if (!lay) return;
+  if (touchPress && e.pointerId === touchPress.id) { if (Math.hypot(e.clientX - touchPress.x, e.clientY - touchPress.y) > 10) cancelTouch(); return; }
   const p = toSp(e);
   if (drag) {
     if (drag.rest) return;
@@ -1194,9 +1239,9 @@ function endPress(cancelled){
   if (d.rest) mutate(() => { doc.notes.splice(d.i, 1); ui.sel = null; ui.caret = d.i; ui.hover = null; });
   else mutate(() => { const n = doc.notes[d.i]; n.r = true; n.a = ''; ui.sel = null; ui.caret = d.i + 1; });
 }
-scoreEl.addEventListener('pointerup', e => { endPress(false); if (e.pointerType === 'touch' && ui.hover) { ui.hover = null; render(); } });
-scoreEl.addEventListener('pointercancel', () => endPress(true));
-scoreEl.addEventListener('pointerleave', () => { if (!drag && ui.hover) { ui.hover = null; render(); } });
+scoreEl.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') touchUp(false); else endPress(false); });
+scoreEl.addEventListener('pointercancel', () => { touchUp(true); endPress(true); });
+scoreEl.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !drag && ui.hover) { ui.hover = null; render(); } });
 scoreEl.addEventListener('focus', () => render());
 scoreEl.addEventListener('blur', () => { if (!drag) render(); });
 
