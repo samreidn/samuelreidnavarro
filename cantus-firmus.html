@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cantus firmus | Samuel Reid Navarro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap">
+  <link rel="stylesheet" href="style.css?v=11">
+</head>
+<body>
+  <header class="banner">
+    <a href="index.html"><p class="site-name">Samuel Reid Navarro</p></a>
+  </header>
+  <nav class="nav" aria-label="Main">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="music.html">Timelines</a></li>
+      <li><a href="mensurator.html">Mensurator</a></li>
+      <li><a href="canon.html">Canon Canonum</a></li>
+      <li><a href="cantus-firmus.html" aria-current="page">Cantus firmus</a></li>
+    </ul>
+  </nav>
+  <main class="wide">
+    <div class="embed">
+      <button class="fs" type="button" id="fs">Full screen</button>
+      <iframe class="game" id="cf" src="games/cantus-firmus.html?v=1" title="Cantus firmus" allow="fullscreen; autoplay; clipboard-write"></iframe>
+    </div>
+    <script>
+      document.getElementById("fs").addEventListener("click", function () {
+        var f = document.getElementById("cf");
+        if (f.requestFullscreen) f.requestFullscreen();
+        else if (f.webkitRequestFullscreen) f.webkitRequestFullscreen();
+        else window.location.href = f.src;
+      });
+    </script>
+  </main>
+</body>
+</html>

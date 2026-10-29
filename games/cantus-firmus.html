@@ -1,0 +1,1574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cantus firmus</title>
+<meta name="description" content="Write a cantus firmus in mensural notation and hear it back.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 27 16 16 29 5 16Z' fill='%2324479A'/%3E%3Cpath d='M16 9.5 21.4 16 16 22.5 10.6 16Z' fill='%23EDE0BC'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<!--
+  Cantus firmus: a small mensural-notation editor with playback.
+  Everything (layout, editing, sound) is in this one file; no build step.
+  Note shapes, clefs and accidentals are outlines from the Bravura music font
+  by Steinberg Media Technologies, used under the SIL Open Font License 1.1.
+-->
+<style>
+:root{
+  --ground:#D8DCD1; --surface:#E8EBE2; --text:#26231F; --muted:#5C5950; --line:#9EA195;
+  --accent:#24479A; --accent-ink:#F3ECDA;
+  --leaf:#EDE0BC; --leaf-ink:#1F1A14; --leaf-muted:#7A6A4E; --rule:#B4513F;
+  --sel:#24479A; --hov:#4B66A8; --play:#C0331C;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#1A1E1B; --surface:#252A26; --text:#E4DFD2; --muted:#A6A296; --line:#4C534D;
+    --accent:#9DB3EA; --accent-ink:#121722;
+    --leaf:#E4D6B0;
+    color-scheme: dark;
+  }
+}
+/* Shown inside samuelreidnavarro.github.io: take on the site's cream page, always light */
+:root.embedded{
+  --ground:#FBF7EF; --surface:#F4EDE0; --text:#3B3125; --muted:#7D6F5B; --line:#D6C8B0;
+  --accent:#24479A; --accent-ink:#F3ECDA; --leaf:#EDE0BC;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--text);
+  font:400 17px/1.5 Cardo,"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 56px}
+header.top{display:flex;flex-wrap:wrap;gap:14px 32px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+h1{font-weight:400;font-size:clamp(2.2rem,4.4vw,3.2rem);line-height:1.02;margin:0;letter-spacing:-.012em}
+.lede{margin:.4rem 0 0;color:var(--muted);font-style:italic;max-width:62ch}
+.share{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.libwrap{position:relative}
+.libbtn{display:inline-flex;align-items:center;gap:8px;background:var(--text);color:var(--ground);border-color:var(--text)}
+.libbtn .chev{width:12px;height:12px;fill:currentColor}
+.library{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(500px,calc(100vw - 28px));max-height:min(72vh,680px);
+  overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px 10px;
+  box-shadow:0 18px 40px -16px rgba(0,0,0,.45)}
+.library h2{font-size:17px;font-weight:700;margin:12px 8px 2px}
+.library .gnote{margin:0 8px 6px;color:var(--muted);font-style:italic;font-size:14.5px}
+.cfitem{display:block;width:100%;text-align:left;padding:8px 10px 6px;border:1px solid transparent;background:transparent;border-radius:6px;min-height:0;line-height:1.3}
+.cfitem:hover:not(:disabled){border-color:var(--line);background:var(--ground)}
+.cfitem .t{display:block;font-size:16.5px}
+.cfitem .d{display:block;font-size:14px;color:var(--muted);font-style:italic;margin-top:1px}
+.cfitem .pv{display:block;margin-top:6px;height:46px;background:var(--leaf);border-radius:3px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.cfitem .pv svg{display:block;height:46px;width:auto}
+.cfitem .pv .staff{stroke:var(--rule)}
+.cfitem .pv use{fill:var(--leaf-ink)}
+.cfitem .pv .ledger{stroke:var(--leaf-ink)}
+
+button{font:inherit;font-size:15.5px;color:var(--text);background:var(--surface);border:1px solid var(--line);
+  border-radius:6px;min-height:40px;padding:0 14px;cursor:pointer;line-height:1}
+button:hover:not(:disabled){border-color:var(--text)}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:disabled{opacity:.42;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select,input[type=number]{font:inherit;font-size:15.5px;color:var(--text);background:var(--surface);
+  border:1px solid var(--line);border-radius:6px;min-height:38px;padding:0 8px}
+input[type=number]{width:4.6em}
+input[type=range]{accent-color:var(--accent);width:120px}
+input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;margin:0}
+
+.tools{background:var(--ground);padding:6px 0 12px;z-index:5}
+@media (min-width:760px) and (min-height:620px){ .tools{position:sticky;top:0} }
+.tools .row{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
+.grp{display:flex;flex-direction:column;gap:5px}
+.gl{font-size:14px;color:var(--muted);font-style:italic;white-space:nowrap}
+.btns{display:flex;gap:4px;flex-wrap:wrap}
+.ib{width:44px;height:44px;padding:0;display:grid;place-items:center}
+.ib svg{width:36px;height:36px;fill:currentColor;overflow:visible}
+.ib.small svg{width:22px;height:22px}
+.seg{display:flex}
+.seg button{border-radius:0}
+.seg button:first-child{border-radius:6px 0 0 6px}
+.seg button:last-child{border-radius:0 6px 6px 0;margin-left:-1px}
+.tb{min-height:44px}
+
+.settings{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;margin:2px 0 12px}
+label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.settings .spacer{flex:1}
+
+.leaf{position:relative;background:var(--leaf);color:var(--leaf-ink);border-radius:3px;padding:16px 22px 18px;
+  box-shadow:0 1px 1px rgba(60,40,10,.14),0 14px 32px -14px rgba(50,34,8,.42),inset 0 0 70px rgba(150,108,40,.13)}
+#title{display:block;width:100%;font:italic 400 1.4rem/1.3 Cardo,"Palatino Linotype",Palatino,Georgia,serif;
+  color:var(--leaf-ink);background:transparent;border:0;border-bottom:1px dashed transparent;padding:2px 0 4px;border-radius:0}
+#title:hover{border-bottom-color:rgba(31,26,20,.25)}
+#title:focus-visible{outline:none;border-bottom-color:var(--sel)}
+#title::placeholder{color:rgba(31,26,20,.42)}
+#score{margin-top:4px;cursor:crosshair;touch-action:manipulation;user-select:none;-webkit-user-select:none;border-radius:2px}
+#score:focus-visible{outline:1.5px solid rgba(36,71,154,.38);outline-offset:6px}
+#score svg{display:block;overflow:visible}
+#score .staff{stroke:var(--rule)}
+#score .ledger{stroke:var(--leaf-ink)}
+#score use,#score .bar{fill:var(--leaf-ink)}
+#score .it.hov use,#score use.clefhov{fill:var(--hov)}
+#score .it.sel use{fill:var(--sel)}
+#score .it.sel .ledger{stroke:var(--sel)}
+#score .it.play use{fill:var(--play)}
+#score .it.play .ledger{stroke:var(--play)}
+#score .selbg{fill:var(--sel);opacity:.1}
+#score .ghost{opacity:.34}
+#score .caret{fill:var(--sel);opacity:.75}
+#score .hint{fill:var(--leaf-muted);font:italic 1.15px Cardo,"Palatino Linotype",Palatino,Georgia,serif}
+
+.status{min-height:1.5em;margin:10px 2px 0;color:var(--muted);font-style:italic}
+.transport{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px 34px;margin-top:16px;padding-top:18px;border-top:1px solid var(--line)}
+.tp-play{display:flex;gap:8px;align-items:center}
+#play{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-width:110px;font-size:17px;
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px}
+#play svg{width:14px;height:14px;fill:currentColor}
+.tactus{display:flex;flex-direction:column;gap:8px}
+.vignette{width:176px;height:142px;background:var(--leaf);border:1.5px solid var(--leaf-ink);outline:1px solid var(--leaf-ink);
+  outline-offset:-5px;overflow:hidden;border-radius:1px}
+.vignette svg{display:block;width:100%;height:100%}
+.tempo-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.eq{font-size:22px;color:var(--text);padding:0 2px}
+.permin{color:var(--muted);margin-right:6px}
+.unitpick{position:relative}
+.unitbtn{width:58px;grid-template-columns:1fr 12px;gap:0;padding:0 4px 0 2px}
+.unitbtn svg{width:34px;height:34px}
+.unitbtn .chev{width:12px;height:12px;fill:currentColor}
+#unitList{left:0;bottom:calc(100% + 6px);min-width:190px}
+.menu{position:absolute;z-index:20;margin:0;padding:4px;list-style:none;color:var(--text);
+  background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:0 10px 28px -10px rgba(0,0,0,.35)}
+.menu:focus{outline:none}
+.menu li{display:flex;align-items:center;gap:10px;padding:3px 12px 3px 4px;border-radius:4px;cursor:pointer;font-size:16px}
+.menu li svg{width:32px;height:32px;fill:currentColor;flex:none}
+.menu li[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.menu li.active:not([aria-selected="true"]){outline:2px solid var(--accent);outline-offset:-2px}
+.menu li:hover:not([aria-selected="true"]){background:color-mix(in srgb,var(--accent) 12%,transparent)}
+#clefMenu{min-width:260px}
+#clefMenu li svg{width:26px;height:62px;overflow:visible}
+.stepper{display:flex}
+.stepper button{min-width:38px;padding:0;font-size:20px;border-radius:0}
+.stepper button:first-child{border-radius:6px 0 0 6px}
+.stepper button:last-child{border-radius:0 6px 6px 0}
+.stepper input{border-radius:0;border-left:0;border-right:0;width:3.6em;text-align:center;min-height:40px;font-size:17px;
+  -moz-appearance:textfield;appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+#heart{color:var(--rule)}
+#heart svg{width:22px;height:22px}
+.tp-side{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+
+details.help{margin-top:26px;max-width:760px}
+details.help summary{cursor:pointer;color:var(--text);font-size:17px}
+.help p{color:var(--muted);margin:.6rem 0}
+.help table{border-collapse:collapse;margin-top:8px;font-size:16px}
+.help td{padding:5px 18px 5px 0;vertical-align:top}
+.help td:first-child{white-space:nowrap}
+kbd{font:inherit;font-size:14.5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 6px;background:var(--surface)}
+footer{margin-top:30px;color:var(--muted);font-size:14.5px}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--ground);
+  padding:10px 16px;border-radius:6px;font-size:16px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;max-width:calc(100vw - 32px)}
+#toast.on{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion: reduce){ #toast{transition:none} }
+@media (max-width:640px){
+  .wrap{padding:18px 14px 40px}
+  .leaf{padding:12px 12px 14px}
+  .ib{width:40px;height:40px}
+  .ib svg{width:32px;height:32px}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<svg id="glyph-defs" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"></svg>
+
+<main class="wrap">
+  <header class="top">
+    <div>
+      <h1>Cantus firmus</h1>
+      <p class="lede">Write a cantus firmus in mensural notation and hear it back.</p>
+    </div>
+    <div class="share">
+      <div class="libwrap">
+        <button id="libBtn" class="libbtn" aria-haspopup="true" aria-expanded="false" aria-controls="library">Cantus firmi<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg></button>
+        <div id="library" class="library" role="dialog" aria-label="Cantus firmi to start from" hidden></div>
+      </div>
+      <button id="copyLink" title="Copy a link that opens this exact cantus firmus">Copy link</button>
+      <button id="savePng" title="Black on white, ready to print">Save image</button>
+      <button id="saveSvg" title="Vector file for documents and editing programs">Save SVG</button>
+    </div>
+  </header>
+
+  <section class="tools" aria-label="Notation tools">
+    <div class="row">
+      <div class="grp">
+        <span class="gl" id="durLabel">Note value</span>
+        <div class="btns" id="durBtns" role="group" aria-labelledby="durLabel"></div>
+      </div>
+      <div class="grp">
+        <span class="gl">Enter</span>
+        <div class="seg" role="group" aria-label="Enter notes or rests">
+          <button class="tb" id="modeNote" aria-pressed="true" title="Enter notes">Note</button>
+          <button class="tb" id="modeRest" aria-pressed="false" title="Enter rests (R)">Rest</button>
+        </div>
+      </div>
+      <div class="grp">
+        <span class="gl">Accidental</span>
+        <div class="btns" id="accBtns" role="group" aria-label="Accidental"></div>
+      </div>
+      <div class="grp">
+        <span class="gl">Pitch</span>
+        <div class="btns">
+          <button class="ib small" id="stepUp" title="Step up (↑)" aria-label="Step up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6 20.5 16.5 18.4 18.3 12 10.4 5.6 18.3 3.5 16.5Z"/></svg></button>
+          <button class="ib small" id="stepDown" title="Step down (↓)" aria-label="Step down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18 20.5 7.5 18.4 5.7 12 13.6 5.6 5.7 3.5 7.5Z"/></svg></button>
+        </div>
+      </div>
+      <div class="grp">
+        <span class="gl">Edit</span>
+        <div class="btns">
+          <button class="tb" id="del" title="Delete (Backspace)">Delete</button>
+          <button class="tb" id="undo" title="Undo (Ctrl/⌘ Z)">Undo</button>
+          <button class="tb" id="redo" title="Redo (Ctrl/⌘ Shift Z)">Redo</button>
+        </div>
+      </div>
+      <div class="grp">
+        <span class="gl">All values</span>
+        <div class="btns">
+          <button class="tb" id="dbl" title="Doubles every note and rest: brevis becomes longa, and so on">Double</button>
+          <button class="tb" id="hlv" title="Halves every note and rest: brevis becomes semibrevis, and so on">Halve</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="settings">
+    <label class="ctl">Clef
+      <select id="clef"></select>
+    </label>
+    <label class="ctl"><input type="checkbox" id="bflat"> B♭ in the signature</label>
+    <label class="ctl">Size <input type="range" id="size" min="8" max="26" step="1"></label>
+    <span class="spacer"></span>
+    <button id="clear">Clear all notes</button>
+  </div>
+
+  <section class="leaf" aria-label="Score">
+    <input id="title" type="text" maxlength="120" placeholder="Untitled cantus firmus" aria-label="Title" spellcheck="false">
+    <div id="score" tabindex="0" role="application" aria-label="Staff. Click to add notes; use the keyboard shortcuts listed below." aria-describedby="status"></div>
+    <ul id="clefMenu" class="menu" role="listbox" aria-label="Clef" tabindex="-1" hidden></ul>
+  </section>
+  <p id="status" class="status"></p>
+
+  <section class="transport" aria-label="Playback">
+    <div class="tp-play">
+      <button id="play" aria-label="Play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 13 7 2 13Z"/></svg><span>Play</span></button>
+      <button id="loop" aria-pressed="false" title="Repeat until stopped">Loop</button>
+    </div>
+
+    <div class="tactus">
+      <div class="vignette" title="The tactus: the hand falls on each beat and rises halfway through it">
+        <svg viewBox="-20 -36 236 190" aria-hidden="true"><g id="handRot"></g></svg>
+      </div>
+      <div class="tempo-row" role="group" aria-label="Tempo">
+        <div class="unitpick">
+          <button id="unitBtn" class="ib unitbtn" aria-haspopup="listbox" aria-expanded="false"></button>
+          <ul id="unitList" class="menu" role="listbox" aria-label="Note value that gets the beat" tabindex="-1" hidden></ul>
+        </div>
+        <span class="eq" aria-hidden="true">=</span>
+        <div class="stepper">
+          <button id="tempoDown" aria-label="Slower" title="Slower">−</button>
+          <input type="number" id="tempo" min="10" max="300" step="1" inputmode="numeric" aria-label="Beats per minute">
+          <button id="tempoUp" aria-label="Faster" title="Faster">+</button>
+        </div>
+        <span class="permin">per minute</span>
+        <button id="heart" class="ib small" aria-label="Semibrevis at the pulse: 72 per minute" title="Semibrevis = 72, the pulse of someone breathing quietly (Gaffurius, Practica musicae, 1496)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
+        <button id="metro" aria-pressed="false" title="A click on every beat while playing">Metronome</button>
+      </div>
+    </div>
+
+    <div class="tp-side">
+      <label class="ctl">Pitch a′ =
+        <select id="ref">
+          <option value="415">415 Hz</option>
+          <option value="440">440 Hz</option>
+          <option value="466">466 Hz</option>
+        </select>
+      </label>
+      <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1"></label>
+      <label class="ctl"><input type="checkbox" id="audition"> Hear notes while editing</label>
+    </div>
+  </section>
+
+  <details class="help">
+    <summary>How to enter and edit</summary>
+    <p>Pick a note value, then click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. Click a note to turn it into a rest of the same value; click a rest to remove it. Drag a note up or down to change its pitch. Click the clef to change it.</p>
+    <p>To change a note without removing it, select it: right-click it, Shift-click it, or press and hold it on a touch screen. Value, rest and accidental buttons then change that note. With nothing selected, they apply to the next note you enter and to the note you just entered.</p>
+    <table>
+      <tr><td><kbd>A</kbd> to <kbd>G</kbd></td><td>Add that note, in the octave closest to the previous note</td></tr>
+      <tr><td><kbd>R</kbd></td><td>Add a rest</td></tr>
+      <tr><td><kbd>1</kbd> to <kbd>7</kbd></td><td>Maxima, longa, brevis, semibrevis, minima, semiminima, fusa</td></tr>
+      <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Move the note a step up or down; with <kbd>Shift</kbd>, an octave</td></tr>
+      <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Select the previous or next note</td></tr>
+      <tr><td><kbd>-</kbd> <kbd>N</kbd> <kbd>=</kbd></td><td>Flat, natural, sharp (press again to remove)</td></tr>
+      <tr><td><kbd>Backspace</kbd></td><td>Delete the selected note, or the one before the cursor</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Deselect</td></tr>
+      <tr><td><kbd>Space</kbd></td><td>Play or stop</td></tr>
+      <tr><td><kbd>Ctrl/⌘</kbd> <kbd>Z</kbd></td><td>Undo; add <kbd>Shift</kbd> to redo</td></tr>
+    </table>
+    <p>Your work is kept in this browser automatically. Copy link gives you an address that opens this exact cantus firmus anywhere, for instance to send to a student.</p>
+  </details>
+
+  <footer>Note shapes from the Bravura music font by Steinberg, SIL Open Font License 1.1.</footer>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+try { if (window.self !== window.top) document.documentElement.classList.add('embedded'); } catch (e) { document.documentElement.classList.add('embedded'); }
+
+/* ------------------------------------------------------------------ */
+/* Glyph outlines in staff-space units, y pointing down.               */
+/* b = [left, top, right, bottom] bounding box.                        */
+/* ------------------------------------------------------------------ */
+const GLY = {"Mx":{"d":"M2.456 -0.684H2.42C2.396 -0.684 2.38 -0.664 2.38 -0.64V-0.54H0.12V-0.64C0.12 -0.664 0.1 -0.684 0.076 -0.684H0.04C0.02 -0.684 0 -0.664 0 -0.64V0.644C0 0.668 0.02 0.688 0.04 0.688H0.076C0.1 0.688 0.12 0.668 0.12 0.644V0.544H2.38V3.504C2.38 3.528 2.396 3.548 2.42 3.548H2.456C2.48 3.548 2.5 3.528 2.5 3.504V-0.64C2.5 -0.664 2.48 -0.684 2.456 -0.684ZM2.38 -0.292V0.3H0.12V-0.292Z","b":[0.0,-0.684,2.5,3.548]},"L":{"d":"M1.256 -0.684H1.22C1.196 -0.684 1.18 -0.664 1.18 -0.64V-0.54H0.12V-0.64C0.12 -0.664 0.1 -0.684 0.076 -0.684H0.04C0.02 -0.684 0 -0.664 0 -0.64V0.644C0 0.668 0.02 0.688 0.04 0.688H0.076C0.1 0.688 0.12 0.668 0.12 0.644V0.544H1.18V3.504C1.18 3.528 1.196 3.548 1.22 3.548H1.256C1.28 3.548 1.3 3.528 1.3 3.504V-0.64C1.3 -0.664 1.28 -0.684 1.256 -0.684ZM1.18 -0.292V0.3H0.12V-0.292Z","b":[0.0,-0.684,1.3,3.548]},"B":{"d":"M1.26 -0.688H1.224C1.2 -0.688 1.18 -0.668 1.18 -0.644V-0.544H0.12V-0.644C0.12 -0.668 0.104 -0.688 0.08 -0.688H0.044C0.02 -0.688 0 -0.668 0 -0.644V0.64C0 0.664 0.02 0.684 0.044 0.684H0.08C0.104 0.684 0.12 0.664 0.12 0.64V0.54H1.18V0.64C1.18 0.664 1.2 0.684 1.224 0.684H1.26C1.28 0.684 1.3 0.664 1.3 0.64V-0.644C1.3 -0.668 1.28 -0.688 1.26 -0.688ZM1.18 -0.296V0.296H0.12V-0.296Z","b":[0.0,-0.688,1.3,0.684]},"S":{"d":"M0.68 -0.724C0.672 -0.736 0.66 -0.74 0.648 -0.74C0.632 -0.736 0.624 -0.732 0.616 -0.724L0.008 -0.028C0.004 -0.016 0 -0.008 0 0C0 0.016 0.004 0.02 0.008 0.028L0.616 0.724C0.624 0.732 0.636 0.736 0.648 0.736C0.66 0.736 0.672 0.732 0.68 0.724L1.272 0.028C1.276 0.02 1.28 0.012 1.28 0C1.28 -0.008 1.276 -0.02 1.272 -0.028ZM0.74 0.468 0.24 -0.108 0.56 -0.472 1.04 0.108Z","b":[0.0,-0.74,1.28,0.736]},"M":{"d":"M1.272 -0.028 0.712 -0.712V-3.504C0.712 -3.524 0.692 -3.544 0.668 -3.544H0.632C0.608 -3.544 0.592 -3.524 0.592 -3.504V-0.712L0.008 -0.028C0 -0.02 0 -0.008 0 0C0 0.012 0 0.02 0.008 0.028L0.616 0.724C0.624 0.732 0.636 0.736 0.648 0.736C0.66 0.736 0.672 0.732 0.68 0.724L1.272 0.028C1.276 0.02 1.28 0.012 1.28 0C1.28 -0.008 1.276 -0.02 1.272 -0.028ZM0.74 0.468 0.24 -0.108 0.56 -0.472 1.04 0.108Z","b":[0.0,-3.544,1.28,0.736]},"Sm":{"d":"M1.272 -0.028 0.712 -0.712V-3.504C0.712 -3.524 0.692 -3.544 0.668 -3.544H0.632C0.608 -3.544 0.588 -3.524 0.588 -3.504V-0.712L0.008 -0.028C0 -0.02 0 -0.008 0 0C0 0.012 0 0.02 0.008 0.028L0.616 0.724C0.624 0.732 0.636 0.736 0.648 0.736C0.66 0.736 0.672 0.732 0.68 0.724L1.272 0.028C1.276 0.02 1.28 0.012 1.28 0C1.28 -0.008 1.276 -0.02 1.272 -0.028Z","b":[0.0,-3.544,1.28,0.736]},"F":{"d":"M1.384 -2.16 0.712 -3.508C0.696 -3.512 0.692 -3.54 0.668 -3.54C0.664 -3.54 0.656 -3.544 0.652 -3.544C0.648 -3.544 0.644 -3.54 0.64 -3.54C0.608 -3.54 0.588 -3.52 0.588 -3.496V-0.708L0.008 -0.024C0 -0.016 0 -0.004 0 0.004C0 0.016 0 0.024 0.008 0.032L0.616 0.728C0.624 0.736 0.636 0.744 0.648 0.744C0.66 0.744 0.672 0.736 0.68 0.728L1.272 0.032C1.276 0.024 1.28 0.016 1.28 0.004C1.28 -0.004 1.276 -0.016 1.272 -0.024L0.708 -0.708V-3.22L1.268 -2.1C1.28 -2.08 1.304 -2.064 1.328 -2.064C1.336 -2.064 1.344 -2.068 1.356 -2.072C1.38 -2.084 1.392 -2.108 1.392 -2.132C1.392 -2.144 1.388 -2.152 1.384 -2.16Z","b":[0.0,-3.544,1.392,0.744]},"rL":{"d":"M0.192 -0.936C0.192 -0.972 0.164 -1 0.128 -1H0.064C0.028 -1 0 -0.972 0 -0.936V0.936C0 0.972 0.028 1 0.064 1H0.128C0.164 1 0.192 0.972 0.192 0.936Z","b":[0.0,-1.0,0.192,1.0]},"rB":{"d":"M0.192 -0.936C0.192 -0.972 0.164 -1 0.128 -1H0.064C0.028 -1 0 -0.972 0 -0.936V-0.064C0 -0.028 0.028 0 0.064 0H0.128C0.164 0 0.192 -0.028 0.192 -0.064Z","b":[0.0,-1.0,0.192,0.0]},"rS":{"d":"M0.192 -0.936C0.192 -0.972 0.164 -1 0.128 -1H0.064C0.028 -1 0 -0.972 0 -0.936V-0.564C0 -0.528 0.028 -0.5 0.064 -0.5H0.128C0.164 -0.5 0.192 -0.528 0.192 -0.564Z","b":[0.0,-1.0,0.192,-0.5]},"rM":{"d":"M0.192 -0.436C0.192 -0.472 0.164 -0.5 0.128 -0.5H0.064C0.028 -0.5 0 -0.472 0 -0.436V-0.064C0 -0.028 0.028 0 0.064 0H0.128C0.164 0 0.192 -0.028 0.192 -0.064Z","b":[0.0,-0.5,0.192,0.0]},"rSm":{"d":"M0.512 -0.54 0.156 -0.656C0.152 -0.66 0.144 -0.66 0.14 -0.66H0.064C0.028 -0.66 0 -0.632 0 -0.596V-0.064C0 -0.028 0.028 0 0.064 0H0.128C0.164 0 0.192 -0.028 0.192 -0.064V-0.444L0.448 -0.356C0.456 -0.352 0.46 -0.352 0.468 -0.352C0.496 -0.352 0.524 -0.372 0.532 -0.396L0.552 -0.46C0.552 -0.464 0.556 -0.472 0.556 -0.476C0.556 -0.504 0.54 -0.532 0.512 -0.54Z","b":[0.0,-0.66,0.556,0.0]},"rF":{"d":"M0.044 -0.54C0.016 -0.532 0 -0.504 0 -0.476C0 -0.472 0.004 -0.464 0.004 -0.46L0.024 -0.396C0.032 -0.372 0.06 -0.352 0.088 -0.352C0.096 -0.352 0.1 -0.352 0.108 -0.356L0.364 -0.444V-0.064C0.364 -0.028 0.392 0 0.428 0H0.492C0.528 0 0.556 -0.028 0.556 -0.064V-0.596C0.556 -0.632 0.528 -0.66 0.492 -0.66H0.416C0.412 -0.66 0.404 -0.66 0.4 -0.656Z","b":[0.0,-0.66,0.556,0.0]},"gC":{"d":"M1.504 -1.66C1.496 -1.708 1.504 -1.712 1.528 -1.736C1.592 -1.796 1.676 -1.88 1.752 -1.964C2.088 -2.332 2.288 -2.808 2.288 -3.26C2.288 -3.608 2.192 -3.952 2.028 -4.192C1.968 -4.28 1.864 -4.392 1.82 -4.392C1.764 -4.392 1.64 -4.288 1.56 -4.2C1.264 -3.872 1.168 -3.372 1.168 -2.956C1.168 -2.724 1.196 -2.464 1.224 -2.3C1.232 -2.252 1.236 -2.244 1.188 -2.204C0.932 -1.992 0.656 -1.748 0.448 -1.492C0.172 -1.148 0 -0.776 0 -0.348C0 0.348 0.476 1.008 1.456 1.008C1.548 1.008 1.652 1 1.732 0.984C1.776 0.976 1.784 0.972 1.792 1.02C1.84 1.288 1.9 1.636 1.9 1.824C1.9 2.416 1.5 2.488 1.264 2.488C1.048 2.488 0.944 2.424 0.944 2.372C0.944 2.344 0.98 2.332 1.072 2.304C1.196 2.268 1.34 2.16 1.34 1.928C1.34 1.708 1.2 1.52 0.956 1.52C0.688 1.52 0.528 1.732 0.528 1.98C0.528 2.24 0.684 2.632 1.288 2.632C1.556 2.632 2.076 2.512 2.076 1.832C2.076 1.604 2.004 1.224 1.96 0.976C1.952 0.928 1.956 0.932 2.012 0.908C2.416 0.748 2.684 0.408 2.684 -0.044C2.684 -0.556 2.308 -1.008 1.72 -1.008C1.616 -1.008 1.616 -1.008 1.604 -1.08ZM1.88 -3.772C2.012 -3.772 2.12 -3.664 2.12 -3.444C2.12 -3.168 1.988 -2.912 1.676 -2.6C1.612 -2.536 1.516 -2.444 1.424 -2.364C1.396 -2.34 1.38 -2.344 1.372 -2.396C1.356 -2.5 1.348 -2.636 1.348 -2.764C1.348 -3.388 1.636 -3.772 1.88 -3.772ZM1.444 -1.048C1.456 -0.972 1.456 -0.976 1.384 -0.952C1.032 -0.832 0.804 -0.516 0.804 -0.176C0.804 0.184 0.992 0.44 1.264 0.532C1.296 0.544 1.344 0.556 1.372 0.556C1.404 0.556 1.42 0.536 1.42 0.512C1.42 0.484 1.388 0.472 1.36 0.46C1.192 0.388 1.072 0.216 1.072 0.032C1.072 -0.196 1.228 -0.368 1.472 -0.436C1.536 -0.452 1.544 -0.448 1.552 -0.404L1.752 0.788C1.76 0.832 1.756 0.832 1.696 0.844C1.632 0.856 1.552 0.864 1.472 0.864C0.772 0.864 0.32 0.476 0.32 -0.08C0.32 -0.316 0.36 -0.632 0.692 -1.008C0.932 -1.276 1.116 -1.424 1.304 -1.576C1.344 -1.608 1.352 -1.604 1.36 -1.56ZM1.72 -0.412C1.712 -0.46 1.716 -0.472 1.764 -0.468C2.088 -0.44 2.356 -0.168 2.356 0.184C2.356 0.436 2.204 0.64 1.98 0.752C1.932 0.776 1.924 0.776 1.916 0.728Z","b":[0.0,-4.392,2.684,2.632]},"gC8":{"d":"M1.504 -1.66C1.496 -1.708 1.504 -1.712 1.528 -1.736C1.592 -1.796 1.676 -1.88 1.752 -1.964C2.088 -2.332 2.288 -2.808 2.288 -3.26C2.288 -3.608 2.192 -3.952 2.028 -4.192C1.968 -4.28 1.864 -4.392 1.82 -4.392C1.764 -4.392 1.64 -4.288 1.56 -4.2C1.264 -3.872 1.168 -3.372 1.168 -2.956C1.168 -2.724 1.196 -2.464 1.224 -2.3C1.232 -2.252 1.236 -2.244 1.188 -2.204C0.932 -1.992 0.656 -1.748 0.448 -1.492C0.172 -1.148 0 -0.776 0 -0.348C0 0.348 0.476 1.008 1.456 1.008C1.548 1.008 1.652 1 1.732 0.984C1.776 0.976 1.784 0.972 1.792 1.02C1.84 1.288 1.9 1.636 1.9 1.824C1.9 2.416 1.5 2.488 1.264 2.488C1.048 2.488 0.944 2.424 0.944 2.372C0.944 2.344 0.98 2.332 1.072 2.304C1.196 2.268 1.34 2.16 1.34 1.928C1.34 1.708 1.2 1.52 0.956 1.52C0.688 1.52 0.528 1.732 0.528 1.98C0.528 2.224 0.664 2.58 1.176 2.628C1.104 2.672 1.064 2.744 1.064 2.836C1.064 2.896 1.08 2.944 1.112 2.984C1.132 3.012 1.14 3.02 1.092 3.04C0.964 3.092 0.912 3.18 0.912 3.276C0.912 3.408 1.008 3.512 1.224 3.512C1.42 3.512 1.588 3.412 1.588 3.228C1.588 3.156 1.572 3.104 1.524 3.052C1.496 3.02 1.488 3.012 1.536 2.988C1.644 2.932 1.684 2.848 1.684 2.776C1.684 2.696 1.644 2.628 1.56 2.592C1.808 2.516 2.076 2.316 2.076 1.832C2.076 1.604 2.004 1.224 1.96 0.976C1.952 0.928 1.956 0.932 2.012 0.908C2.416 0.748 2.684 0.408 2.684 -0.044C2.684 -0.556 2.308 -1.008 1.72 -1.008C1.616 -1.008 1.616 -1.008 1.604 -1.08ZM1.88 -3.772C2.012 -3.772 2.12 -3.664 2.12 -3.444C2.12 -3.168 1.988 -2.912 1.676 -2.6C1.612 -2.536 1.516 -2.444 1.424 -2.364C1.396 -2.34 1.38 -2.344 1.372 -2.396C1.356 -2.5 1.348 -2.636 1.348 -2.764C1.348 -3.388 1.636 -3.772 1.88 -3.772ZM1.444 -1.048C1.456 -0.972 1.456 -0.976 1.384 -0.952C1.032 -0.832 0.804 -0.516 0.804 -0.176C0.804 0.184 0.992 0.44 1.264 0.532C1.296 0.544 1.344 0.556 1.372 0.556C1.404 0.556 1.42 0.536 1.42 0.512C1.42 0.484 1.388 0.472 1.36 0.46C1.192 0.388 1.072 0.216 1.072 0.032C1.072 -0.196 1.228 -0.368 1.472 -0.436C1.536 -0.452 1.544 -0.448 1.552 -0.404L1.752 0.788C1.76 0.832 1.756 0.832 1.696 0.844C1.632 0.856 1.552 0.864 1.472 0.864C0.772 0.864 0.32 0.476 0.32 -0.08C0.32 -0.316 0.36 -0.632 0.692 -1.008C0.932 -1.276 1.116 -1.424 1.304 -1.576C1.344 -1.608 1.352 -1.604 1.36 -1.56ZM1.72 -0.412C1.712 -0.46 1.716 -0.472 1.764 -0.468C2.088 -0.44 2.356 -0.168 2.356 0.184C2.356 0.436 2.204 0.64 1.98 0.752C1.932 0.776 1.924 0.776 1.916 0.728ZM1.404 2.628C1.5 2.628 1.532 2.692 1.532 2.756C1.532 2.824 1.504 2.892 1.436 2.94C1.42 2.952 1.408 2.952 1.376 2.932C1.284 2.86 1.252 2.824 1.252 2.768C1.252 2.68 1.316 2.628 1.404 2.628ZM1.18 3.092C1.2 3.08 1.212 3.084 1.24 3.104C1.368 3.204 1.4 3.232 1.4 3.292C1.4 3.396 1.324 3.452 1.228 3.452C1.108 3.452 1.068 3.372 1.068 3.3C1.068 3.236 1.096 3.144 1.18 3.092Z","b":[0.0,-4.392,2.684,3.512]},"fC":{"d":"M1.008 -1.048C0.312 -1.048 0 -0.54 0 -0.156C0 0.164 0.168 0.44 0.492 0.44C0.744 0.44 0.916 0.264 0.916 0.016C0.916 -0.24 0.728 -0.4 0.532 -0.4C0.424 -0.4 0.384 -0.372 0.332 -0.372C0.28 -0.372 0.268 -0.404 0.268 -0.444C0.268 -0.604 0.508 -0.896 0.916 -0.896C1.34 -0.896 1.524 -0.48 1.524 0.148C1.524 0.56 1.436 1.04 1.188 1.424C0.948 1.796 0.536 2.136 0.04 2.42C0.004 2.44 -0.02 2.46 -0.02 2.492C-0.02 2.516 -0.004 2.54 0.032 2.54C0.052 2.54 0.076 2.532 0.1 2.52C0.632 2.26 1.144 1.956 1.568 1.5C1.916 1.124 2.124 0.636 2.124 0.112C2.124 -0.584 1.7 -1.048 1.008 -1.048ZM2.516 -0.72C2.392 -0.72 2.296 -0.624 2.296 -0.5C2.296 -0.376 2.392 -0.28 2.516 -0.28C2.64 -0.28 2.736 -0.376 2.736 -0.5C2.736 -0.624 2.64 -0.72 2.516 -0.72ZM2.52 0.284C2.396 0.284 2.304 0.376 2.304 0.5C2.304 0.624 2.396 0.716 2.52 0.716C2.644 0.716 2.736 0.624 2.736 0.5C2.736 0.376 2.644 0.284 2.52 0.284Z","b":[-0.02,-1.048,2.736,2.54]},"fl":{"d":"M0.82 0.58V-0.22C0.82 -0.352 0.752 -0.416 0.624 -0.504C0.492 -0.584 0.348 -0.604 0.292 -0.608C0.24 -0.608 0.236 -0.584 0.236 -0.572V-0.404C0.236 -0.3 0.272 -0.296 0.272 -0.296L0.44 -0.2C0.568 -0.132 0.744 -0.004 0.744 0.144C0.744 0.276 0.656 0.284 0.632 0.284C0.448 0.284 0.264 0.156 0.152 0.024C0.116 -0.012 0.108 -0.036 0.108 -0.048C0.108 -0.048 0.12 -1.416 0.12 -1.496C0.12 -1.58 0.12 -1.648 0.072 -1.652C0.008 -1.652 0 -1.56 0 -1.508V0.216C0.028 0.308 0.072 0.34 0.072 0.34C0.324 0.584 0.7 0.604 0.764 0.604C0.812 0.604 0.82 0.584 0.82 0.58Z","b":[0.0,-1.652,0.82,0.604]},"na":{"d":"M0 0.432C0.008 0.456 0.016 0.464 0.04 0.472L0.328 0.424V0.604C0.328 0.864 0.328 0.992 0.324 1C0.356 1.012 0.376 1.016 0.38 1.016C0.396 1.016 0.408 1.008 0.408 0.992V-0.428C0.404 -0.44 0.396 -0.456 0.38 -0.456C0.332 -0.456 0.276 -0.448 0.092 -0.412V-1.004C0.072 -1.008 0.056 -1.012 0.04 -1.012C0.032 -1.012 0.016 -1.008 0 -1.004ZM0.336 0.208 0.084 0.248C0.084 -0.048 0.084 -0.196 0.088 -0.196L0.336 -0.236Z","b":[0.0,-1.012,0.408,1.016]},"sh":{"d":"M0.948 -0.472C0.976 -0.484 0.996 -0.516 0.996 -0.54V-0.824C0.996 -0.844 0.984 -0.856 0.968 -0.856C0.96 -0.856 0.956 -0.856 0.948 -0.852C0.948 -0.852 0.868 -0.82 0.848 -0.816C0.82 -0.816 0.792 -0.836 0.792 -0.868V-1.356C0.792 -1.38 0.768 -1.4 0.736 -1.4C0.696 -1.4 0.672 -1.38 0.672 -1.356V-0.836C0.668 -0.796 0.656 -0.744 0.62 -0.72C0.572 -0.692 0.436 -0.636 0.368 -0.62C0.332 -0.62 0.32 -0.668 0.32 -0.7V-1.18C0.32 -1.204 0.292 -1.224 0.264 -1.224C0.224 -1.224 0.2 -1.204 0.2 -1.18V-0.64C0.2 -0.584 0.176 -0.544 0.152 -0.532C0.128 -0.52 0.048 -0.488 0.048 -0.488C0.02 -0.48 0 -0.448 0 -0.424V-0.14C0 -0.116 0.012 -0.104 0.032 -0.104C0.036 -0.104 0.044 -0.108 0.048 -0.108C0.048 -0.108 0.108 -0.132 0.136 -0.148C0.14 -0.148 0.144 -0.152 0.148 -0.152C0.176 -0.152 0.2 -0.112 0.2 -0.08V0.316C0.2 0.36 0.18 0.396 0.156 0.408C0.132 0.416 0.048 0.452 0.048 0.452C0.02 0.46 0 0.492 0 0.516V0.8C0 0.824 0.012 0.836 0.032 0.836C0.036 0.836 0.044 0.832 0.048 0.832C0.048 0.832 0.104 0.808 0.14 0.796C0.144 0.792 0.148 0.792 0.152 0.792C0.18 0.792 0.2 0.836 0.2 0.856V1.348C0.2 1.372 0.224 1.392 0.252 1.392C0.292 1.392 0.32 1.372 0.32 1.348V0.792C0.32 0.74 0.34 0.712 0.36 0.704L0.604 0.604C0.608 0.604 0.616 0.6 0.62 0.6C0.652 0.6 0.672 0.648 0.672 0.672V1.172C0.672 1.196 0.696 1.216 0.724 1.216C0.768 1.216 0.792 1.196 0.792 1.172V0.604C0.792 0.572 0.808 0.524 0.836 0.512C0.864 0.5 0.948 0.468 0.948 0.468C0.976 0.456 0.996 0.424 0.996 0.4V0.116C0.996 0.096 0.984 0.084 0.968 0.084C0.96 0.084 0.956 0.084 0.948 0.088L0.844 0.128C0.82 0.128 0.792 0.104 0.792 0.056V-0.316C0.792 -0.344 0.812 -0.42 0.844 -0.432ZM0.672 0.18C0.648 0.26 0.46 0.34 0.368 0.34C0.344 0.34 0.324 0.332 0.32 0.32C0.312 0.304 0.308 0.216 0.308 0.12C0.308 -0.004 0.312 -0.144 0.32 -0.176C0.328 -0.244 0.512 -0.328 0.612 -0.328C0.64 -0.328 0.664 -0.32 0.672 -0.304C0.68 -0.284 0.688 -0.184 0.688 -0.076C0.688 0.032 0.68 0.144 0.672 0.18Z","b":[0.0,-1.4,0.996,1.392]},"cu":{"d":"M0.04 -0.3C0.024 -0.276 0.004 -0.236 0.004 -0.208C0.004 -0.184 0.016 -0.168 0.06 -0.168C0.104 -0.168 0.148 -0.224 0.18 -0.264C0.216 -0.312 0.252 -0.36 0.292 -0.404C0.32 -0.436 0.34 -0.456 0.356 -0.456C0.372 -0.456 0.384 -0.44 0.4 -0.408L0.656 -0.032C0.668 -0.012 0.688 -0.004 0.712 -0.004C0.732 -0.004 0.756 -0.012 0.768 -0.024C0.788 -0.052 1.036 -0.384 1.064 -0.416C1.08 -0.432 1.092 -0.44 1.1 -0.44C1.112 -0.44 1.12 -0.428 1.132 -0.408C1.152 -0.384 1.356 -0.064 1.396 -0.024C1.416 -0.004 1.436 0 1.46 0C1.488 0 1.512 -0.008 1.524 -0.024C1.552 -0.056 2.404 -1.468 2.444 -1.528C2.452 -1.54 2.456 -1.556 2.456 -1.568C2.456 -1.584 2.452 -1.596 2.44 -1.608C2.424 -1.624 2.4 -1.644 2.376 -1.644C2.372 -1.644 2.324 -1.62 2.304 -1.6C2.272 -1.56 1.7 -0.592 1.652 -0.532C1.64 -0.52 1.636 -0.52 1.636 -0.516C1.616 -0.488 1.604 -0.476 1.596 -0.476C1.592 -0.476 1.588 -0.484 1.584 -0.492L1.56 -0.528C1.536 -0.564 1.368 -0.92 1.328 -0.964C1.308 -0.984 1.292 -0.992 1.272 -0.992C1.252 -0.992 1.232 -0.984 1.216 -0.964C1.184 -0.928 0.984 -0.58 0.948 -0.536C0.928 -0.508 0.908 -0.496 0.892 -0.496C0.872 -0.496 0.856 -0.516 0.844 -0.536C0.82 -0.568 0.616 -0.9 0.596 -0.936C0.596 -0.976 0.54 -0.988 0.512 -0.992C0.492 -0.992 0.48 -0.984 0.46 -0.956C0.432 -0.928 0.412 -0.888 0.392 -0.856C0.308 -0.728 0.228 -0.6 0.148 -0.472Z","b":[0.004,-1.644,2.456,0.0]},"cd":{"d":"M0.04 -0.688 0.148 -0.516C0.228 -0.388 0.308 -0.26 0.392 -0.132C0.412 -0.1 0.432 -0.06 0.46 -0.032C0.48 -0.004 0.492 0.004 0.512 0.004C0.54 0 0.596 -0.012 0.596 -0.052C0.616 -0.088 0.82 -0.42 0.844 -0.452C0.856 -0.472 0.872 -0.492 0.892 -0.492C0.908 -0.492 0.928 -0.48 0.948 -0.452C0.984 -0.408 1.184 -0.06 1.216 -0.024C1.232 -0.004 1.252 0.004 1.272 0.004C1.292 0.004 1.308 -0.004 1.328 -0.024C1.368 -0.068 1.536 -0.424 1.56 -0.46L1.584 -0.496C1.588 -0.504 1.592 -0.512 1.596 -0.512C1.604 -0.512 1.616 -0.5 1.636 -0.472C1.636 -0.468 1.64 -0.468 1.652 -0.456C1.7 -0.396 2.272 0.572 2.304 0.612C2.324 0.632 2.372 0.656 2.376 0.656C2.4 0.656 2.424 0.636 2.44 0.62C2.452 0.608 2.456 0.596 2.456 0.58C2.456 0.568 2.452 0.552 2.444 0.54C2.404 0.48 1.552 -0.932 1.524 -0.964C1.512 -0.98 1.488 -0.988 1.46 -0.988C1.436 -0.988 1.416 -0.984 1.396 -0.964C1.356 -0.924 1.152 -0.604 1.132 -0.58C1.12 -0.56 1.112 -0.548 1.1 -0.548C1.092 -0.548 1.08 -0.556 1.064 -0.572C1.036 -0.604 0.788 -0.936 0.768 -0.964C0.756 -0.976 0.732 -0.984 0.712 -0.984C0.688 -0.984 0.668 -0.976 0.656 -0.956L0.4 -0.58C0.384 -0.548 0.372 -0.532 0.356 -0.532C0.34 -0.532 0.32 -0.552 0.292 -0.584C0.252 -0.628 0.216 -0.676 0.18 -0.724C0.148 -0.764 0.104 -0.82 0.06 -0.82C0.016 -0.82 0.004 -0.804 0.004 -0.78C0.004 -0.752 0.024 -0.712 0.04 -0.688Z","b":[0.004,-0.988,2.456,0.656]}};
+
+const $ = s => document.querySelector(s);
+const f = v => Math.round(v * 1000) / 1000;
+const mod7 = s => ((s % 7) + 7) % 7;
+const gw = k => GLY[k].b[2] - GLY[k].b[0];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ------------------------------------------------------------------ */
+/* Musical vocabulary                                                  */
+/* ------------------------------------------------------------------ */
+const DKEYS = ['Mx','L','B','S','M','Sm','F'];
+const DUR = {
+  Mx: {name:'Maxima',     m:16,  tail:true},
+  L:  {name:'Longa',      m:8,   tail:true},
+  B:  {name:'Brevis',     m:4},
+  S:  {name:'Semibrevis', m:2},
+  M:  {name:'Minima',     m:1,   stem:true},
+  Sm: {name:'Semiminima', m:0.5, stem:true},
+  F:  {name:'Fusa',       m:0.25,stem:true}
+};
+const REST = {Mx:'rL', L:'rL', B:'rB', S:'rS', M:'rM', Sm:'rSm', F:'rF'};
+/* bottom = diatonic step on the bottom staff line (C4 = 28); pos = staff position of the clef's own line */
+const CLEFS = {
+  treble8:  {label:'G clef, octave lower (tenor)',  bottom:23, g:'gC8', pos:2, code:'t8'},
+  treble:   {label:'G clef (treble)',               bottom:30, g:'gC',  pos:2, code:'t'},
+  baritone: {label:'F clef on the middle line',     bottom:20, g:'fC',  pos:4, code:'f3'},
+  bass:     {label:'F clef (bass)',                 bottom:18, g:'fC',  pos:6, code:'f'}
+};
+const LET = 'CDEFGAB', SEMI = [0,2,4,5,7,9,11];
+const ACC = {
+  'b': {g:'fl', name:'Flat',    key:'-', alt:-1},
+  'n': {g:'na', name:'Natural', key:'N', alt:0},
+  '#': {g:'sh', name:'Sharp',   key:'=', alt:1}
+};
+const STEP_MIN = 7, STEP_MAX = 55;          /* C1 to B7 */
+const clampStep = s => Math.max(STEP_MIN, Math.min(STEP_MAX, Math.round(s)));
+
+/* ------------------------------------------------------------------ */
+/* Document and interface state                                        */
+/* ------------------------------------------------------------------ */
+const FUX = [22,24,23,22,25,24,26,25,24,23,22];   /* D F E D G F A G F E D */
+const defaultDoc = () => ({
+  title: 'Cantus firmus after Fux, dorian',
+  clef: 'treble8', bflat: false,
+  notes: FUX.map((s, i) => ({d: i === FUX.length - 1 ? 'L' : 'B', r: false, s, a: ''}))
+});
+let doc = defaultDoc();
+const ui = {
+  sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
+  size: window.innerWidth < 640 ? 11 : 16,
+  unit: 'S', tempo: 72, ref: 440, vol: 70, audition: true, loop: false, metro: false
+};
+let lay = null;          /* last computed layout, used for hit testing */
+let drag = null;
+
+const scoreEl = $('#score');
+const statusEl = $('#status');
+
+/* ------------------------------------------------------------------ */
+/* Pitch helpers                                                       */
+/* ------------------------------------------------------------------ */
+function alterOf(n){
+  if (n.a && ACC[n.a]) return ACC[n.a].alt;
+  return (doc.bflat && mod7(n.s) === 6) ? -1 : 0;
+}
+function pitchName(n){
+  const a = alterOf(n);
+  return LET[mod7(n.s)] + (a < 0 ? '♭' : a > 0 ? '♯' : '') + Math.floor(n.s / 7);
+}
+function freqOf(n){
+  const midi = 12 * (Math.floor(n.s / 7) + 1) + SEMI[mod7(n.s)] + alterOf(n);
+  return ui.ref * Math.pow(2, (midi - 69) / 12);
+}
+function noteWord(n){ return DUR[n.d].name.toLowerCase(); }
+function describe(n){ return n.r ? `${noteWord(n)} rest` : `${noteWord(n)} on ${pitchName(n)}`; }
+
+/* ------------------------------------------------------------------ */
+/* Saving, loading, sharing                                            */
+/* ------------------------------------------------------------------ */
+const STORE = 'cantus-firmus:v1';
+function sanitizeDoc(d){
+  if (!d || !Array.isArray(d.notes)) return null;
+  return {
+    title: typeof d.title === 'string' ? d.title.slice(0, 120) : '',
+    clef: CLEFS[d.clef] ? d.clef : 'treble8',
+    bflat: !!d.bflat,
+    notes: d.notes.filter(n => n && DUR[n.d]).slice(0, 3000).map(n => ({
+      d: n.d, r: !!n.r, s: clampStep(Number(n.s) || 26), a: ACC[n.a] ? n.a : ''
+    }))
+  };
+}
+function save(){
+  try {
+    localStorage.setItem(STORE, JSON.stringify({doc, prefs: {
+      inDur: ui.inDur, size: ui.size, unit: ui.unit, tempo: ui.tempo, ref: ui.ref,
+      vol: ui.vol, audition: ui.audition, loop: ui.loop, metro: ui.metro
+    }}));
+  } catch (e) { /* storage unavailable: work continues, just not kept */ }
+}
+function pitchToken(n){
+  return LET[mod7(n.s)] + ({'b':'b','n':'n','#':'s'}[n.a] || '') + Math.floor(n.s / 7);
+}
+function shareURL(){
+  const p = new URLSearchParams();
+  p.set('clef', CLEFS[doc.clef].code);
+  if (doc.bflat) p.set('flat', '1');
+  p.set('notes', doc.notes.map(n => n.d + '-' + (n.r ? 'r' : pitchToken(n))).join('.'));
+  if (doc.title) p.set('title', doc.title);
+  return location.href.split('#')[0] + '#' + p.toString();
+}
+function docFromHash(){
+  const h = location.hash.slice(1);
+  if (!h) return null;
+  const p = new URLSearchParams(h);
+  if (!p.has('notes')) return null;
+  const clef = Object.keys(CLEFS).find(k => CLEFS[k].code === p.get('clef')) || 'treble8';
+  const notes = [];
+  for (const tok of (p.get('notes') || '').split('.')) {
+    const m = /^(Mx|Sm|L|B|S|M|F)-(?:(r)|([A-G])([bns]?)(\d))$/.exec(tok);
+    if (!m) continue;
+    if (m[2]) { notes.push({d: m[1], r: true, s: CLEFS[clef].bottom + 4, a: ''}); continue; }
+    notes.push({d: m[1], r: false, s: clampStep(7 * Number(m[5]) + LET.indexOf(m[3])),
+                a: ({b:'b', n:'n', s:'#'})[m[4]] || ''});
+  }
+  return sanitizeDoc({title: p.get('title') || '', clef, bflat: p.get('flat') === '1', notes});
+}
+function loadAll(){
+  let stored = null;
+  try { stored = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) {}
+  if (stored && stored.prefs) {
+    const p = stored.prefs;
+    if (DUR[p.inDur]) ui.inDur = p.inDur;
+    if (p.size >= 8 && p.size <= 26) ui.size = p.size;
+    if (DUR[p.unit]) ui.unit = p.unit;
+    else if (({4:'B', 2:'S', 1:'M'})[p.unit]) ui.unit = ({4:'B', 2:'S', 1:'M'})[p.unit];
+    if (p.tempo >= 10 && p.tempo <= 300) ui.tempo = p.tempo;
+    if ([415,440,466].includes(p.ref)) ui.ref = p.ref;
+    if (p.vol >= 0 && p.vol <= 100) ui.vol = p.vol;
+    ui.audition = p.audition !== false;
+    ui.loop = !!p.loop;
+    ui.metro = !!p.metro;
+  }
+  const fromLink = docFromHash();
+  if (fromLink) {
+    doc = fromLink;
+    try { history.replaceState(null, '', location.href.split('#')[0]); } catch (e) {}
+  } else if (stored && stored.doc) {
+    doc = sanitizeDoc(stored.doc) || doc;
+  }
+  ui.caret = doc.notes.length;
+}
+
+/* ------------------------------------------------------------------ */
+/* Undo                                                                */
+/* ------------------------------------------------------------------ */
+const undoStack = [], redoStack = [];
+const snapshot = () => JSON.stringify({title: doc.title, clef: doc.clef, bflat: doc.bflat, notes: doc.notes});
+function pushUndo(before){
+  undoStack.push(before);
+  if (undoStack.length > 300) undoStack.shift();
+  redoStack.length = 0;
+}
+function mutate(fn){
+  stopPlayback();
+  const before = snapshot();
+  fn();
+  if (snapshot() !== before) pushUndo(before);
+  save(); render();
+}
+function restore(json){
+  const s = JSON.parse(json);
+  doc.title = s.title || ''; doc.clef = s.clef; doc.bflat = s.bflat; doc.notes = s.notes;
+  ui.sel = null;
+  ui.caret = Math.min(ui.caret, doc.notes.length);
+  syncSettings();
+}
+function undo(){ if (!undoStack.length) return; stopPlayback(); redoStack.push(snapshot()); restore(undoStack.pop()); save(); render(); }
+function redo(){ if (!redoStack.length) return; stopPlayback(); undoStack.push(snapshot()); restore(redoStack.pop()); save(); render(); }
+
+/* ------------------------------------------------------------------ */
+/* Layout (all units are staff spaces)                                 */
+/* ------------------------------------------------------------------ */
+const gapAfter = m => 1.0 + 1.05 * Math.log2(1 + m);
+function sigPos(clef){
+  let best = null;
+  for (let p = 0; p <= 8; p++)
+    if (mod7(clef.bottom + p) === 6 && (best === null || Math.abs(p - 4) < Math.abs(best - 4))) best = p;
+  return best;
+}
+function measure(n, i, clef){
+  const D = DUR[n.d];
+  const it = {i, n, lead: 0, gap: gapAfter(D.m)};
+  if (n.r) { it.w = n.d === 'Mx' ? 1.6 : 1.1; it.pos = 4; it.flip = false; return it; }
+  const pos = n.s - clef.bottom;
+  it.pos = pos;
+  it.flip = (D.stem && pos >= 7) || (D.tail && pos <= -3);
+  it.headW = n.d === 'Mx' ? 2.5 : (n.d === 'L' || n.d === 'B') ? 1.3 : 1.28;
+  it.w = Math.max(gw(n.d), 1.1);
+  if (n.a) { it.accW = gw(ACC[n.a].g); it.lead = it.accW + 0.3; }
+  return it;
+}
+function extent(it){
+  if (it.n.r) return [0.5, 3.5];
+  const g = GLY[it.n.d].b, y = (8 - it.pos) * 0.5;
+  let a = it.flip ? [y - g[3], y - g[1]] : [y + g[1], y + g[3]];
+  return [Math.min(a[0], y - 0.8), Math.max(a[1], y + 0.8)];
+}
+function layout(){
+  const S = ui.size;
+  const Wpx = Math.max(260, scoreEl.clientWidth);
+  const W = Wpx / S;
+  const clef = CLEFS[doc.clef], cg = GLY[clef.g];
+  const L = {W, S, staffL: 0.1, staffR: W - 0.1, clefX: 0.75, lines: []};
+  let x = L.clefX + gw(clef.g) + 0.9;
+  L.clefEnd = L.clefX + gw(clef.g) + 0.25;
+  if (doc.bflat) { L.sigPos = sigPos(clef); L.sigX = x - 0.25; x += 1.35; L.clefEnd = L.sigX + gw('fl') + 0.25; }
+  L.noteStart = x + 0.7;
+  L.limit = L.staffR - 2.6;                     /* leaves room for a custos */
+
+  const items = doc.notes.map((n, i) => measure(n, i, clef));
+  const rows = [[]];
+  let cx = L.noteStart;
+  for (const it of items) {
+    let row = rows[rows.length - 1];
+    if (row.length && cx + it.lead + it.w > L.limit) { row = []; rows.push(row); cx = L.noteStart; }
+    it.x0 = cx; it.hx = cx + it.lead; it.x1 = it.hx + it.w;
+    cx = it.x1 + it.gap;
+    row.push(it);
+  }
+  /* justify every line except the last */
+  for (let r = 0; r < rows.length - 1; r++) {
+    const row = rows[r];
+    if (row.length < 2) continue;
+    const per = (L.limit - row[row.length - 1].x1) / (row.length - 1);
+    row.forEach((it, k) => { const d = per * k; it.x0 += d; it.hx += d; it.x1 += d; });
+  }
+  /* vertical room per line, so ledger notes and stems never collide */
+  const cy = (8 - clef.pos) * 0.5;
+  let y = 0.4;
+  L.lines = rows.map(row => {
+    let minY = Math.min(0, cy + cg.b[1]), maxY = Math.max(4, cy + cg.b[3]);
+    for (const it of row) { const e = extent(it); minY = Math.min(minY, e[0]); maxY = Math.max(maxY, e[1]); }
+    const above = Math.max(4.4, -minY + 0.9), below = Math.max(4.4, maxY - 4 + 0.9);
+    const line = {items: row, bandTop: y, staffTop: y + above};
+    y = line.staffTop + 4 + below;
+    line.bandBot = y;
+    return line;
+  });
+  L.H = y + 0.3;
+  const last = L.lines[L.lines.length - 1].items;
+  L.finalX = last.length ? last[last.length - 1].x1 + 1.4 : null;
+  return L;
+}
+
+/* ------------------------------------------------------------------ */
+/* Drawing                                                             */
+/* ------------------------------------------------------------------ */
+const use = (k, x, y, extra='') => `<use href="#g-${k}" x="${f(x)}" y="${f(y)}"${extra}/>`;
+const useT = (k, x, y, sx, sy) => `<use href="#g-${k}" transform="translate(${f(x)} ${f(y)}) scale(${sx} ${sy})"/>`;
+const hline = (x1, x2, y, cls, w) => `<line class="${cls}" x1="${f(x1)}" x2="${f(x2)}" y1="${f(y)}" y2="${f(y)}" stroke-width="${w}"/>`;
+
+function ledgers(pos, x, w, top){
+  let s = '';
+  const a = x - 0.42, b = x + w + 0.42;
+  for (let p = -2; p >= pos; p -= 2) s += hline(a, b, top + 4 - p * 0.5, 'ledger', 0.16);
+  for (let p = 10; p <= pos; p += 2) s += hline(a, b, top + 4 - p * 0.5, 'ledger', 0.16);
+  return s;
+}
+function noteGlyph(d, pos, flip, x, top){
+  const y = top + 4 - pos * 0.5;
+  return flip ? useT(d, x, y, 1, -1) : use(d, x, y);
+}
+function restGlyph(d, cx, top){
+  const y = top + 2;
+  if (d === 'Mx') return use('rL', cx - 0.45, y) + use('rL', cx + 0.26, y);
+  const k = REST[d];
+  return use(k, cx - gw(k) / 2, y);
+}
+function drawItem(it, top, exp){
+  const n = it.n, cls = ['it'];
+  if (!exp) {
+    if (ui.sel === it.i) cls.push('sel');
+    if (ui.playing === it.i) cls.push('play');
+    if (ui.hover && ui.hover.type === 'item' && ui.hover.i === it.i && ui.sel !== it.i) cls.push('hov');
+  }
+  let s = `<g class="${cls.join(' ')}" data-i="${it.i}">`;
+  if (!exp && ui.sel === it.i)
+    s += `<rect class="selbg" x="${f(it.x0 - 0.5)}" y="${f(top - 1.4)}" width="${f(it.x1 - it.x0 + 1)}" height="6.8" rx="0.35"/>`;
+  if (n.r) {
+    s += restGlyph(n.d, it.hx + it.w / 2, top);
+  } else {
+    s += ledgers(it.pos, it.hx, it.headW, top);
+    if (n.a) s += use(ACC[n.a].g, it.hx - it.accW - 0.3, top + 4 - it.pos * 0.5);
+    s += noteGlyph(n.d, it.pos, it.flip, it.hx, top);
+  }
+  return s + '</g>';
+}
+/* Where the preview of the next note sits while hovering a gap */
+function ghostInfo(){
+  const h = ui.hover;
+  if (!h || h.type !== 'gap' || drag) return null;
+  const line = lay.lines[h.li], items = line.items, d = ui.inDur;
+  const w = ui.inRest ? (d === 'Mx' ? 1.6 : 1.1) : (d === 'Mx' ? 2.5 : (d === 'L' || d === 'B') ? 1.3 : 1.28);
+  let k = items.findIndex(it => it.i === h.idx);
+  if (k === -1) k = items.length;
+  let x;
+  if (k === items.length) x = items.length ? items[k - 1].x1 + Math.min(items[k - 1].gap, 2.2) : lay.noteStart;
+  else if (k === 0) x = items[0].x0 - 0.5 - w / 2;
+  else x = (items[k - 1].x1 + items[k].x0) / 2 - w / 2;
+  return {h, line, x, w, atEnd: h.idx >= doc.notes.length};
+}
+function drawGhost(g){
+  if (!g) return '';
+  const top = g.line.staffTop, h = g.h;
+  if (ui.inRest) return `<g class="ghost">${restGlyph(ui.inDur, g.x + g.w / 2, top)}</g>`;
+  const d = ui.inDur, D = DUR[d];
+  const flip = (D.stem && h.pos >= 7) || (D.tail && h.pos <= -3);
+  return `<g class="ghost">${ledgers(h.pos, g.x, g.w, top)}${noteGlyph(d, h.pos, flip, g.x, top)}</g>`;
+}
+function drawCaret(){
+  if (ui.sel !== null || drag || document.activeElement !== scoreEl || !doc.notes.length) return '';
+  let line, x;
+  if (ui.caret === 0) { line = lay.lines[0]; x = lay.noteStart - 0.55; }
+  else {
+    line = lay.lines.find(l => l.items.some(it => it.i === ui.caret - 1));
+    if (!line) return '';
+    const it = line.items.find(it => it.i === ui.caret - 1);
+    x = it.x1 + Math.min(0.7, it.gap / 2);
+  }
+  return `<rect class="caret" x="${f(x - 0.07)}" y="${f(line.staffTop - 1)}" width="0.14" height="6"/>`;
+}
+function drawScore(L, exp){
+  const clef = CLEFS[doc.clef];
+  let o = '';
+  L.lines.forEach((line, li) => {
+    const top = line.staffTop, isLast = li === L.lines.length - 1;
+    const xr = (exp && isLast && L.finalX !== null) ? L.finalX + 0.9 : L.staffR;
+    for (let k = 0; k < 5; k++) o += hline(L.staffL, xr, top + k, 'staff', 0.12);
+    const ch = (!exp && ui.hover && ui.hover.type === 'clef' && ui.hover.li === li) ? ' class="clefhov"' : '';
+    o += use(clef.g, L.clefX, top + (8 - clef.pos) * 0.5, ch);
+    if (doc.bflat) o += use('fl', L.sigX, top + 4 - L.sigPos * 0.5, ch);
+    for (const it of line.items) o += drawItem(it, top, exp);
+    /* custos: points to the first note of the next line */
+    if (!isLast) {
+      const nx = L.lines[li + 1].items[0];
+      if (nx && !nx.n.r) {
+        const y = top + 4 - nx.pos * 0.5;
+        o += `<use href="#g-${nx.pos >= 5 ? 'cd' : 'cu'}" transform="translate(${f(L.staffR - 2.25)} ${f(y + 0.4)}) scale(0.8)"/>`;
+      }
+    }
+    const bx = exp ? L.finalX : (L.barX ?? L.finalX);
+    if (isLast && bx !== null) {
+      o += `<rect class="bar" x="${f(bx)}" y="${f(top)}" width="0.16" height="4"/>`;
+      o += `<rect class="bar" x="${f(bx + 0.4)}" y="${f(top)}" width="0.5" height="4"/>`;
+    }
+    if (!exp && !doc.notes.length)
+      o += `<text class="hint" x="${f(L.noteStart + 0.6)}" y="${f(top + 2.4)}">Click on the staff to add the first note</text>`;
+  });
+  return o;
+}
+
+let defsMarkup = '';
+function render(){
+  lay = layout();
+  const S = ui.size;
+  const g = ghostInfo();
+  if (g && g.atEnd && g.line === lay.lines[lay.lines.length - 1]) lay.barX = Math.max(lay.finalX ?? 0, g.x + g.w + 1.2);
+  scoreEl.innerHTML =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f(lay.W)} ${f(lay.H)}" width="${f(lay.W * S)}" height="${f(lay.H * S)}" aria-hidden="true">` +
+    drawScore(lay, false) + drawGhost(g) + drawCaret() + '</svg>';
+  syncTools();
+  updateStatus();
+}
+
+/* ------------------------------------------------------------------ */
+/* Toolbar                                                             */
+/* ------------------------------------------------------------------ */
+function iconSVG(k, minBox){
+  const b = GLY[k].b, cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2;
+  const box = Math.max(minBox, b[2] - b[0] + 0.5, b[3] - b[1] + 0.5);
+  return `<svg viewBox="${f(cx - box / 2)} ${f(cy - box / 2)} ${box} ${box}" aria-hidden="true"><use href="#g-${k}"/></svg>`;
+}
+function buildTools(){
+  defsMarkup = '<defs>' + Object.entries(GLY).map(([k, v]) => `<path id="g-${k}" d="${v.d}"/>`).join('') + '</defs>';
+  $('#glyph-defs').innerHTML = defsMarkup;
+  const durBtns = $('#durBtns');
+  DKEYS.forEach((k, ix) => {
+    const b = document.createElement('button');
+    b.className = 'ib'; b.dataset.d = k;
+    b.title = `${DUR[k].name} (${ix + 1})`;
+    b.setAttribute('aria-label', DUR[k].name);
+    b.innerHTML = iconSVG(k, 2.7);
+    b.addEventListener('click', () => setDur(k));
+    durBtns.appendChild(b);
+  });
+  const accBtns = $('#accBtns');
+  Object.entries(ACC).forEach(([a, A]) => {
+    const b = document.createElement('button');
+    b.className = 'ib'; b.dataset.a = a;
+    b.title = `${A.name} (${A.key})`;
+    b.setAttribute('aria-label', A.name);
+    b.innerHTML = iconSVG(A.g, 2.9);
+    b.addEventListener('click', () => toggleAcc(a));
+    accBtns.appendChild(b);
+  });
+  const clefSel = $('#clef');
+  Object.entries(CLEFS).forEach(([k, c]) => {
+    const o = document.createElement('option'); o.value = k; o.textContent = c.label; clefSel.appendChild(o);
+  });
+}
+function targetIndex(){
+  if (ui.sel !== null) return ui.sel;
+  return ui.caret > 0 && ui.caret <= doc.notes.length ? ui.caret - 1 : null;
+}
+function setPressed(el, on){ el.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+function syncTools(){
+  const sel = ui.sel !== null ? doc.notes[ui.sel] : null;
+  const shownDur = sel ? sel.d : ui.inDur;
+  document.querySelectorAll('#durBtns button').forEach(b => setPressed(b, b.dataset.d === shownDur));
+  $('#durLabel').textContent = sel ? `Note value: ${DUR[shownDur].name.toLowerCase()}, selected`
+                                   : `Note value: ${DUR[shownDur].name.toLowerCase()}`;
+  const shownRest = sel ? sel.r : ui.inRest;
+  setPressed($('#modeNote'), !shownRest); setPressed($('#modeRest'), shownRest);
+  const ti = targetIndex(), t = ti !== null ? doc.notes[ti] : null;
+  document.querySelectorAll('#accBtns button').forEach(b => {
+    setPressed(b, !!t && !t.r && t.a === b.dataset.a);
+    b.disabled = !t || t.r;
+  });
+  $('#stepUp').disabled = $('#stepDown').disabled = !t || t.r;
+  $('#del').disabled = !t;
+  $('#undo').disabled = !undoStack.length;
+  $('#redo').disabled = !redoStack.length;
+  const n = doc.notes;
+  const dbl = $('#dbl'), hlv = $('#hlv');
+  dbl.disabled = !n.length || n.some(x => x.d === 'Mx');
+  hlv.disabled = !n.length || n.some(x => x.d === 'F');
+  dbl.title = n.some(x => x.d === 'Mx') ? 'A maxima has no larger value, so nothing can be doubled'
+                                        : 'Doubles every note and rest: brevis becomes longa, and so on';
+  hlv.title = n.some(x => x.d === 'F') ? 'A fusa is the smallest value here, so nothing can be halved'
+                                       : 'Halves every note and rest: brevis becomes semibrevis, and so on';
+  $('#clear').disabled = !n.length;
+}
+function syncSettings(){
+  $('#clef').value = doc.clef;
+  $('#bflat').checked = doc.bflat;
+  $('#title').value = doc.title;
+  $('#size').value = ui.size;
+  $('#tempo').value = ui.tempo;
+  syncUnit();
+  setPressed($('#metro'), ui.metro);
+  $('#ref').value = String(ui.ref);
+  $('#vol').value = ui.vol;
+  $('#audition').checked = ui.audition;
+  setPressed($('#loop'), ui.loop);
+}
+function updateStatus(){
+  let msg;
+  const h = ui.hover;
+  if (drag && drag.moved) msg = `${describe(doc.notes[drag.i])}. Release to keep it there.`;
+  else if (h && h.type === 'gap') {
+    const where = h.idx >= doc.notes.length ? 'at the end' : 'here';
+    if (ui.inRest) msg = `Click to add a ${DUR[ui.inDur].name.toLowerCase()} rest ${where}.`;
+    else {
+      const probe = {s: lay ? CLEFS[doc.clef].bottom + h.pos : 0, a: ''};
+      msg = `Click to add a ${DUR[ui.inDur].name.toLowerCase()} on ${pitchName(probe)} ${where}.`;
+    }
+  } else if (h && h.type === 'clef') {
+    msg = 'Click to change the clef.';
+  } else if (h && h.type === 'item') {
+    const n = doc.notes[h.i];
+    msg = n.r ? `${cap(describe(n))}. Click to remove it; right-click to select it.`
+              : `${cap(describe(n))}. Click to turn it into a rest, drag up or down to change its pitch, right-click to select it.`;
+  } else if (ui.sel !== null) {
+    msg = `Selected: ${describe(doc.notes[ui.sel])}. Arrow keys move it, Backspace deletes it, Esc deselects.`;
+  } else if (!doc.notes.length) {
+    msg = 'Pick a note value above, then click on the staff. Letters A to G add notes from the keyboard.';
+  } else {
+    msg = 'Click between notes to insert, after the last note to continue. Click a note to turn it into a rest, click a rest to remove it.';
+  }
+  statusEl.textContent = msg;
+}
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* ------------------------------------------------------------------ */
+/* Editing commands                                                    */
+/* ------------------------------------------------------------------ */
+function refStepBefore(idx){
+  for (let i = Math.min(idx, doc.notes.length) - 1; i >= 0; i--) if (!doc.notes[i].r) return doc.notes[i].s;
+  for (let i = idx; i < doc.notes.length; i++) if (!doc.notes[i].r) return doc.notes[i].s;
+  return CLEFS[doc.clef].bottom + 4;
+}
+function insertAt(idx, note){
+  mutate(() => {
+    doc.notes.splice(idx, 0, note);
+    ui.sel = null; ui.caret = idx + 1;
+  });
+  if (!note.r) audition(note);
+}
+function insertionIndex(){ return ui.sel !== null ? ui.sel + 1 : Math.min(ui.caret, doc.notes.length); }
+function typeNote(letter){
+  const idx = insertionIndex(), ref = refStepBefore(idx), li = LET.indexOf(letter);
+  let best = null;
+  for (let o = 0; o <= 8; o++) {
+    const s = 7 * o + li;
+    if (s < STEP_MIN || s > STEP_MAX) continue;
+    if (best === null || Math.abs(s - ref) < Math.abs(best - ref)) best = s;
+  }
+  ui.inRest = false;
+  insertAt(idx, {d: ui.inDur, r: false, s: best, a: ''});
+}
+function typeRest(){
+  const idx = insertionIndex();
+  insertAt(idx, {d: ui.inDur, r: true, s: refStepBefore(idx), a: ''});
+}
+function setDur(k){
+  ui.inDur = k;
+  if (ui.sel !== null) mutate(() => { doc.notes[ui.sel].d = k; });
+  else { save(); render(); }
+}
+function setRestMode(rest){
+  ui.inRest = rest;
+  if (ui.sel !== null && doc.notes[ui.sel].r !== rest) mutate(() => {
+    const n = doc.notes[ui.sel]; n.r = rest; if (rest) n.a = '';
+  });
+  else render();
+}
+function toggleAcc(a){
+  const ti = targetIndex();
+  if (ti === null || doc.notes[ti].r) return;
+  mutate(() => { const n = doc.notes[ti]; n.a = n.a === a ? '' : a; });
+  audition(doc.notes[ti]);
+}
+function stepPitch(delta){
+  const ti = targetIndex();
+  if (ti === null || doc.notes[ti].r) return;
+  mutate(() => { const n = doc.notes[ti]; n.s = clampStep(n.s + delta); });
+  audition(doc.notes[ti]);
+}
+function deleteTarget(){
+  const ti = targetIndex();
+  if (ti === null) return;
+  mutate(() => { doc.notes.splice(ti, 1); ui.sel = null; ui.caret = ti; });
+}
+function moveSel(dir){
+  const n = doc.notes.length;
+  if (!n) return;
+  if (ui.sel === null) ui.sel = dir < 0 ? Math.max(0, ui.caret - 1) : Math.min(n - 1, ui.caret);
+  else ui.sel = Math.max(0, Math.min(n - 1, ui.sel + dir));
+  ui.caret = ui.sel + 1;
+  audition(doc.notes[ui.sel]);
+  render();
+}
+function scaleAll(dir){
+  mutate(() => {
+    for (const n of doc.notes) {
+      const k = DKEYS.indexOf(n.d) + dir;
+      if (k >= 0 && k < DKEYS.length) n.d = DKEYS[k];
+    }
+  });
+  toast(dir < 0 ? 'Every value doubled.' : 'Every value halved.');
+}
+
+/* ------------------------------------------------------------------ */
+/* Pointer input on the staff                                          */
+/* ------------------------------------------------------------------ */
+function toSp(e){
+  const r = scoreEl.firstElementChild.getBoundingClientRect();
+  return {x: (e.clientX - r.left) / ui.size, y: (e.clientY - r.top) / ui.size};
+}
+function hit(x, y){
+  const lines = lay.lines;
+  let li = lines.findIndex(l => y >= l.bandTop && y < l.bandBot);
+  if (li < 0) li = y < lines[0].bandTop ? 0 : lines.length - 1;
+  const line = lines[li];
+  if (x <= lay.clefEnd && y >= line.staffTop - 2.5 && y <= line.staffTop + 6.5) return {type: 'clef', li};
+  for (const it of line.items) if (x >= it.x0 - 0.15 && x <= it.x1 + 0.15) return {type: 'item', i: it.i, li};
+  const after = line.items.find(it => it.x0 > x);
+  let idx;
+  if (after) idx = after.i;
+  else if (line.items.length) idx = line.items[line.items.length - 1].i + 1;
+  else idx = doc.notes.length;
+  const pos = Math.max(-8, Math.min(16, Math.round((line.staffTop + 4 - y) / 0.5)));
+  return {type: 'gap', idx, li, pos};
+}
+const sameHover = (a, b) => (!a && !b) || (a && b && a.type === b.type && a.i === b.i && a.idx === b.idx && a.pos === b.pos && a.li === b.li);
+
+function selectItem(i){
+  ui.sel = i; ui.caret = i + 1;
+  audition(doc.notes[i]);
+  render();
+}
+scoreEl.addEventListener('contextmenu', e => e.preventDefault());
+scoreEl.addEventListener('pointerdown', e => {
+  if (!lay || (e.button !== 0 && e.button !== 2)) return;
+  e.preventDefault();
+  scoreEl.focus({preventScroll: true});
+  const p = toSp(e), h = hit(p.x, p.y);
+  const wasOpen = !$('#clefMenu').hidden;
+  closeClefMenu(false);
+  if (h.type === 'clef') { if (e.button === 0 && !wasOpen) openClefMenu(h.li); return; }
+  if (h.type === 'item') {
+    /* right-click or Shift-click: select without changing anything */
+    if (e.button === 2 || e.shiftKey) { selectItem(h.i); return; }
+    const n = doc.notes[h.i];
+    drag = {i: h.i, y0: p.y, s0: n.s, rest: n.r, before: snapshot(), moved: false, held: false};
+    /* press and hold: select (the touch-screen way to select) */
+    drag.timer = setTimeout(() => { if (drag && !drag.moved) { drag.held = true; selectItem(drag.i); } }, 450);
+    try { scoreEl.setPointerCapture(e.pointerId); } catch (err) {}
+    return;
+  }
+  if (e.button !== 0) return;
+  insertAt(h.idx, {d: ui.inDur, r: ui.inRest, s: clampStep(CLEFS[doc.clef].bottom + h.pos), a: ''});
+});
+scoreEl.addEventListener('pointermove', e => {
+  if (!lay) return;
+  const p = toSp(e);
+  if (drag) {
+    if (drag.rest) return;
+    const steps = Math.round((drag.y0 - p.y) / 0.5);
+    if (!drag.moved) {
+      if (steps === 0) return;
+      drag.moved = true; clearTimeout(drag.timer);
+      ui.sel = drag.i; ui.caret = drag.i + 1; ui.hover = null;
+      scoreEl.style.cursor = 'grabbing';
+      stopPlayback();
+    }
+    const n = doc.notes[drag.i], s = clampStep(drag.s0 + steps);
+    if (s !== n.s) { n.s = s; render(); audition(n); }
+    return;
+  }
+  if (e.pointerType === 'touch') return;
+  const h = hit(p.x, p.y);
+  scoreEl.style.cursor = h.type === 'gap' ? 'crosshair' : 'pointer';
+  if (!sameHover(h, ui.hover)) { ui.hover = h; render(); }
+});
+function endPress(cancelled){
+  if (!drag) return;
+  const d = drag;
+  drag = null;
+  clearTimeout(d.timer);
+  scoreEl.style.cursor = '';
+  if (d.moved) { if (snapshot() !== d.before) pushUndo(d.before); save(); render(); return; }
+  if (cancelled || d.held) { render(); return; }
+  /* a plain click: a note becomes a rest of the same value, a rest disappears */
+  if (d.rest) mutate(() => { doc.notes.splice(d.i, 1); ui.sel = null; ui.caret = d.i; ui.hover = null; });
+  else mutate(() => { const n = doc.notes[d.i]; n.r = true; n.a = ''; ui.sel = null; ui.caret = d.i + 1; });
+}
+scoreEl.addEventListener('pointerup', e => { endPress(false); if (e.pointerType === 'touch' && ui.hover) { ui.hover = null; render(); } });
+scoreEl.addEventListener('pointercancel', () => endPress(true));
+scoreEl.addEventListener('pointerleave', () => { if (!drag && ui.hover) { ui.hover = null; render(); } });
+scoreEl.addEventListener('focus', () => render());
+scoreEl.addEventListener('blur', () => { if (!drag) render(); });
+
+/* ------------------------------------------------------------------ */
+/* Keyboard                                                            */
+/* ------------------------------------------------------------------ */
+document.addEventListener('keydown', e => {
+  const t = e.target, tag = t.tagName;
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || t.isContentEditable) return;
+  const mod = e.ctrlKey || e.metaKey, k = e.key;
+  if (mod && (k === 'z' || k === 'Z')) { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && (k === 'y' || k === 'Y')) { e.preventDefault(); redo(); return; }
+  if (k === 'ArrowUp' || k === 'ArrowDown') {
+    e.preventDefault();
+    const dir = k === 'ArrowUp' ? 1 : -1;
+    stepPitch(dir * (e.shiftKey || mod ? 7 : 1));
+    return;
+  }
+  if (mod || e.altKey) return;
+  if (k === ' ') {
+    if (tag === 'BUTTON' || tag === 'SUMMARY') return;
+    e.preventDefault(); togglePlay(); return;
+  }
+  if (tag === 'BUTTON' && k === 'Enter') return;
+  if (/^[a-gA-G]$/.test(k)) { e.preventDefault(); typeNote(k.toUpperCase()); return; }
+  if (k === 'r' || k === 'R') { e.preventDefault(); typeRest(); return; }
+  if (/^[1-7]$/.test(k)) { e.preventDefault(); setDur(DKEYS[Number(k) - 1]); return; }
+  if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); moveSel(k === 'ArrowLeft' ? -1 : 1); return; }
+  if (k === 'Backspace' || k === 'Delete') { e.preventDefault(); deleteTarget(); return; }
+  if (k === 'Escape') { if (ui.sel !== null) { ui.sel = null; render(); } return; }
+  if (k === '-' || k === '_') { e.preventDefault(); toggleAcc('b'); return; }
+  if (k === '=' || k === '+' || k === '#') { e.preventDefault(); toggleAcc('#'); return; }
+  if (k === 'n' || k === 'N') { e.preventDefault(); toggleAcc('n'); return; }
+});
+
+/* ------------------------------------------------------------------ */
+/* Sound                                                               */
+/* Synth.voice() is the one place that makes a tone. Swapping in an    */
+/* organ sample set or a richer oscillator later only touches this.    */
+/* ------------------------------------------------------------------ */
+const audio = {ctx: null, master: null, voices: [], raf: 0, timeline: null, aud: null};
+function ensureAudio(){
+  if (!audio.ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audio.ctx = new AC();
+    audio.master = audio.ctx.createGain();
+    audio.master.gain.value = masterLevel();
+    audio.master.connect(audio.ctx.destination);
+  }
+  if (audio.ctx.state === 'suspended') audio.ctx.resume();
+  return audio.ctx;
+}
+const masterLevel = () => Math.pow(ui.vol / 100, 1.6) * 0.9;
+const Synth = {
+  level: 0.34,
+  voice(ctx, dest, freq, t0, t1){
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    const g = ctx.createGain();
+    const atk = 0.035, rel = Math.min(0.09, (t1 - t0) * 0.35);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(this.level, t0 + atk);
+    g.gain.setValueAtTime(this.level, Math.max(t0 + atk, t1 - rel));
+    g.gain.linearRampToValueAtTime(0, t1);
+    osc.connect(g); g.connect(dest);
+    osc.start(t0); osc.stop(t1 + 0.03);
+    return {osc, g};
+  }
+};
+function silence(v, now){
+  try {
+    v.g.gain.cancelScheduledValues(now);
+    v.g.gain.setValueAtTime(v.g.gain.value, now);
+    v.g.gain.linearRampToValueAtTime(0, now + 0.04);
+    v.osc.stop(now + 0.06);
+  } catch (e) {}
+}
+function audition(n){
+  if (!ui.audition || !n || n.r || audio.timeline) return;
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  if (audio.aud) silence(audio.aud, now);
+  audio.aud = Synth.voice(ctx, audio.master, freqOf(n), now + 0.01, now + 0.55);
+}
+/* A woodblock-like tick for the metronome */
+function metroClick(ctx, dest, t){
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(1500, t);
+  o.frequency.exponentialRampToValueAtTime(820, t + 0.035);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.55, t + 0.002);
+  g.gain.exponentialRampToValueAtTime(0.0005, t + 0.07);
+  o.connect(g); g.connect(dest);
+  o.start(t); o.stop(t + 0.08);
+  return {osc: o, g};
+}
+const beatSeconds = () => 60 / ui.tempo;
+const secondsPerMinim = () => beatSeconds() / DUR[ui.unit].m;
+
+/* Plays from note `from`; beats and the hand stay aligned with the start of the piece. */
+function startPlayback(from){
+  if (!doc.notes.length) return;
+  const ctx = ensureAudio();
+  if (!ctx) { toast('This browser cannot play sound.'); return; }
+  stopPlayback();
+  from = Math.max(0, Math.min(doc.notes.length - 1, from || 0));
+  const spm = secondsPerMinim(), beat = beatSeconds();
+  let offset = 0;
+  for (let i = 0; i < from; i++) offset += DUR[doc.notes[i].d].m * spm;
+  const t0 = ctx.currentTime + 0.12;
+  const origin = t0 - offset;                 /* where the piece "began" */
+  let t = t0;
+  const tl = [];
+  for (let i = from; i < doc.notes.length; i++) {
+    const n = doc.notes[i], d = DUR[n.d].m * spm;
+    if (!n.r) audio.voices.push(Synth.voice(ctx, audio.master, freqOf(n), t, t + d - 0.012));
+    tl.push({i, t0: t, t1: t + d});
+    t += d;
+  }
+  if (ui.metro) {
+    for (let k = Math.ceil(offset / beat - 1e-6); origin + k * beat < t - 0.02; k++)
+      audio.voices.push(metroClick(ctx, audio.master, origin + k * beat));
+  }
+  audio.timeline = {tl, end: t, origin, beat};
+  setPlayButton(true);
+  audio.raf = requestAnimationFrame(tick);
+}
+function tick(){
+  const tlObj = audio.timeline;
+  if (!tlObj) return;
+  const now = audio.ctx.currentTime;
+  if (now >= tlObj.end) {
+    if (ui.loop) { startPlayback(0); return; }
+    stopPlayback(); return;
+  }
+  const cur = tlObj.tl.find(x => now >= x.t0 && now < x.t1);
+  setPlaying(cur ? cur.i : -1);
+  /* tactus: down on the beat, up halfway through it, an even motion */
+  const phase = now < tlObj.tl[0].t0 ? 0 : (((now - tlObj.origin) / tlObj.beat) % 1 + 1) % 1;
+  setHand(45 * (1 - Math.cos(2 * Math.PI * phase)) / 2);
+  audio.raf = requestAnimationFrame(tick);
+}
+function setPlaying(i){
+  if (i === ui.playing) return;
+  const svg = scoreEl.firstElementChild;
+  if (svg) {
+    const old = svg.querySelector('.it.play'); if (old) old.classList.remove('play');
+    if (i >= 0) {
+      const el = svg.querySelector(`.it[data-i="${i}"]`);
+      if (el) el.classList.add('play');
+    }
+  }
+  ui.playing = i;
+}
+function stopPlayback(){
+  if (!audio.timeline) return;
+  cancelAnimationFrame(audio.raf);
+  const now = audio.ctx.currentTime;
+  audio.voices.forEach(v => silence(v, now));
+  audio.voices = [];
+  audio.timeline = null;
+  setPlaying(-1);
+  setPlayButton(false);
+  setHand(0);
+}
+/* After a tempo or metronome change, carry on from the note that was sounding. */
+function replayIfPlaying(){
+  if (!audio.timeline) return;
+  const at = ui.playing >= 0 ? ui.playing : 0;
+  startPlayback(at);
+}
+function togglePlay(){ audio.timeline ? stopPlayback() : startPlayback(0); }
+function setPlayButton(on){
+  const b = $('#play');
+  b.setAttribute('aria-label', on ? 'Stop' : 'Play');
+  b.innerHTML = on
+    ? '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2h10v10H2Z"/></svg><span>Stop</span>'
+    : '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 13 7 2 13Z"/></svg><span>Play</span>';
+}
+
+/* ------------------------------------------------------------------ */
+/* Tempo and tactus                                                    */
+/* ------------------------------------------------------------------ */
+const PULSE = 72;   /* Gaffurius: the semibrevis lasts one pulse of someone breathing quietly */
+const INK = '#1F1A14', PAPER = '#F2E6C6';
+const HAND_SVG = (() => {
+  const hatch = (n, f) => Array.from({length: n}, (_, i) => f(i)).join('');
+  const sleeve = 'M-40 92 C-10 88 20 87 44 88 L44 150 C20 150 -10 150 -40 148Z';
+  const hand = 'M58 96 C80 90 108 88 124 92 C146 96 172 98 194 101 C202 102 204 108 197 110 C202 111 205 116 198 118 C201 120 200 125 192 125 C194 127 190 132 182 131 C160 130 140 130 120 132 C100 134 82 136 60 132Z';
+  return `<defs><clipPath id="clipSleeve"><path d="${sleeve}"/></clipPath><clipPath id="clipHand"><path d="${hand}"/></clipPath></defs>
+<g fill="none" stroke="${INK}" stroke-linecap="round" stroke-linejoin="round">
+<path d="${sleeve}" fill="${PAPER}" stroke-width="2.4"/>
+<g clip-path="url(#clipSleeve)" stroke-width="1.3">${hatch(22, i => `<path d="M${-60 + i * 6} 152 L${-30 + i * 6} 86"/>`)}</g>
+<path d="M-40 118 C-10 116 18 116 44 117" stroke-width="1.4"/>
+<path d="${hand}" fill="${PAPER}" stroke-width="2.4"/>
+<g clip-path="url(#clipHand)" stroke-width="1.1">${hatch(16, i => `<path d="M${70 + i * 8} 136 L${76 + i * 8} 126"/>`)}</g>
+<path d="M197 110 C176 108 152 106 130 104 M198 118 C178 117 154 115 132 113 M192 125 C176 124 156 123 136 122" stroke-width="1.6"/>
+<path d="M150 97 c2 3 2 6 0 8 M174 99 c2 3 2 5 0 7" stroke-width="1.3"/>
+<path d="M70 128 C92 118 118 112 140 112 C149 112 152 118 145 121 C126 125 104 130 84 134" fill="${PAPER}" stroke-width="2.2"/>
+<path d="M126 113 c2 3 2 7 0 10" stroke-width="1.2"/>
+<path d="M92 128 C108 124 124 121 138 120" stroke-width="1"/>
+<path d="M46 80 q-6 5 0 10 q-6 5 0 10 q-6 5 0 10 q-6 5 0 10 q-6 5 0 10 q-6 5 0 10 q-6 5 0 10 L60 150 q6 -5 0 -10 q6 -5 0 -10 q6 -5 0 -10 q6 -5 0 -10 q6 -5 0 -10 q6 -5 0 -10 q6 -5 0 -10Z" fill="${PAPER}" stroke-width="2.2"/>
+<path d="M50 84 L56 86 M50 94 L56 96 M50 104 L56 106 M50 114 L56 116 M50 124 L56 126 M50 134 L56 136 M50 144 L56 146" stroke-width="1.2"/>
+</g>`;
+})();
+let handEl = null, handAngle = -1;
+function setHand(deg){
+  if (!handEl) return;
+  const a = Math.round(deg * 10) / 10;
+  if (a === handAngle) return;
+  handAngle = a;
+  handEl.setAttribute('transform', `rotate(${-a} 0 118)`);
+}
+const CHEV = '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4.2 6 8.4 10 4.2 8.9 3.1 6 6.1 3.1 3.1Z"/></svg>';
+function buildTactus(){
+  handEl = $('#handRot');
+  handEl.innerHTML = HAND_SVG;
+  setHand(0);
+  const list = $('#unitList');
+  DKEYS.forEach(k => {
+    const li = document.createElement('li');
+    li.setAttribute('role', 'option'); li.dataset.d = k; li.id = 'unit-' + k;
+    li.innerHTML = iconSVG(k, 2.7) + `<span>${DUR[k].name}</span>`;
+    li.addEventListener('click', () => { chooseUnit(k); closeUnits(true); });
+    list.appendChild(li);
+  });
+}
+function syncUnit(){
+  const b = $('#unitBtn');
+  b.innerHTML = iconSVG(ui.unit, 2.7) + CHEV;
+  b.setAttribute('aria-label', `Beat: ${DUR[ui.unit].name.toLowerCase()}. Change`);
+  b.title = `${DUR[ui.unit].name} gets the beat`;
+  document.querySelectorAll('#unitList li').forEach(li => li.setAttribute('aria-selected', li.dataset.d === ui.unit ? 'true' : 'false'));
+}
+function chooseUnit(k){
+  if (!DUR[k]) return;
+  ui.unit = k; syncUnit(); save(); replayIfPlaying();
+}
+let unitActive = 0;
+function openUnits(){
+  const list = $('#unitList');
+  list.hidden = false;
+  $('#unitBtn').setAttribute('aria-expanded', 'true');
+  unitActive = DKEYS.indexOf(ui.unit);
+  markActive();
+  list.focus();
+}
+function closeUnits(focusBtn){
+  const list = $('#unitList');
+  if (list.hidden) return;
+  list.hidden = true;
+  $('#unitBtn').setAttribute('aria-expanded', 'false');
+  if (focusBtn) $('#unitBtn').focus();
+}
+function markActive(){
+  const items = document.querySelectorAll('#unitList li');
+  items.forEach((li, i) => li.classList.toggle('active', i === unitActive));
+  $('#unitList').setAttribute('aria-activedescendant', 'unit-' + DKEYS[unitActive]);
+}
+function setTempo(v){
+  const num = Number(v);
+  v = (String(v).trim() === '' || !isFinite(num)) ? ui.tempo : Math.max(10, Math.min(300, Math.round(num)));
+  const changed = v !== ui.tempo;
+  ui.tempo = v; $('#tempo').value = v; save();
+  if (changed) replayIfPlaying();
+}
+function wireTempo(){
+  $('#unitBtn').addEventListener('click', () => $('#unitList').hidden ? openUnits() : closeUnits(true));
+  $('#unitList').addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault(); e.stopPropagation();
+      unitActive = Math.max(0, Math.min(DKEYS.length - 1, unitActive + (e.key === 'ArrowDown' ? 1 : -1)));
+      markActive();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); e.stopPropagation(); chooseUnit(DKEYS[unitActive]); closeUnits(true);
+    } else if (e.key === 'Escape' || e.key === 'Tab') {
+      e.stopPropagation(); closeUnits(e.key === 'Escape');
+    } else e.stopPropagation();
+  });
+  /* the staff redraws during a click, so test against the path captured at dispatch */
+  document.addEventListener('pointerdown', e => {
+    const path = e.composedPath();
+    if (!path.includes($('.unitpick'))) closeUnits(false);
+    if (!path.includes($('#clefMenu')) && !path.includes(scoreEl)) closeClefMenu(false);
+  });
+
+  const tempoIn = $('#tempo');
+  tempoIn.addEventListener('change', () => setTempo(tempoIn.value));
+  tempoIn.addEventListener('keydown', e => { if (e.key === 'Enter') { setTempo(tempoIn.value); tempoIn.blur(); } });
+  /* − and +: one step per click, keeps going while held */
+  for (const [id, step] of [['#tempoDown', -1], ['#tempoUp', 1]]) {
+    const b = $(id);
+    let hold = 0, rep = 0;
+    const stop = () => { clearTimeout(hold); clearInterval(rep); };
+    b.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      setTempo(ui.tempo + step);
+      hold = setTimeout(() => { rep = setInterval(() => setTempo(ui.tempo + step), 70); }, 420);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, stop));
+    b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setTempo(ui.tempo + step); } });
+  }
+  $('#heart').addEventListener('click', () => {
+    ui.unit = 'S'; syncUnit();
+    ui.tempo = PULSE; $('#tempo').value = PULSE; save();
+    replayIfPlaying();
+    toast('Semibrevis = 72: one pulse of someone breathing quietly, as Gaffurius has it.');
+  });
+  $('#metro').addEventListener('click', () => {
+    ui.metro = !ui.metro; setPressed($('#metro'), ui.metro); save(); replayIfPlaying();
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Clef menu (opened by clicking the clef on the staff)                */
+/* ------------------------------------------------------------------ */
+const CLEF_KEYS = Object.keys(CLEFS);
+let clefActive = 0;
+function clefIcon(k){
+  const c = CLEFS[k];
+  let lines = '';
+  for (let i = 0; i < 5; i++) lines += `<line x1="-0.3" x2="3.3" y1="${i}" y2="${i}" stroke="currentColor" stroke-opacity=".5" stroke-width="0.1"/>`;
+  return `<svg viewBox="-0.3 -1.9 3.6 8.8" aria-hidden="true">${lines}<use href="#g-${c.g}" x="0.25" y="${(8 - c.pos) * 0.5}"/></svg>`;
+}
+function buildClefMenu(){
+  const menu = $('#clefMenu');
+  CLEF_KEYS.forEach(k => {
+    const li = document.createElement('li');
+    li.setAttribute('role', 'option'); li.dataset.k = k; li.id = 'clefopt-' + k;
+    li.innerHTML = clefIcon(k) + `<span>${CLEFS[k].label}</span>`;
+    li.addEventListener('click', () => chooseClef(k));
+    menu.appendChild(li);
+  });
+  menu.addEventListener('keydown', e => {
+    e.stopPropagation();
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      clefActive = Math.max(0, Math.min(CLEF_KEYS.length - 1, clefActive + (e.key === 'ArrowDown' ? 1 : -1)));
+      markClef();
+    } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chooseClef(CLEF_KEYS[clefActive]); }
+    else if (e.key === 'Escape') closeClefMenu(true);
+    else if (e.key === 'Tab') closeClefMenu(false);
+  });
+}
+function markClef(){
+  document.querySelectorAll('#clefMenu li').forEach((li, i) => {
+    li.classList.toggle('active', i === clefActive);
+    li.setAttribute('aria-selected', li.dataset.k === doc.clef ? 'true' : 'false');
+  });
+  $('#clefMenu').setAttribute('aria-activedescendant', 'clefopt-' + CLEF_KEYS[clefActive]);
+}
+function openClefMenu(li){
+  const menu = $('#clefMenu'), leaf = menu.parentElement;
+  const lr = leaf.getBoundingClientRect(), sr = scoreEl.getBoundingClientRect();
+  const line = lay.lines[li];
+  clefActive = CLEF_KEYS.indexOf(doc.clef);
+  markClef();
+  menu.hidden = false;
+  const left = Math.max(8, Math.min(leaf.clientWidth - menu.offsetWidth - 8, sr.left - lr.left + lay.clefX * ui.size));
+  menu.style.left = left + 'px';
+  menu.style.top = (sr.top - lr.top + (line.staffTop + 6) * ui.size) + 'px';
+  menu.focus({preventScroll: true});
+}
+function closeClefMenu(focusScore){
+  const menu = $('#clefMenu');
+  if (menu.hidden) return;
+  menu.hidden = true;
+  if (focusScore) scoreEl.focus({preventScroll: true});
+}
+function chooseClef(k){
+  closeClefMenu(true);
+  if (k === doc.clef) return;
+  mutate(() => { doc.clef = k; });
+  syncSettings();
+}
+
+/* ------------------------------------------------------------------ */
+/* Library of cantus firmi                                             */
+/* Steps: C4 = 28, D3 = 22 and so on. All notes breves, the final a    */
+/* longa. Clef: G clef an octave lower.                                */
+/* ------------------------------------------------------------------ */
+const LIBRARY = [
+  {group: 'Pedagogical', note: 'Within the natural hexachord, ut to la and back.', items: [
+    {title: 'Hexachord up and down', desc: 'ut re mi fa sol la, la sol fa mi re ut', s: [21,22,23,24,25,26,26,25,24,23,22,21]},
+    {title: 'Hexachord in thirds', desc: 'ut mi re fa mi sol fa la, la fa sol mi fa re mi ut', s: [21,23,22,24,23,25,24,26,26,24,25,23,24,22,23,21]},
+    {title: 'Hexachord in fourths', desc: 'ut fa re sol mi la, la mi sol re fa ut', s: [21,24,22,25,23,26,26,23,25,22,24,21]}
+  ]},
+  {group: 'Fux, Gradus ad Parnassum', note: 'The cantus firmi of the six modes (1725).', items: [
+    {title: 'Dorian, on D', desc: 'D F E D G F A G F E D', s: [22,24,23,22,25,24,26,25,24,23,22]},
+    {title: 'Phrygian, on E', desc: 'E C D C A, up the octave to A, G E F E', s: [30,28,29,28,26,33,32,30,31,30]},
+    {title: 'Lydian, on F', desc: 'F G A F D E F C A F G F', s: [24,25,26,24,22,23,24,28,26,24,25,24]},
+    {title: 'Mixolydian, on G', desc: 'G C B G C E D G E C D B A G', s: [25,28,27,25,28,30,29,32,30,28,29,27,26,25]},
+    {title: 'Aeolian, on A', desc: 'A C B D C E F E D C B A', s: [26,28,27,29,28,30,31,30,29,28,27,26]},
+    {title: 'Ionian, on C', desc: 'C E F G E A G E F E D C', s: [28,30,31,32,30,33,32,30,31,30,29,28]}
+  ]},
+  {group: 'Chant', note: 'First verse, one breve for every pitch.', items: [
+    {title: 'Ave maris stella', desc: 'Hymn, mode 1. Antiphonarium O.P., 1933', s: [
+      22,26,26,27,25,26,27,28,29,28,27,26,25, 26,26,22,23,25,24,23,22,
+      24,23,25,26,26,22,23,24,23,22,21, 23,25,23,24,23,22,21,22]},
+    {title: 'Veni creator spiritus', desc: 'Hymn, mode 8. Liber usualis, p. 885', s: [
+      25,26,25,24,25,26,25,28,29,28, 28,25,26,28,29,28,29,30,29,
+      28,29,30,28,27,26,25,28,29,25,26,28, 27,28,26,25,24,26,26,27,26,25,24,25]},
+    {title: 'Pange lingua gloriosi', desc: 'Hymn, mode 3. Liber usualis, p. 957', s: [
+      23,23,24,23,22,25,25,26,28,28, 28,29,28,28,27,26,28,27,26,25,
+      25,26,28,27,26,25,26,25, 26,27,25,25,23,26,26,22,
+      23,25,25,23,25,26,26,25, 26,27,25,26,25,24,23,22,23]}
+  ]}
+];
+function presetDoc(item){
+  return {title: item.title, clef: 'treble8', bflat: false,
+          notes: item.s.map((s, i) => ({d: i === item.s.length - 1 ? 'L' : 'B', r: false, s, a: ''}))};
+}
+function previewSVG(item){
+  const clef = CLEFS.treble8, top = 0;
+  let o = '', x = 0.5;
+  o += use(clef.g, x, top + (8 - clef.pos) * 0.5);
+  x += gw(clef.g) + 0.9;
+  item.s.forEach((s, i) => {
+    const d = i === item.s.length - 1 ? 'L' : 'B';
+    const pos = s - clef.bottom;
+    o += ledgers(pos, x, 1.3, top);
+    o += noteGlyph(d, pos, d === 'L' && pos <= -3, x, top);
+    x += 2.2;
+  });
+  const w = x + 0.4;
+  let lines = '';
+  for (let k = 0; k < 5; k++) lines += hline(0, w, top + k, 'staff', 0.13);
+  return `<svg viewBox="0 -2.6 ${f(w)} 9.6" style="width:${f(w * 4.8)}px" aria-hidden="true">${lines}${o}</svg>`;
+}
+function buildLibrary(){
+  const lib = $('#library');
+  let html = '';
+  LIBRARY.forEach((g, gi) => {
+    html += `<h2>${esc(g.group)}</h2><p class="gnote">${esc(g.note)}</p>`;
+    g.items.forEach((it, ii) => {
+      html += `<button class="cfitem" data-g="${gi}" data-i="${ii}"><span class="t">${esc(it.title)}</span>` +
+              `<span class="d">${esc(it.desc)}</span><span class="pv">${previewSVG(it)}</span></button>`;
+    });
+  });
+  lib.innerHTML = html;
+  lib.addEventListener('click', e => {
+    const b = e.target.closest('.cfitem');
+    if (!b) return;
+    const item = LIBRARY[Number(b.dataset.g)].items[Number(b.dataset.i)];
+    closeLibrary(false);
+    mutate(() => { doc = presetDoc(item); ui.sel = null; ui.caret = doc.notes.length; ui.hover = null; });
+    syncSettings();
+    toast(`${item.title} loaded. Undo brings back what you had.`);
+    scoreEl.focus({preventScroll: true});
+  });
+  lib.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); closeLibrary(true); } });
+  $('#libBtn').addEventListener('click', () => $('#library').hidden ? openLibrary() : closeLibrary(true));
+  document.addEventListener('pointerdown', e => {
+    const path = e.composedPath();
+    if (!path.includes($('.libwrap'))) closeLibrary(false);
+  });
+}
+function openLibrary(){
+  $('#library').hidden = false;
+  $('#libBtn').setAttribute('aria-expanded', 'true');
+  const first = $('#library .cfitem');
+  if (first) first.focus({preventScroll: true});
+}
+function closeLibrary(focusBtn){
+  if ($('#library').hidden) return;
+  $('#library').hidden = true;
+  $('#libBtn').setAttribute('aria-expanded', 'false');
+  if (focusBtn) $('#libBtn').focus();
+}
+
+/* ------------------------------------------------------------------ */
+/* Export                                                              */
+/* ------------------------------------------------------------------ */
+function exportSVG(){
+  const L = layout();
+  const th = doc.title ? 3.4 : 0.6;
+  const m = 1.2;                                  /* page margin */
+  const w = ((L.lines.length === 1 && L.finalX !== null) ? Math.min(L.W, L.finalX + 1.5) : L.W) + 2 * m;
+  const h = L.H + th + m;
+  const S = 12;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${f(w)} ${f(h)}" width="${f(w * S)}" height="${f(h * S)}">` +
+    `<style>.staff,.ledger{stroke:#000}use,.bar{fill:#000}.ttl{font-family:Cardo,'Palatino Linotype',Palatino,Georgia,serif;font-style:italic;font-size:1.55px;fill:#000}</style>` +
+    defsMarkup + `<rect x="0" y="0" width="${f(w)}" height="${f(h)}" fill="#fff"/>` +
+    (doc.title ? `<text class="ttl" x="${f(m + L.staffL)}" y="${f(m + 1.6)}">${esc(doc.title)}</text>` : '') +
+    `<g transform="translate(${f(m)} ${f(th + m * 0.5)})">${drawScore(L, true)}</g></svg>`;
+  return svg.replace(/ href="#/g, ' xlink:href="#');
+}
+function fileBase(){
+  return (doc.title || 'cantus-firmus').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cantus-firmus';
+}
+function download(blob, name){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function saveSVG(){
+  download(new Blob([exportSVG()], {type: 'image/svg+xml'}), fileBase() + '.svg');
+}
+function savePNG(){
+  const img = new Image();
+  img.onload = () => {
+    const scale = 3, c = document.createElement('canvas');
+    c.width = img.width * scale; c.height = img.height * scale;
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(img, 0, 0, c.width, c.height);
+    c.toBlob(b => b ? download(b, fileBase() + '.png') : toast('The image could not be made in this browser.'), 'image/png');
+  };
+  img.onerror = () => toast('The image could not be made in this browser.');
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(exportSVG());
+}
+async function copyLink(){
+  const url = shareURL();
+  try { await navigator.clipboard.writeText(url); toast('Link copied. Anyone who opens it sees this cantus firmus.'); }
+  catch (e) { window.prompt('Copy this link:', url); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Small things                                                        */
+/* ------------------------------------------------------------------ */
+let toastTimer = 0;
+function toast(msg){
+  const el = $('#toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+/* ------------------------------------------------------------------ */
+/* Wiring                                                              */
+/* ------------------------------------------------------------------ */
+function wire(){
+  $('#modeNote').addEventListener('click', () => setRestMode(false));
+  $('#modeRest').addEventListener('click', () => setRestMode(true));
+  $('#stepUp').addEventListener('click', () => stepPitch(1));
+  $('#stepDown').addEventListener('click', () => stepPitch(-1));
+  $('#del').addEventListener('click', deleteTarget);
+  $('#undo').addEventListener('click', undo);
+  $('#redo').addEventListener('click', redo);
+  $('#dbl').addEventListener('click', () => scaleAll(-1));
+  $('#hlv').addEventListener('click', () => scaleAll(1));
+  $('#clear').addEventListener('click', () => {
+    mutate(() => { doc.notes = []; ui.sel = null; ui.caret = 0; });
+    toast('All notes cleared. Undo brings them back.');
+  });
+  $('#clef').addEventListener('change', e => mutate(() => { doc.clef = e.target.value; }));
+  $('#bflat').addEventListener('change', e => mutate(() => { doc.bflat = e.target.checked; }));
+  let titleBefore = null;
+  $('#title').addEventListener('focus', () => { titleBefore = snapshot(); });
+  $('#title').addEventListener('input', e => { doc.title = e.target.value; save(); });
+  $('#title').addEventListener('change', () => {
+    if (titleBefore && snapshot() !== titleBefore) { pushUndo(titleBefore); syncTools(); }
+    titleBefore = snapshot();
+  });
+  $('#size').addEventListener('input', e => { ui.size = Number(e.target.value); save(); render(); });
+  $('#play').addEventListener('click', togglePlay);
+  $('#loop').addEventListener('click', () => { ui.loop = !ui.loop; setPressed($('#loop'), ui.loop); save(); });
+  wireTempo();
+  $('#ref').addEventListener('change', e => { ui.ref = Number(e.target.value); stopPlayback(); save(); });
+  $('#vol').addEventListener('input', e => {
+    ui.vol = Number(e.target.value);
+    if (audio.master) audio.master.gain.setTargetAtTime(masterLevel(), audio.ctx.currentTime, 0.03);
+    save();
+  });
+  $('#audition').addEventListener('change', e => { ui.audition = e.target.checked; save(); });
+  $('#copyLink').addEventListener('click', copyLink);
+  $('#savePng').addEventListener('click', savePNG);
+  $('#saveSvg').addEventListener('click', saveSVG);
+  let rq = 0;
+  new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(render); }).observe(scoreEl);
+}
+
+buildTools();
+buildTactus();
+buildClefMenu();
+buildLibrary();
+loadAll();
+syncSettings();
+wire();
+render();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+})();
+</script>
+</body>
+</html>
