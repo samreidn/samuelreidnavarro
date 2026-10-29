@@ -6,8 +6,8 @@
   <title>Cantus firmus | Samuel Reid Navarro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap">
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+Double+Pica:ital@0;1&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
   <header class="banner">
@@ -23,12 +23,17 @@
       <li><a href="cantus-firmus.html" aria-current="page">Cantus firmus</a></li>
     </ul>
   </nav>
-  <main class="wide">
-    <div class="embed">
+  <main class="edge">
+    <div class="embed edge">
       <button class="fs" type="button" id="fs">Full screen</button>
-      <iframe class="game" id="cf" src="games/cantus-firmus.html?v=2" title="Cantus firmus" allow="fullscreen; autoplay; clipboard-write"></iframe>
+      <iframe class="game" id="cf" src="games/cantus-firmus.html?v=3" title="Cantus firmus" allow="fullscreen; autoplay; clipboard-write"></iframe>
     </div>
     <script>
+      window.addEventListener("message", function (e) {
+        var f = document.getElementById("cf");
+        if (e.source !== f.contentWindow || !e.data || !e.data.cantusFirmusHeight) return;
+        f.style.height = Math.max(420, e.data.cantusFirmusHeight) + "px";
+      });
       document.getElementById("fs").addEventListener("click", function () {
         var f = document.getElementById("cf");
         if (f.requestFullscreen) f.requestFullscreen();

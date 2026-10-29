@@ -6,7 +6,8 @@
   --soft: #8a7b66;
   --line: #e0d4c0;
   --mark: #9c6b3c;
-  --serif: "EB Garamond", Garamond, "Times New Roman", serif;
+  --serif: "IM Fell English", "EB Garamond", Garamond, "Times New Roman", serif;
+  --display: "IM Fell Double Pica", "IM Fell English", Garamond, "Times New Roman", serif;
   color-scheme: light;
 }
 
@@ -16,7 +17,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--serif);
-  font-size: 1.15rem;
+  font-size: 1.22rem;
   line-height: 1.6;
 }
 
@@ -173,3 +174,14 @@ main.about-page { max-width: 62rem; }
   .cc { grid-template-columns: minmax(0, 1fr); }
   .cc-col + .cc-col { border-left: 0; border-top: 1px solid var(--line); }
 }
+
+/* Titles in the Fell Double Pica face (the Petrucci look of Mensurator) */
+h1, h2, h3, .site-name, .page-title, .cc-label { font-family: var(--display); font-weight: 400; }
+.nav a { font-family: var(--serif); }
+
+/* Cantus firmus: the app takes the whole width of the screen, under the banner and navigation */
+main.edge { display: block; max-width: none; padding: 0; }
+.embed.edge { position: relative; display: block; width: 100%; }
+.edge .game { width: 100%; height: 40rem; min-height: 0; border: 0; border-radius: 0; border-top: 1px solid var(--line); background: #efe3c7; }
+.edge .game:fullscreen { height: 100vh !important; }
+.edge .fs { position: absolute; top: .55rem; right: .9rem; z-index: 2; opacity: .85; }

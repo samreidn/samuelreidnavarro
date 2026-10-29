@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 27 16 16 29 5 16Z' fill='%2324479A'/%3E%3Cpath d='M16 9.5 21.4 16 16 22.5 10.6 16Z' fill='%23EDE0BC'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+Double+Pica:ital@0;1&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
 <!--
   Cantus firmus: a small mensural-notation editor with playback.
   Everything (layout, editing, sound) is in this one file; no build step.
@@ -20,17 +20,17 @@
   --ground:#EFE3C7; --surface:#F6EDD6; --text:#2F2619; --muted:#6B5D45; --line:#C9B791;
   --accent:#24479A; --accent-ink:#F6EEDA;
   --leaf:#F3E8CC; --leaf-ink:#1F1A14; --leaf-muted:#7A6A4E; --rule:#B4513F;
-  --sel:#24479A; --hov:#4B66A8; --play:#C0331C;
+  --sel:#24479A; --hov:#4B66A8; --play:#C0331C; --del:#C2301B;
   --paper:none;
   color-scheme: light;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ground) var(--paper) fixed;color:var(--text);
-  font:400 17px/1.5 Cardo,"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
-.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 56px}
+  font:400 19px/1.45 "IM Fell English","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
+.wrap{max-width:none;margin:0 auto;padding:22px clamp(14px,2.6vw,44px) 40px}
 header.top{display:flex;flex-wrap:wrap;gap:14px 32px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
-h1{font-weight:400;font-size:clamp(2.2rem,4.4vw,3.2rem);line-height:1.02;margin:0;letter-spacing:-.012em}
+h1{font-family:"IM Fell Double Pica","IM Fell English",Georgia,serif;font-weight:400;font-size:clamp(2.2rem,4.4vw,3.2rem);line-height:1.02;margin:0;letter-spacing:-.012em}
 .lede{margin:.4rem 0 0;color:var(--muted);font-style:italic;max-width:62ch}
 .share{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .libwrap{position:relative}
@@ -39,7 +39,7 @@ h1{font-weight:400;font-size:clamp(2.2rem,4.4vw,3.2rem);line-height:1.02;margin:
 .library{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(500px,calc(100vw - 28px));max-height:min(72vh,680px);
   overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px 10px;
   box-shadow:0 18px 40px -16px rgba(0,0,0,.45)}
-.library h2{font-size:17px;font-weight:700;margin:12px 8px 2px}
+.library h2{font-family:"IM Fell Double Pica","IM Fell English",Georgia,serif;font-size:17px;font-weight:700;margin:12px 8px 2px}
 .library .gnote{margin:0 8px 6px;color:var(--muted);font-style:italic;font-size:14.5px}
 .cfitem{display:block;width:100%;text-align:left;padding:8px 10px 6px;border:1px solid transparent;background:transparent;border-radius:6px;min-height:0;line-height:1.3}
 .cfitem:hover:not(:disabled){border-color:var(--line);background:var(--ground)}
@@ -85,7 +85,7 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 
 .leaf{position:relative;background:rgba(251,245,226,.5);color:var(--leaf-ink);border-radius:3px;padding:16px 22px 18px;
   box-shadow:0 1px 1px rgba(60,40,10,.14),0 14px 32px -14px rgba(50,34,8,.42),inset 0 0 70px rgba(150,108,40,.13),inset 0 0 0 1px rgba(120,90,40,.16)}
-#title{display:block;width:100%;font:italic 400 1.4rem/1.3 Cardo,"Palatino Linotype",Palatino,Georgia,serif;
+#title{display:block;width:100%;font:italic 400 1.4rem/1.3 "IM Fell English","Palatino Linotype",Palatino,Georgia,serif;
   color:var(--leaf-ink);background:transparent;border:0;border-bottom:1px dashed transparent;padding:2px 0 4px;border-radius:0}
 #title:hover{border-bottom-color:rgba(31,26,20,.25)}
 #title:focus-visible{outline:none;border-bottom-color:var(--sel)}
@@ -96,7 +96,10 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 #score .staff{stroke:var(--rule)}
 #score .ledger{stroke:var(--leaf-ink)}
 #score use,#score .bar{fill:var(--leaf-ink)}
-#score .it.hov use,#score use.clefhov{fill:var(--hov)}
+#score use.clefhov{fill:var(--hov)}
+#score .it.hov use{fill:var(--del)}
+#score .it.hov .ledger{stroke:var(--del)}
+#score .it.dim{opacity:.28}
 #score use.sigghost{opacity:.26}
 #score use.sigghost.on{opacity:.85;fill:var(--hov)}
 #score .it.sel use{fill:var(--sel)}
@@ -104,9 +107,11 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 #score .it.play use{fill:var(--play)}
 #score .it.play .ledger{stroke:var(--play)}
 #score .selbg{fill:var(--sel);opacity:.1}
-#score .ghost{opacity:.34}
+#score .ghost{opacity:.62}
+#score .ghost use{fill:var(--sel)}
+#score .ghost .ledger{stroke:var(--sel)}
 #score .caret{fill:var(--sel);opacity:.75}
-#score .hint{fill:var(--leaf-muted);font:italic 1.15px Cardo,"Palatino Linotype",Palatino,Georgia,serif}
+#score .hint{fill:var(--leaf-muted);font:italic 1.15px "IM Fell English","Palatino Linotype",Palatino,Georgia,serif}
 
 .status{min-height:1.5em;margin:10px 2px 0;color:var(--muted);font-style:italic}
 .transport{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px 34px;margin-top:16px;padding-top:18px;border-top:1px solid var(--line)}
@@ -117,7 +122,9 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 .tactus{display:flex;flex-direction:column;gap:8px}
 .vignette{width:176px;height:142px;background:var(--leaf);border:1.5px solid var(--leaf-ink);outline:1px solid var(--leaf-ink);
   outline-offset:-5px;overflow:hidden;border-radius:1px}
-.vignette svg{display:block;width:100%;height:100%}
+.handbox{position:absolute;right:clamp(10px,3vw,48px);top:4px;width:250px;height:202px;opacity:.3;pointer-events:none;z-index:0}
+.handbox svg{display:block;width:100%;height:100%}
+#title,#score{position:relative;z-index:1}
 .tempo-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .eq{font-size:22px;color:var(--text);padding:0 2px}
 .permin{color:var(--muted);margin-right:6px}
@@ -244,6 +251,7 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
   </div>
 
   <section class="leaf" aria-label="Score">
+    <div class="handbox" title="The tactus: the hand drops on one beat and lifts on the next" aria-hidden="true"><svg viewBox="-20 -36 236 190"><g id="handRot"></g></svg></div>
     <input id="title" type="text" maxlength="120" placeholder="Untitled cantus firmus" aria-label="Title" spellcheck="false">
     <div id="score" tabindex="0" role="application" aria-label="Staff. Click to add notes; use the keyboard shortcuts listed below." aria-describedby="status"></div>
     <ul id="clefMenu" class="menu" role="listbox" aria-label="Clef" tabindex="-1" hidden></ul>
@@ -257,9 +265,6 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
     </div>
 
     <div class="tactus">
-      <div class="vignette" title="The tactus: the hand drops on one beat and lifts on the next">
-        <svg viewBox="-20 -36 236 190" aria-hidden="true"><g id="handRot"></g></svg>
-      </div>
       <div class="tempo-row" role="group" aria-label="Tempo">
         <div class="unitpick">
           <button id="unitBtn" class="ib unitbtn" aria-haspopup="listbox" aria-expanded="false"></button>
@@ -292,7 +297,7 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
 
   <details class="help">
     <summary>How to enter and edit</summary>
-    <p>Pick a note value, then click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. Click a note to turn it into a rest of the same value; click a rest to remove it. Drag a note up or down to change its pitch. Click the clef to change it.</p>
+    <p>Pick a note value, then click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. Click exactly on a note (it turns red) to turn it into a rest of the same value; click exactly on a rest to remove it. Click anywhere else near a note or rest to enter a new note there. Drag a note up or down to change its pitch. Click the clef to change it.</p>
     <p>To change a note without removing it, select it: right-click it, Shift-click it, or press and hold it on a touch screen. Value, rest and accidental buttons then change that note. With nothing selected, they apply to the next note you enter and to the note you just entered.</p>
     <table>
       <tr><td><kbd>A</kbd> to <kbd>G</kbd></td><td>Add that note, in the octave closest to the previous note</td></tr>
@@ -662,6 +667,7 @@ function drawItem(it, top, exp){
     if (ui.sel === it.i) cls.push('sel');
     if (ui.playing === it.i) cls.push('play');
     if (ui.hover && ui.hover.type === 'item' && ui.hover.i === it.i && ui.sel !== it.i) cls.push('hov');
+    if (ui.hover && ui.hover.type === 'repl' && ui.hover.i === it.i) cls.push('dim');
   }
   let s = `<g class="${cls.join(' ')}" data-i="${it.i}">`;
   if (!exp && ui.sel === it.i)
@@ -678,22 +684,24 @@ function drawItem(it, top, exp){
 /* Where the preview of the next note sits while hovering a gap */
 function ghostInfo(){
   const h = ui.hover;
-  if (!h || h.type !== 'gap' || drag) return null;
-  const line = lay.lines[h.li], items = line.items, d = ui.inDur;
-  const w = ui.inRest ? (d === 'Mx' ? 1.6 : 1.1) : (d === 'Mx' ? 2.5 : (d === 'L' || d === 'B') ? 1.3 : 1.28);
+  if (!h || (h.type !== 'gap' && h.type !== 'repl') || drag) return null;
+  const line = lay.lines[h.li], items = line.items, rep = h.type === 'repl';
+  const d = rep ? doc.notes[h.i].d : ui.inDur, asRest = rep ? false : ui.inRest;
+  const w = asRest ? (d === 'Mx' ? 1.6 : 1.1) : (d === 'Mx' ? 2.5 : (d === 'L' || d === 'B') ? 1.3 : 1.28);
   let k = items.findIndex(it => it.i === h.idx);
   if (k === -1) k = items.length;
   let x;
-  if (k === items.length) x = items.length ? items[k - 1].x1 + Math.min(items[k - 1].gap, 2.2) : lay.noteStart;
+  if (rep) { const it = items.find(t => t.i === h.i); x = it.hx + it.w / 2 - w / 2; }
+  else if (k === items.length) x = items.length ? items[k - 1].x1 + Math.min(items[k - 1].gap, 2.2) : lay.noteStart;
   else if (k === 0) x = items[0].x0 - 0.5 - w / 2;
   else x = (items[k - 1].x1 + items[k].x0) / 2 - w / 2;
-  return {h, line, x, w, atEnd: h.idx >= doc.notes.length};
+  return {h, line, x, w, d, asRest, atEnd: !rep && h.idx >= doc.notes.length};
 }
 function drawGhost(g){
   if (!g) return '';
   const top = g.line.staffTop, h = g.h;
-  if (ui.inRest) return `<g class="ghost">${restGlyph(ui.inDur, g.x + g.w / 2, top)}</g>`;
-  const d = ui.inDur, D = DUR[d];
+  if (g.asRest) return `<g class="ghost">${restGlyph(g.d, g.x + g.w / 2, top)}</g>`;
+  const d = g.d, D = DUR[d];
   const flip = (D.stem && h.pos >= 7) || (D.tail && h.pos <= -3);
   return `<g class="ghost">${ledgers(h.pos, g.x, g.w, top)}${noteGlyph(d, h.pos, flip, g.x, top)}</g>`;
 }
@@ -849,6 +857,8 @@ function updateStatus(){
     }
   } else if (h && h.type === 'clef') {
     msg = 'Click to change the clef.';
+  } else if (h && h.type === 'repl') {
+    msg = `Click to put a ${DUR[doc.notes[h.i].d].name.toLowerCase()} here instead of the rest. Click exactly on the rest to remove it.`;
   } else if (h && h.type === 'sig') {
     msg = doc.bflat ? 'Click to remove the B flat from the signature.' : 'Click to put a B flat in the signature.';
   } else if (h && h.type === 'item') {
@@ -952,19 +962,28 @@ function toSp(e){
   const r = scoreEl.firstElementChild.getBoundingClientRect();
   return {x: (e.clientX - r.left) / ui.size, y: (e.clientY - r.top) / ui.size};
 }
-function hit(x, y){
+function hit(x, y, fat){
   const lines = lay.lines;
   let li = lines.findIndex(l => y >= l.bandTop && y < l.bandBot);
   if (li < 0) li = y < lines[0].bandTop ? 0 : lines.length - 1;
   const line = lines[li];
   if (x <= lay.sigEnd && y >= line.staffTop - 2.5 && y <= line.staffTop + 6.5) return {type: x <= lay.clefEnd ? 'clef' : 'sig', li};
-  for (const it of line.items) if (x >= it.x0 - 0.15 && x <= it.x1 + 0.15) return {type: 'item', i: it.i, li};
+  const pos = Math.max(-8, Math.min(16, Math.round((line.staffTop + 4 - y) / 0.5)));
+  for (const it of line.items) if (x >= it.x0 - 0.15 && x <= it.x1 + 0.15) {
+    /* directly on the glyph: act on it. Anywhere else near it: enter a note instead */
+    const mx = fat ? 0.5 : 0.1, my = fat ? 0.45 : 0;
+    let on;
+    if (it.n.r) { const cx = it.hx + it.w / 2; on = Math.abs(x - cx) <= 0.6 + mx && y >= line.staffTop + 0.5 - my && y <= line.staffTop + 3.5 + my; }
+    else on = x >= it.hx - mx && x <= it.hx + it.headW + mx && Math.abs(y - (line.staffTop + 4 - it.pos * 0.5)) <= 0.65 + my;
+    if (on) return {type: 'item', i: it.i, li};
+    if (it.n.r) return {type: 'repl', i: it.i, li, pos};
+    return {type: 'gap', idx: x < it.hx + it.headW / 2 ? it.i : it.i + 1, li, pos};
+  }
   const after = line.items.find(it => it.x0 > x);
   let idx;
   if (after) idx = after.i;
   else if (line.items.length) idx = line.items[line.items.length - 1].i + 1;
   else idx = doc.notes.length;
-  const pos = Math.max(-8, Math.min(16, Math.round((line.staffTop + 4 - y) / 0.5)));
   return {type: 'gap', idx, li, pos};
 }
 const sameHover = (a, b) => (!a && !b) || (a && b && a.type === b.type && a.i === b.i && a.idx === b.idx && a.pos === b.pos && a.li === b.li);
@@ -979,7 +998,7 @@ scoreEl.addEventListener('pointerdown', e => {
   if (!lay || (e.button !== 0 && e.button !== 2)) return;
   e.preventDefault();
   scoreEl.focus({preventScroll: true});
-  const p = toSp(e), h = hit(p.x, p.y);
+  const p = toSp(e), h = hit(p.x, p.y, e.pointerType !== 'mouse');
   const wasOpen = !$('#clefMenu').hidden;
   closeClefMenu(false);
   if (h.type === 'clef') { if (e.button === 0 && !wasOpen) openClefMenu(h.li); return; }
@@ -995,6 +1014,11 @@ scoreEl.addEventListener('pointerdown', e => {
     return;
   }
   if (e.button !== 0) return;
+  if (h.type === 'repl') {
+    mutate(() => { const o = doc.notes[h.i]; doc.notes[h.i] = {d: o.d, r: false, s: clampStep(CLEFS[doc.clef].bottom + h.pos), a: ''}; ui.sel = null; ui.caret = h.i + 1; ui.hover = null; });
+    audition(doc.notes[h.i]);
+    return;
+  }
   insertAt(h.idx, {d: ui.inDur, r: ui.inRest, s: clampStep(CLEFS[doc.clef].bottom + h.pos), a: ''});
 });
 scoreEl.addEventListener('pointermove', e => {
@@ -1016,7 +1040,7 @@ scoreEl.addEventListener('pointermove', e => {
   }
   if (e.pointerType === 'touch') return;
   const h = hit(p.x, p.y);
-  scoreEl.style.cursor = h.type === 'gap' ? 'crosshair' : 'pointer';
+  scoreEl.style.cursor = (h.type === 'gap' || h.type === 'repl') ? 'crosshair' : 'pointer';
   if (!sameHover(h, ui.hover)) { ui.hover = h; render(); }
 });
 function endPress(cancelled){
@@ -1179,7 +1203,7 @@ function tick(){
   if (now < tlObj.tl[0].t0) setHand(0);
   else {
     const el = now - tlObj.origin, bi = Math.floor(el / tlObj.beat), t = el - bi * tlObj.beat;
-    const down = bi % 2 === 0, from = down ? 45 : 0, to = down ? 0 : 45;
+    const down = bi % 2 === 0, from = down && bi > 0 ? 45 : 0, to = down ? 0 : 45;   /* the first downbeat: no movement */
     const p = Math.min(1, t / Math.min(0.09, tlObj.beat * 0.3)), e = 1 - Math.pow(1 - p, 3);
     setHand(from + (to - from) * e);
   }
@@ -1529,7 +1553,7 @@ function exportSVG(){
   const h = L.H + th + m;
   const S = 12;
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${f(w)} ${f(h)}" width="${f(w * S)}" height="${f(h * S)}">` +
-    `<style>.staff,.ledger{stroke:#000}use,.bar{fill:#000}.ttl{font-family:Cardo,'Palatino Linotype',Palatino,Georgia,serif;font-style:italic;font-size:1.55px;fill:#000}</style>` +
+    `<style>.staff,.ledger{stroke:#000}use,.bar{fill:#000}.ttl{font-family:'IM Fell English','Palatino Linotype',Palatino,Georgia,serif;font-style:italic;font-size:1.55px;fill:#000}</style>` +
     defsMarkup + `<rect x="0" y="0" width="${f(w)}" height="${f(h)}" fill="#fff"/>` +
     (doc.title ? `<text class="ttl" x="${f(m + L.staffL)}" y="${f(m + 1.6)}">${esc(doc.title)}</text>` : '') +
     `<g transform="translate(${f(m)} ${f(th + m * 0.5)})">${drawScore(L, true)}</g></svg>`;
@@ -1630,6 +1654,13 @@ syncSettings();
 wire();
 render();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+/* inside the website's frame: tell the page how tall the app is, so the page scrolls and the frame doesn't */
+try {
+  if (window.parent !== window && window.ResizeObserver) {
+    const post = () => parent.postMessage({cantusFirmusHeight: Math.ceil(document.body.getBoundingClientRect().height)}, '*');
+    new ResizeObserver(post).observe(document.body); post();
+  }
+} catch (e) {}
 })();
 </script>
 </body>
