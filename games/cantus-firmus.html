@@ -91,8 +91,6 @@ input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;margin:0}
 .popbody .btns:not(.col){flex-wrap:nowrap}
 .popbody .col{flex-direction:column}
 .popbody .col .tb{justify-content:flex-start;text-align:left;white-space:nowrap}
-.btns.stack{flex-direction:column;gap:3px}
-.btns.stack .ib{height:34px}
 .tools .row .spacer{flex:1}
 .tools .row .ctl{align-self:flex-start;margin-top:20px}
 .tools .row #clear{align-self:flex-start;margin-top:15px}
@@ -241,7 +239,7 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
       </div>
       <div class="grp">
         <span class="gl">Accidental</span>
-        <div class="btns stack" id="accBtns" role="group" aria-label="Accidental"></div>
+        <div class="btns" id="accBtns" role="group" aria-label="Accidental"></div>
       </div>
       <div class="grp pop" id="popXform">
         <span class="gl">&nbsp;</span>
@@ -319,8 +317,8 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
 
   <details class="help">
     <summary>How to enter and edit</summary>
-    <p>Pick a note value, then click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. Click exactly on a note (it turns red) to turn it into a rest of the same value; click exactly on a rest to remove it. Click anywhere else near a note or rest to enter a new note there. Drag a note up or down to change its pitch. Click the clef to change it.</p>
-    <p>To change a note without removing it, select it: right-click it, Shift-click it, or press and hold it on a touch screen. Value, rest and accidental buttons then change that note. With nothing selected, they apply to the next note you enter and to the note you just entered.</p>
+    <p>Pick a note value, then right-click on the staff where the note should go: between two notes inserts it there, after the last note adds it at the end. Right-click exactly on a note (it turns red) to turn it into a rest of the same value; right-click exactly on a rest to remove it. Right-click anywhere else near a note or rest to enter a new note there. Drag a note with the right button to change its pitch. The left button selects: click a note, and Play and the space bar start from it. Click the clef to change it.</p>
+    <p>To change a note without removing it, select it: left-click it, or press and hold it on a touch screen. (On a touch screen a tap edits, as the right button does.) Value, rest and accidental buttons then change that note. With nothing selected, they apply to the next note you enter and to the note you just entered.</p>
     <table>
       <tr><td><kbd>A</kbd> to <kbd>G</kbd></td><td>Add that note, in the octave closest to the previous note</td></tr>
       <tr><td><kbd>R</kbd></td><td>Add a rest</td></tr>
@@ -454,7 +452,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 15, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: true
+  unit: 'S', tempo: 67, ref: 440, vol: 70, reg: 'custom', bright: 50, room: 40, atk: 180, rel: 150, chiff: 7, ens: 0.3, wind: 10, scoop: 5, draw: [100, 71, 55, 48, 37, 22, 12, 8, 0, 0, 0, 0], audition: true, loop: false, metro: false, setOpen: true
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -1036,14 +1034,18 @@ scoreEl.addEventListener('pointerdown', e => {
   if (!lay || (e.button !== 0 && e.button !== 2)) return;
   e.preventDefault();
   scoreEl.focus({preventScroll: true});
-  const p = toSp(e), h = hit(p.x, p.y, e.pointerType !== 'mouse');
+  const isMouse = e.pointerType === 'mouse';
+  /* with a mouse: the right button edits (insert, rest, remove, drag), the left button selects.
+     Touch keeps tap = edit, press and hold = select. */
+  const selectClick = e.shiftKey || (isMouse ? e.button === 0 : e.button === 2);
+  const p = toSp(e), h = hit(p.x, p.y, !isMouse);
   const wasOpen = !$('#clefMenu').hidden;
   closeClefMenu(false);
   if (h.type === 'clef') { if (e.button === 0 && !wasOpen) openClefMenu(h.li); return; }
   if (h.type === 'sig') { if (e.button === 0) mutate(() => { doc.bflat = !doc.bflat; }); return; }
   if (h.type === 'item') {
     /* right-click or Shift-click: select without changing anything */
-    if (e.button === 2 || e.shiftKey) { selectItem(h.i); return; }
+    if (selectClick) { selectItem(h.i); return; }
     const n = doc.notes[h.i];
     drag = {i: h.i, y0: p.y, s0: n.s, rest: n.r, before: snapshot(), moved: false, held: false};
     /* press and hold: select (the touch-screen way to select) */
@@ -1051,7 +1053,7 @@ scoreEl.addEventListener('pointerdown', e => {
     try { scoreEl.setPointerCapture(e.pointerId); } catch (err) {}
     return;
   }
-  if (e.button !== 0) return;
+  if (selectClick) { if (ui.sel !== null) { ui.sel = null; render(); } return; }
   if (h.type === 'repl') {
     mutate(() => { const o = doc.notes[h.i]; doc.notes[h.i] = {d: o.d, r: false, s: clampStep(CLEFS[doc.clef].bottom + h.pos), a: ''}; ui.sel = null; ui.caret = h.i + 1; ui.hover = null; });
     audition(doc.notes[h.i]);
@@ -1102,6 +1104,11 @@ scoreEl.addEventListener('blur', () => { if (!drag) render(); });
 /* ------------------------------------------------------------------ */
 /* Keyboard                                                            */
 /* ------------------------------------------------------------------ */
+/* a focused button would otherwise also "click" on the space bar's release */
+document.addEventListener('keyup', e => {
+  const t = e.target, tag = t.tagName;
+  if (e.key === ' ' && (tag === 'BUTTON' || tag === 'SUMMARY')) e.preventDefault();
+});
 document.addEventListener('keydown', e => {
   const t = e.target, tag = t.tagName;
   if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || t.isContentEditable) return;
@@ -1116,7 +1123,6 @@ document.addEventListener('keydown', e => {
   }
   if (mod || e.altKey) return;
   if (k === ' ') {
-    if (tag === 'BUTTON' || tag === 'SUMMARY') return;
     e.preventDefault(); togglePlay(); return;
   }
   if (tag === 'BUTTON' && k === 'Enter') return;
@@ -1395,7 +1401,7 @@ function replayIfPlaying(){
   const at = ui.playing >= 0 ? ui.playing : 0;
   startPlayback(at);
 }
-function togglePlay(){ audio.timeline ? stopPlayback() : startPlayback(0); }
+function togglePlay(){ audio.timeline ? stopPlayback() : startPlayback(ui.sel !== null ? ui.sel : 0); }
 function setPlayButton(on){
   const b = $('#play');
   b.setAttribute('aria-label', on ? 'Stop' : 'Play');
