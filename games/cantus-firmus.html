@@ -122,8 +122,8 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 .tactus{display:flex;flex-direction:column;gap:8px}
 .vignette{width:176px;height:142px;background:var(--leaf);border:1.5px solid var(--leaf-ink);outline:1px solid var(--leaf-ink);
   outline-offset:-5px;overflow:hidden;border-radius:1px}
-.handbox{position:absolute;right:clamp(10px,3vw,48px);top:4px;width:250px;height:202px;opacity:.3;pointer-events:none;z-index:0}
-.handbox svg{display:block;width:100%;height:100%}
+.handbox{position:absolute;right:0;top:4px;width:250px;height:202px;opacity:.3;pointer-events:none;z-index:0}
+.handbox svg{display:block;width:100%;height:100%;transform:scaleX(-1)}
 #title,#score{position:relative;z-index:1}
 .tempo-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .eq{font-size:22px;color:var(--text);padding:0 2px}
@@ -195,8 +195,6 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
         <div id="library" class="library" role="dialog" aria-label="Cantus firmi to start from" hidden></div>
       </div>
       <button id="copyLink" title="Copy a link that opens this exact cantus firmus">Copy link</button>
-      <button id="savePng" title="Black on white, ready to print">Save image</button>
-      <button id="saveSvg" title="Vector file for documents and editing programs">Save SVG</button>
     </div>
   </header>
 
@@ -1639,8 +1637,6 @@ function wire(){
   });
   $('#audition').addEventListener('change', e => { ui.audition = e.target.checked; save(); });
   $('#copyLink').addEventListener('click', copyLink);
-  $('#savePng').addEventListener('click', savePNG);
-  $('#saveSvg').addEventListener('click', saveSVG);
   let rq = 0;
   new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(render); }).observe(scoreEl);
 }
