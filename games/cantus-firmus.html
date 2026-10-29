@@ -158,6 +158,11 @@ label.ctl{display:flex;align-items:center;gap:8px;color:var(--muted)}
 .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 #heart{color:var(--rule)}
 #heart svg{width:22px;height:22px}
+.tune{display:grid;grid-template-columns:auto 150px 3.4em;gap:4px 10px;align-items:center;margin-top:6px;padding-top:8px;border-top:1px solid var(--line);width:100%}
+.tune .tg{grid-column:1/-1;font-style:italic;color:var(--muted);font-size:15px;margin-top:4px}
+.tune label{color:var(--muted);font-size:16px}
+.tune input[type=range]{width:150px}
+.tune output{font-variant-numeric:tabular-nums;font-size:15px;color:var(--text);text-align:right}
 .tp-side{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 
 details.help{margin-top:26px;max-width:760px}
@@ -291,11 +296,13 @@ footer{margin-top:30px;color:var(--muted);font-size:14.5px}
         </select>
       </label>
       <label class="ctl">Sound
-        <select id="reg"><option value="gedackt">Gedackt 8′ (stopped flute)</option><option value="principal">Principal 8′</option><option value="regal">Regal (soft reed)</option><option value="sine">Sine</option></select>
+        <select id="reg"><option value="gedackt">Gedackt 8′ (stopped flute)</option><option value="principal">Principal 8′</option><option value="regal">Regal (soft reed)</option><option value="sine">Sine</option><option value="custom">Your own (drawbars)</option></select>
       </label>
       <label class="ctl">Brightness <input type="range" id="bright" min="0" max="100" step="1"></label>
       <label class="ctl">Room <input type="range" id="room" min="0" max="100" step="1"></label>
       <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1"></label>
+      <div class="tune" id="tune" aria-label="Sound settings"></div>
+      <button id="copySound" title="Copies the current sound settings as text, to send to whoever is tuning the sound">Copy sound settings</button>
       <label class="ctl"><input type="checkbox" id="audition"> Hear notes while editing</label>
     </div>
   </section>
@@ -437,7 +444,7 @@ let doc = defaultDoc();
 const ui = {
   sel: null, caret: 0, inDur: 'B', inRest: false, hover: null, playing: -1,
   size: window.innerWidth < 640 ? 11 : 16,
-  unit: 'S', tempo: 72, ref: 440, vol: 70, reg: 'gedackt', bright: 50, room: 30, audition: true, loop: false, metro: false
+  unit: 'S', tempo: 72, ref: 440, vol: 70, reg: 'gedackt', bright: 50, room: 30, atk: 15, rel: 120, chiff: 40, ens: 1.6, draw: [100, 3, 28, 2, 10, 1, 4, 0], audition: true, loop: false, metro: false
 };
 let lay = null;          /* last computed layout, used for hit testing */
 let drag = null;
@@ -482,7 +489,7 @@ function save(){
   try {
     localStorage.setItem(STORE, JSON.stringify({doc, prefs: {
       inDur: ui.inDur, size: ui.size, unit: ui.unit, tempo: ui.tempo, ref: ui.ref,
-      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, audition: ui.audition, loop: ui.loop, metro: ui.metro
+      vol: ui.vol, reg: ui.reg, bright: ui.bright, room: ui.room, atk: ui.atk, rel: ui.rel, chiff: ui.chiff, ens: ui.ens, draw: ui.draw, audition: ui.audition, loop: ui.loop, metro: ui.metro
     }}));
   } catch (e) { /* storage unavailable: work continues, just not kept */ }
 }
@@ -528,6 +535,11 @@ function loadAll(){
     if (REGISTERS[p.reg]) ui.reg = p.reg;
     if (p.bright >= 0 && p.bright <= 100) ui.bright = p.bright;
     if (p.room >= 0 && p.room <= 100) ui.room = p.room;
+    if (p.atk >= 0 && p.atk <= 400) ui.atk = p.atk;
+    if (p.rel >= 10 && p.rel <= 800) ui.rel = p.rel;
+    if (p.chiff >= 0 && p.chiff <= 100) ui.chiff = p.chiff;
+    if (p.ens >= 0 && p.ens <= 12) ui.ens = p.ens;
+    if (Array.isArray(p.draw) && p.draw.length === 8 && p.draw.every(v => v >= 0 && v <= 100)) ui.draw = p.draw;
     ui.audition = p.audition !== false;
     ui.loop = !!p.loop;
     ui.metro = !!p.metro;
@@ -1138,11 +1150,14 @@ const REGISTERS = {
   gedackt:   {name: "Gedackt 8′ (stopped flute)", h: [1, .03, .28, .02, .1, .01, .035]},
   principal: {name: "Principal 8′",               h: [1, .7, .5, .4, .3, .22, .16, .12, .08, .05]},
   regal:     {name: "Regal (soft reed)",          h: Array.from({length: 14}, (_, i) => Math.pow(i + 1, -0.85))},
-  sine:      {name: "Sine",                       h: [1]}
+  sine:      {name: "Sine",                       h: [1]},
+  custom:    {name: "Your own (drawbars)",        get h(){ return ui.draw.map(v => v / 100); }}
 };
+const FEET = ["8′", "4′", "2⅔′", "2′", "1⅗′", "1⅓′", "1⅐′", "1′"];
+const padDraw = h => Array.from({length: 8}, (_, i) => Math.round((h[i] || 0) * 100));
 const waveCache = {};
 function organWave(ctx){
-  const key = ui.reg + '/' + ui.bright;
+  const key = ui.reg + '/' + ui.bright + (ui.reg === 'custom' ? '/' + ui.draw.join(',') : '');
   if (waveCache[key]) return waveCache[key];
   const base = REGISTERS[ui.reg].h, imag = new Float32Array(base.length + 1);
   /* brightness tilts the upper harmonics up or down; the middle setting leaves the register as it is */
@@ -1154,14 +1169,14 @@ const Synth = {
   level: 0.3,
   voice(ctx, dest, freq, t0, t1){
     const g = ctx.createGain();
-    const atk = 0.07, rel = Math.min(0.14, (t1 - t0) * 0.4);
+    const atk = ui.atk / 1000, rel = Math.min(ui.rel / 1000, (t1 - t0) * 0.4);
     g.gain.setValueAtTime(0, t0);
     g.gain.linearRampToValueAtTime(this.level, t0 + atk);
     g.gain.setValueAtTime(this.level, Math.max(t0 + atk, t1 - rel));
     g.gain.linearRampToValueAtTime(0, t1);
     const wave = organWave(ctx), parts = [];
     /* two pipes a hair apart, as in an ensemble, so the tone breathes a little */
-    [-1.6, 1.6].forEach(cents => {
+    [-ui.ens, ui.ens].forEach(cents => {
       const o = ctx.createOscillator();
       o.setPeriodicWave(wave);
       o.frequency.setValueAtTime(freq, t0);
@@ -1172,7 +1187,7 @@ const Synth = {
       parts.push(o);
     });
     /* the small spit of air when a pipe speaks */
-    if (ui.reg !== 'sine') {
+    if (ui.reg !== 'sine' && ui.chiff > 0) {
       if (!chiffBuf) {
         chiffBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.09), ctx.sampleRate);
         const d = chiffBuf.getChannelData(0);
@@ -1180,7 +1195,7 @@ const Synth = {
       }
       const n = ctx.createBufferSource(); n.buffer = chiffBuf;
       const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = Math.min(9000, freq * 3); bp.Q.value = 3;
-      const ng = ctx.createGain(); ng.gain.value = 0.16 * this.level;
+      const ng = ctx.createGain(); ng.gain.value = 0.4 * this.level * ui.chiff / 100;
       n.connect(bp); bp.connect(ng); ng.connect(g);
       n.start(t0); parts.push(n);
     }
@@ -1195,6 +1210,38 @@ function silence(v, now){
     v.g.gain.linearRampToValueAtTime(0, now + 0.04);
     v.osc.stop(now + 0.06);
   } catch (e) {}
+}
+const TUNE = [
+  {k: 'atk',   label: 'Attack',   min: 0, max: 300, step: 1,   unit: ' ms'},
+  {k: 'rel',   label: 'Release',  min: 10, max: 600, step: 5,  unit: ' ms'},
+  {k: 'chiff', label: 'Chiff',    min: 0, max: 100, step: 1,   unit: ''},
+  {k: 'ens',   label: 'Ensemble', min: 0, max: 12, step: 0.1,  unit: ' ct'}
+];
+function buildTune(){
+  const box = $('#tune');
+  let html = '<div class="tg">Pipe speech</div>';
+  TUNE.forEach(t => { html += `<label for="tn-${t.k}">${t.label}</label><input type="range" id="tn-${t.k}" min="${t.min}" max="${t.max}" step="${t.step}"><output id="to-${t.k}"></output>`; });
+  html += '<div class="tg">Harmonics, as organ drawbars</div>';
+  FEET.forEach((f, i) => { html += `<label for="db-${i}">${f}</label><input type="range" id="db-${i}" min="0" max="100" step="1"><output id="do-${i}"></output>`; });
+  box.innerHTML = html;
+  TUNE.forEach(t => {
+    $('#tn-' + t.k).addEventListener('input', e => { ui[t.k] = Number(e.target.value); syncTune(); save(); });
+    $('#tn-' + t.k).addEventListener('change', testTone);
+  });
+  FEET.forEach((f, i) => {
+    $('#db-' + i).addEventListener('input', e => {
+      if (ui.reg !== 'custom') { ui.draw = padDraw(REGISTERS[ui.reg].h); ui.reg = 'custom'; }
+      ui.draw[i] = Number(e.target.value); syncTune(); save();
+    });
+    $('#db-' + i).addEventListener('change', testTone);
+  });
+  syncTune();
+}
+function syncTune(){
+  TUNE.forEach(t => { $('#tn-' + t.k).value = ui[t.k]; $('#to-' + t.k).textContent = ui[t.k] + t.unit; });
+  const d = ui.reg === 'custom' ? ui.draw : padDraw(REGISTERS[ui.reg].h);
+  FEET.forEach((f, i) => { $('#db-' + i).value = d[i]; $('#do-' + i).textContent = d[i]; });
+  $('#reg').value = ui.reg;
 }
 function testTone(){
   const ctx = ensureAudio();
@@ -1703,7 +1750,18 @@ function wire(){
     if (audio.master) audio.master.gain.setTargetAtTime(masterLevel(), audio.ctx.currentTime, 0.03);
     save();
   });
-  $('#reg').addEventListener('change', e => { ui.reg = e.target.value; save(); testTone(); });
+  buildTune();
+  $('#reg').addEventListener('change', e => {
+    ui.reg = e.target.value;
+    if (ui.reg !== 'custom') ui.draw = padDraw(REGISTERS[ui.reg].h);
+    syncTune(); save(); testTone();
+  });
+  $('#copySound').addEventListener('click', () => {
+    const t = `Sound: ${REGISTERS[ui.reg].name}; brightness ${ui.bright}; room ${ui.room}; attack ${ui.atk} ms; release ${ui.rel} ms; chiff ${ui.chiff}; ensemble ${ui.ens} cents; drawbars ${FEET.map((f, i) => f + '=' + ui.draw[i]).join(' ')}; volume ${ui.vol}`;
+    const done = () => { $('#copySound').textContent = 'Copied'; setTimeout(() => { $('#copySound').textContent = 'Copy sound settings'; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => window.prompt('Copy this:', t));
+    else window.prompt('Copy this:', t);
+  });
   $('#bright').addEventListener('input', e => { ui.bright = Number(e.target.value); save(); });
   $('#bright').addEventListener('change', testTone);
   $('#room').addEventListener('input', e => { ui.room = Number(e.target.value); if (audio.wet) audio.wet.gain.setTargetAtTime(roomLevel(), audio.ctx.currentTime, 0.03); save(); });
