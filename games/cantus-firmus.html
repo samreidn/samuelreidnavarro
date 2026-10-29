@@ -280,6 +280,7 @@ button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--
 .handbox{color:#2A2218}
 .handbox[data-beat="pendulum"] #handRot,.handbox[data-beat="hand"] #pendG{display:none}
 .handbox[data-beat="tick"]{display:none}
+#reg{width:178px}
 @media (max-width:700px){ .podg{flex-wrap:wrap} }
 </style>
 </head>
@@ -367,9 +368,9 @@ button[aria-pressed="true"]:hover:not(:disabled){background:#6F2017;color:var(--
       <button id="tap" title="Tap the beat twice or more: the tempo follows your taps">Tap</button>
       <button id="heart" class="ib" aria-label="Semibrevis at the pulse: 67 per minute" title="Semibrevis = 67 per minute, a resting pulse (Gaffurius takes the semibrevis as one heartbeat)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.2s-7.6-4.7-9.7-9.4C.8 8.4 2.9 4.8 6.5 4.8c2.2 0 3.7 1.3 5.5 3.3 1.8-2 3.3-3.3 5.5-3.3 3.6 0 5.7 3.6 4.2 7-2.1 4.7-9.7 9.4-9.7 9.4Z"/></svg></button>
     </div>
-    <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1" style="width:100px"></label>
+    <label class="ctl">Volume <input type="range" id="vol" min="0" max="100" step="1" style="width:84px"></label>
     <div class="grow podg">
-    <label class="ctl">Pitch a′ =
+    <label class="ctl">a′ =
       <select id="ref">
         <option value="415">415 Hz</option>
         <option value="440">440 Hz</option>
